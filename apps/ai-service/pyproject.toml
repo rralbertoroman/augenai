@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "ai_service", from = "src"}]
+packages = [{include = "ai-service", from = "src"}]
 
 
 [build-system]
