@@ -26,7 +26,7 @@ const ModelScorecardPresentation: React.FC<ModelScorecardPresentationProps> = ({
                         <p className="mt-1">{model.modelTasks.join(', ')}</p>
                     </div>
                     
-                    <div>
+                    <div className="overflow-y-auto max-h-64">
                         <h3 className="text-sm font-medium text-gray-500">DISEASES</h3>
                         <div className="mt-1 space-y-1">
                             {model.diseases.map((disease, index) => (
