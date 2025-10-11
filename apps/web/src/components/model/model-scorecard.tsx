@@ -11,7 +11,7 @@ const ModelScorecardPresentation: React.FC<ModelScorecardPresentationProps> = ({
     const formattedDate = new Date(model.latestTraining).toLocaleDateString();
     
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Model Scorecard</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
