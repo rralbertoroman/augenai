@@ -84,7 +84,10 @@ export const ModelScorecard: React.FC = () => {
         diseases: [{
             name: 'Diabetic Retinopathy',
             stages: ['R0', 'R1', 'R2', 'R3', 'R4']
-        }],
+        },{
+            name: 'Age-Related Macular Degeneration',
+            stages: ['M0', 'M1', 'M2']
+        },],
         acceptedImageTypes: ['OCT', 'Fundus'],
         latestTraining: '2023-05-24',
         accuracy: 0.87,
