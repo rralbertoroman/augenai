@@ -5,27 +5,29 @@ import torch
 from torch import nn
 from transformers import ViTForImageClassification, ViTImageProcessor
 
-from ..config import settings
-from ..schemas import PredictionResult
+from PIL.Image import Image
+from ai_service.config import settings
+from ai_service.models.schemas import PredictionResult
 from .model_instance import ModelInstance
 
 logger = logging.getLogger(__name__)
 
-def hf_vit_clsf_model_factory(model_id: str):
+def vit_clsf_model_factory(model_id: str):
     """Create a ViT model for image classification"""
     class HFViTModel(ModelInstance):
         def __init__(self, model_id):
             self.model_id = model_id
-
-            model_path = Path(settings.models_dir) / self.model_id
-            self.model = ViTForImageClassification.from_pretrained(model_path)
-            self.processor = ViTImageProcessor.from_pretrained(model_path)
+            
+            model_path = Path(settings.weights_dir) / self.model_id
+            logger.info(f"Loading model from {model_path.resolve()}")
+            self.model = ViTForImageClassification.from_pretrained(str(model_path))
+            self.processor = ViTImageProcessor.from_pretrained(str(model_path))
 
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-            logger.info(f"Loaded \n\n {self.model} \n\n{"==" * 20}")
+            logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
-        def run(self, image):
+        def run(self, image: Image):
             inputs = self.processor(images=image, return_tensors="pt")
             
             logger.info(f"Running {self.model_id} inference on device: {self.device}")
@@ -60,3 +62,9 @@ def hf_vit_clsf_model_factory(model_id: str):
             
     
     return HFViTModel(model_id)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+    model = vit_clsf_model_factory("diabetic-retinopathy-224-procnorm-vit")
