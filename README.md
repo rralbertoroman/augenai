@@ -1,4 +1,4 @@
-# AugenAI is an AI service for medical image analysis.
+# AugenAI
 
 ## Prerequisites
 
