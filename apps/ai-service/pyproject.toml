@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["rralbertorman <rr.albertorman@gmail.com>"]
 readme = "README.md"
-packages = [{include = "ai-service", from = "src"}]
+packages = [{include = "ai_service", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.15"
@@ -12,6 +12,7 @@ fastapi = {extras = ["standard"], version = "^0.118.3"}
 torch = "^2.9.0"
 torchvision = "^0.24.0"
 transformers = "^4.57.1"
+pydantic-settings = "^2.11.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]

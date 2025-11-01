@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # Add your configuration variables here
-    weights_dir: str = "apps/ai-service/weights"
+    weights_dir: str = "weights"
 
     class Config:
         env_file = ".env"
