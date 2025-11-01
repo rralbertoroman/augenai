@@ -1,30 +1,39 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-from enum import Enum
-from datetime import datetime
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
+
 
 class PredictionStatus(str, Enum):
     SUCCESS = "success"
     ERROR = "error"
 
+
 class PredictionRequest(BaseModel):
     """Schema for prediction request payload"""
+
     image: bytes = Field(..., description="Image data in bytes")
     model_id: str = Field(..., description="ID of the model to use")
 
+
 class PredictionResult(BaseModel):
     """Schema for prediction result"""
+
     class_id: int = Field(..., description="Predicted class ID")
     class_name: str = Field(..., description="Human-readable class name")
-    confidence: float = Field(..., ge=0, le=1, description="Confidence score between 0 and 1")
-    model_metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Additional model-specific metadata"
+    confidence: float = Field(
+        ..., ge=0, le=1, description="Confidence score between 0 and 1"
     )
+    model_metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional model-specific metadata"
+    )
+
 
 class PredictionResponse(BaseModel):
     """Schema for prediction API response"""
+
     status: PredictionStatus
     result: Optional[PredictionResult] = None
     error: Optional[str] = None

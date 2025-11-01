@@ -1,6 +1,7 @@
-from .model_pool import ModelPool
 from ..config import settings
 from .factories import hf
+from .model_pool import ModelPool
+
 
 class ModelService:
     def __init__(self):

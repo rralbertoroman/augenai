@@ -1,10 +1,13 @@
 import logging
-import torch
+from pathlib import Path
 
+import torch
 from torch import nn
 from transformers import ViTForImageClassification, ViTImageProcessor
-from .model_instance import ModelInstance
+
+from ..config import settings
 from ..schemas import PredictionResult
+from .model_instance import ModelInstance
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +16,11 @@ def hf_vit_clsf_model_factory(model_id: str):
     class HFViTModel(ModelInstance):
         def __init__(self, model_id):
             self.model_id = model_id
-            self.model = ViTForImageClassification.from_pretrained(self.model_id)
-            self.processor = ViTImageProcessor.from_pretrained(self.model_id)
+
+            model_path = Path(settings.models_dir) / self.model_id
+            self.model = ViTForImageClassification.from_pretrained(model_path)
+            self.processor = ViTImageProcessor.from_pretrained(model_path)
+
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n {self.model} \n\n{"==" * 20}")
