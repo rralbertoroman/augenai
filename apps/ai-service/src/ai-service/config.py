@@ -1,7 +1,6 @@
 """Application configuration"""
 
 from pydantic_settings import BaseSettings
-from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -14,7 +13,7 @@ class Settings(BaseSettings):
     port: int = 8000
     
     # Add your configuration variables here
-    api_key: Optional[str] = None
+    weights_dir: str = "apps/ai-service/weights"
     
     class Config:
         env_file = ".env"
