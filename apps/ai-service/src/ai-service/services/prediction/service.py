@@ -1,8 +1,16 @@
-
+from .model_pool import ModelPool
+from ..config import settings
+from .factories import hf
 
 class ModelService:
     def __init__(self):
-        pass
+        factories = {
+            "diabetic-retinopathy-224-procnorm-vit": hf.vit_clsf_model_factory,
+        }
+        self._model_pool = ModelPool(factories)
 
     def predict(self, image, model_id):
-        pass
+        model = self._model_pool.get_model(model_id)
+
+        result = model.run(image)
+        return result
