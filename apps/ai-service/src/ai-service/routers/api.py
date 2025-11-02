@@ -4,7 +4,13 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
+from . import predictions
+
 router = APIRouter(tags=["api"])
+
+
+# Include sub-routers
+router.include_router(predictions.router, prefix="/predictions", tags=["predictions"])
 
 
 # Request/Response models
