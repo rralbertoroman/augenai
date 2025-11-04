@@ -1,8 +1,9 @@
 """Main API endpoints"""
 
+from typing import List, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
 
 from . import predictions
 

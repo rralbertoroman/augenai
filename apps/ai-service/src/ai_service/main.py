@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import health, api
+from .routers import api, health
 
 app = FastAPI(
     title="AI Service",
