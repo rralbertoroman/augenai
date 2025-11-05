@@ -6,7 +6,6 @@ export const CreatePatientSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
   gender: z.string().min(1),
-  diagnosisId: z.uuid().optional(),
   clinicalConditions: z.array(z.string()),
 });
 
@@ -17,7 +16,6 @@ export const UpdatePatientSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
     .optional(),
   gender: z.string().min(1).optional(),
-  diagnosisId: z.uuid().optional(),
   clinicalConditions: z.array(z.string()).optional(),
 });
 
@@ -30,7 +28,6 @@ export const PatientDTOSchema = z.object({
   name: z.string(),
   dateOfBirth: z.string(),
   gender: z.string(),
-  diagnosisId: z.uuid().nullable(),
   clinicalConditions: z.array(z.string()),
   createdAt: z.date(),
   updatedAt: z.date(),

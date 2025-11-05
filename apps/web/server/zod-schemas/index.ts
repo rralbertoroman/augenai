@@ -10,18 +10,6 @@ export {
   type DiseaseDTO,
 } from "./disease";
 
-// Diagnosis schemas
-export {
-  CreateDiagnosisSchema,
-  UpdateDiagnosisSchema,
-  DeleteDiagnosisSchema,
-  DiagnosisDTOSchema,
-  type CreateDiagnosisInput,
-  type UpdateDiagnosisInput,
-  type DeleteDiagnosisInput,
-  type DiagnosisDTO,
-} from "./diagnosis";
-
 // Model schemas
 export {
   CreateModelSchema,
