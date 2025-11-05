@@ -49,20 +49,35 @@ curl -X POST "http://localhost:8000/api/v1/predictions/predict" \
 ### Prerequisites
 
 - Python 3.10+
-- Poetry (for dependency management)
+- uv (for dependency management)
 
 ### Installation
 
 1. Install dependencies:
 
 ```bash
-poetry install
+uv sync
 ```
 
-2. Run the application:
+### Development
+
+Run the application in development mode with hot-reloading:
 
 ```bash
-poetry run uvicorn ai-service.main:app --reload --host 0.0.0.0 --port 8000
+uv run fastapi dev src/ai_service/main.py
+```
+
+Or using npm scripts if available:
+```bash
+npm run dev
+```
+
+### Production
+
+For production deployment, run using uvicorn:
+
+```bash
+uv run uvicorn src.ai_service.main:app --host 0.0.0.0 --port 8000
 ```
 
 The application will be available at `http://localhost:8000`.
