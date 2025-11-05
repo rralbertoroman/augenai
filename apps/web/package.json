@@ -9,7 +9,7 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "lint": "eslint",
     "check-types": "tsc --noEmit",
-    "generate": "drizzle-kit generate",
+    "generate": "drizzle-kit generate --name",
     "migrate": "drizzle-kit migrate"
   },
   "dependencies": {

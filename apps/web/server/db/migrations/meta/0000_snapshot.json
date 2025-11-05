@@ -1,65 +1,9 @@
 {
-  "id": "d0896689-185f-42bf-ab71-b0c770f432cd",
+  "id": "db6632ce-3a72-48f0-81e9-b312d3908155",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.diagnoses": {
-      "name": "diagnoses",
-      "schema": "",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "disease_id": {
-          "name": "disease_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "current_stage": {
-          "name": "current_stage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "diagnoses_disease_id_diseases_id_fk": {
-          "name": "diagnoses_disease_id_diseases_id_fk",
-          "tableFrom": "diagnoses",
-          "tableTo": "diseases",
-          "columnsFrom": ["disease_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.diseases": {
       "name": "diseases",
       "schema": "",
@@ -219,12 +163,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "diagnosis_id": {
-          "name": "diagnosis_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "clinical_conditions": {
           "name": "clinical_conditions",
           "type": "text[]",
@@ -233,12 +171,73 @@
         }
       },
       "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prediction_classes": {
+      "name": "prediction_classes",
+      "schema": "",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "model_id": {
+          "name": "model_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "disease_id": {
+          "name": "disease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stage_idx": {
+          "name": "stage_idx",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
       "foreignKeys": {
-        "patients_diagnosis_id_diagnoses_id_fk": {
-          "name": "patients_diagnosis_id_diagnoses_id_fk",
-          "tableFrom": "patients",
-          "tableTo": "diagnoses",
-          "columnsFrom": ["diagnosis_id"],
+        "prediction_classes_model_id_models_id_fk": {
+          "name": "prediction_classes_model_id_models_id_fk",
+          "tableFrom": "prediction_classes",
+          "tableTo": "models",
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "prediction_classes_disease_id_diseases_id_fk": {
+          "name": "prediction_classes_disease_id_diseases_id_fk",
+          "tableFrom": "prediction_classes",
+          "tableTo": "diseases",
+          "columnsFrom": ["disease_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -275,8 +274,32 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "class_id": {
+          "name": "class_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "model_id": {
           "name": "model_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prediction_result": {
+          "name": "prediction_result",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prediction_metadata": {
+          "name": "prediction_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -286,22 +309,19 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
-        },
-        "predicted_diagnosis_id": {
-          "name": "predicted_diagnosis_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "consultation_date": {
-          "name": "consultation_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
+        "predictions_class_id_prediction_classes_id_fk": {
+          "name": "predictions_class_id_prediction_classes_id_fk",
+          "tableFrom": "predictions",
+          "tableTo": "prediction_classes",
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "predictions_model_id_models_id_fk": {
           "name": "predictions_model_id_models_id_fk",
           "tableFrom": "predictions",
@@ -316,15 +336,6 @@
           "tableFrom": "predictions",
           "tableTo": "patients",
           "columnsFrom": ["patient_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "predictions_predicted_diagnosis_id_diagnoses_id_fk": {
-          "name": "predictions_predicted_diagnosis_id_diagnoses_id_fk",
-          "tableFrom": "predictions",
-          "tableTo": "diagnoses",
-          "columnsFrom": ["predicted_diagnosis_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
