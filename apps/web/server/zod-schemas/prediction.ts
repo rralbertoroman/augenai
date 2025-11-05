@@ -1,22 +1,21 @@
 import { z } from "zod";
 
 export const CreatePredictionSchema = z.object({
-  consultationDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  classId: z.uuid(),
   modelId: z.uuid(),
   patientId: z.uuid(),
-  predictedDiagnosisId: z.uuid(),
+  predictionResult: z.any(),
+  predictionMetadata: z.any(),
+  userId: z.uuid(),
 });
 
 export const UpdatePredictionSchema = z.object({
-  consultationDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-    .optional(),
+  classId: z.uuid().optional(),
   modelId: z.uuid().optional(),
   patientId: z.uuid().optional(),
-  predictedDiagnosisId: z.uuid().optional(),
+  predictionResult: z.any().optional(),
+  predictionMetadata: z.any().optional(),
+  userId: z.uuid().optional(),
 });
 
 export const DeletePredictionSchema = z.object({
@@ -25,10 +24,12 @@ export const DeletePredictionSchema = z.object({
 
 export const PredictionDTOSchema = z.object({
   id: z.uuid(),
-  consultationDate: z.string(),
+  classId: z.uuid(),
   modelId: z.uuid(),
   patientId: z.uuid(),
-  predictedDiagnosisId: z.uuid(),
+  predictionResult: z.any(),
+  predictionMetadata: z.any(),
+  userId: z.uuid(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
