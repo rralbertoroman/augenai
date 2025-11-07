@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "fastapi dev src/ai-service/main.py"
+    "dev": "uv run fastapi dev src/ai_service/main.py",
+    "start": "uv run fastapi dev src/ai_service/main.py --port 8000"
   },
   "keywords": [],
   "author": "",

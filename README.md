@@ -2,26 +2,20 @@
 
 ## Prerequisites
 
-1. Install Python 3.12.3
+1. Install Python 3.10+
 
-2. Install Poetry
+2. Install uv
 
 ## Installation
 
-1. Install the AI service by creating and installing the Poetry virtual environment and its dependencies. Configure Poetry to install the virtual environment locally by running:
-
-   ```bash
-   poetry config virtualenvs.in-project true
-   ```
-
-2. Install the dependencies and activate the virtual environment by running:
+1. Install the AI service dependencies using uv. The virtual environment will be created automatically by uv:
 
    ```bash
    cd apps/ai-service
-   poetry install
+   uv sync
    ```
 
-3. Go to the project root directory and install the rest of the dependencies by running:
+2. Go to the project root directory and install the rest of the dependencies by running:
 
    ```bash
    cd ../..
@@ -30,11 +24,26 @@
 
 At this point, you should have the project installed and ready to run.
 
-## Running the development version
+## Running the system
 
-Run the development version of the system by running:
+### Development
 
-```bash
-source apps/ai-service/.venv/bin/activate
-pnpm run dev
-```
+Run the development version of the system with hot-reloading:
+
+   ```bash
+   pnpm run dev
+   ```
+
+Or you can run the AI service directly using uv from the project root directory:
+
+   ```bash
+   cd apps/ai-service && uv run fastapi dev src/ai_service/main.py
+   ```
+
+### Production
+
+For production deployment, run using uvicorn:
+
+   ```bash
+   cd apps/ai-service && uv run uvicorn src.ai_service.main:app --host 0.0.0.0 --port 8000
+   ```
