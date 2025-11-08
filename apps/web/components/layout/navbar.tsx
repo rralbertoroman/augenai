@@ -24,7 +24,7 @@ export function Navbar({ currentPath }: NavbarProps) {
 
         {/* Logo */}
         <Link href="/" className="text-xl font-semibold text-[#1A1A1A]">
-          AugurAI
+          augenai
         </Link>
 
         {/* Navigation links */}
