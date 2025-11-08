@@ -5,6 +5,7 @@ node_modules
 .pnp
 .pnp.js
 *ai_service.egg-info
+.venv
 
 # Local env files
 .env
