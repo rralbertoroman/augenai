@@ -49,3 +49,17 @@ export {
   type GetPredictionsByPatientInput,
   type GetPredictionsByModelInput,
 } from "./prediction";
+
+// Prediction Class Disease schemas
+export {
+  CreatePredictionClassDiseaseSchema,
+  UpdatePredictionClassDiseaseSchema,
+  DeletePredictionClassDiseaseSchema,
+  PredictionClassDiseaseDTOSchema,
+  GetByClassIdAndModelIdSchema,
+  type CreatePredictionClassDiseaseInput,
+  type UpdatePredictionClassDiseaseInput,
+  type DeletePredictionClassDiseaseInput,
+  type PredictionClassDiseaseDTO,
+  type GetByClassIdAndModelIdInput,
+} from "./prediction_class_disease";

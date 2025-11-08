@@ -1,20 +1,16 @@
 import { z } from "zod";
 
 export const CreatePredictionSchema = z.object({
-  classId: z.uuid(),
   modelId: z.uuid(),
   patientId: z.uuid(),
   predictionResult: z.any(),
-  predictionMetadata: z.any(),
   userId: z.uuid(),
 });
 
 export const UpdatePredictionSchema = z.object({
-  classId: z.uuid().optional(),
   modelId: z.uuid().optional(),
   patientId: z.uuid().optional(),
   predictionResult: z.any().optional(),
-  predictionMetadata: z.any().optional(),
   userId: z.uuid().optional(),
 });
 
@@ -24,11 +20,9 @@ export const DeletePredictionSchema = z.object({
 
 export const PredictionDTOSchema = z.object({
   id: z.uuid(),
-  classId: z.uuid(),
   modelId: z.uuid(),
   patientId: z.uuid(),
   predictionResult: z.any(),
-  predictionMetadata: z.any(),
   userId: z.uuid(),
   createdAt: z.date(),
   updatedAt: z.date(),
