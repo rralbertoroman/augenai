@@ -26,7 +26,7 @@ class PredictionResult(BaseModel):
     confidence: float = Field(
         ..., ge=0, le=1, description="Confidence score between 0 and 1"
     )
-    model_metadata: Dict[str, Any] = Field(
+    metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional model-specific metadata"
     )
 

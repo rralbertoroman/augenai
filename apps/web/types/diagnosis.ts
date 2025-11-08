@@ -61,6 +61,23 @@ export interface Prediction {
   consultationDate: Date;
 }
 
+// Expected response from the server
+
+export enum PredictionStatus {
+  SUCCESS = "success",
+  ERROR = "error",
+}
+
+export interface PredictionResponse {
+  status: PredictionStatus;
+  result?: Record<string, unknown>;
+  error?: string;
+  request_id: string;
+  model_version: string;
+  inference_time_ms: number;
+  timestamp: string; // Use ISO string for serialization
+}
+
 // Patient Types
 export interface Patient {
   id: string;
