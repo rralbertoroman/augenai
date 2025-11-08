@@ -1,11 +1,12 @@
 """AI predictions endpoints"""
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Dict, Any
 import uuid
 
 from ..utils.model_handler import model_handler
+from ..auth.auth import verify_api_key
 
 router = APIRouter(tags=["predictions"])
 
@@ -26,13 +27,16 @@ class PredictionResponse(BaseModel):
 @router.post("/predict", response_model=PredictionResponse)
 async def predict(
     model_id: str = Form(..., description="ID of the model to use for prediction"),
-    image: UploadFile = File(..., description="Image file to analyze")
+    image: UploadFile = File(..., description="Image file to analyze"),
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Make a prediction using the specified model and image file.
     
     This endpoint accepts a model ID and an image file, processes the image with the specified model,
     and returns the prediction result with confidence score.
+    
+    Requires authentication via X-API-Key header.
     """
     # Validate file type
     if not image.content_type.startswith("image/"):
@@ -75,6 +79,6 @@ async def predict(
 
 # Additional utility endpoints could be added here
 @router.get("/models")
-async def list_models():
+async def list_models(api_key: str = Depends(verify_api_key)):
     """List available models"""
     return {"models": model_handler.get_available_models()}
