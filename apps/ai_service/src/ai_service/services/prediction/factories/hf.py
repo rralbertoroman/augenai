@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from datetime import datetime
 
 import torch
 from PIL.Image import Image
@@ -18,14 +19,13 @@ def vit_clsf_model_factory(model_id: str):
     """Create a ViT model for image classification"""
 
     class HFViTModel(ModelInstance):
-        def __init__(self, model_id):
-            self.model_id = model_id
+        def __init__(self, model_id: str, timeout: int = 60):
+            super().__init__(model_id=model_id, timeout=timeout)
 
             model_path = Path(settings.weights_dir) / self.model_id
-            logger.info(f"Loading model from {model_path.resolve()}")
+            logger.info(f"Loading {self.model_id} model from {model_path.resolve()}")
             self.model = ViTForImageClassification.from_pretrained(str(model_path))
             self.processor = ViTImageProcessor.from_pretrained(str(model_path))
-
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
