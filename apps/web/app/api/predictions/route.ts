@@ -9,17 +9,29 @@ import type {
 } from "@/types/prediction";
 import { createPrediction } from "@/server/services/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "@/server/services/prediction_class_disease";
+import { supabaseAdmin } from "@/server/supabase/client";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const image = formData.get("image") as File;
+    const storagePath = formData.get("storage_path") as string;
+    const bucketName = formData.get("bucket_name") as string;
     const modelId = formData.get("model_id") as string;
     const patientId = formData.get("patient_id") as string;
     const userId = formData.get("user_id") as string;
 
-    if (!image) {
-      return NextResponse.json({ error: "Image is required" }, { status: 400 });
+    if (!storagePath) {
+      return NextResponse.json(
+        { error: "Storage path is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!bucketName) {
+      return NextResponse.json(
+        { error: "Bucket name is required" },
+        { status: 400 },
+      );
     }
 
     if (!modelId) {
@@ -43,8 +55,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: imageBlob, error: downloadError } =
+      await supabaseAdmin.storage.from(bucketName).download(storagePath);
+
+    if (downloadError || !imageBlob) {
+      return NextResponse.json(
+        {
+          error: `Failed to download image from storage: ${downloadError?.message || "No data returned"}`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const fileName = storagePath.split("/").pop();
+
+    if (!fileName) {
+      return NextResponse.json(
+        { error: "Invalid storage path: cannot extract filename" },
+        { status: 400 },
+      );
+    }
+
     const predictionFormData = new FormData();
-    predictionFormData.append("image", image);
+    predictionFormData.append("image", imageBlob, fileName);
     predictionFormData.append("model_id", modelId);
 
     const predictionResponse = await fetch(

@@ -6,6 +6,18 @@ if (!process.env.SUPABASE_DB_URL) {
   throw new Error("SUPABASE_DB_URL is not set in environment variables");
 }
 
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error(
+    "NEXT_PUBLIC_SUPABASE_URL is not set in environment variables",
+  );
+}
+
+if (!process.env.SUPABASE_MASTER_API_KEY) {
+  throw new Error(
+    "SUPABASE_MASTER_API_KEY is not set in environment variables",
+  );
+}
+
 if (!process.env.AI_PREDICTION_SERVICE_URL) {
   throw new Error(
     "AI_PREDICTION_SERVICE_URL is not set in environment variables",
@@ -19,6 +31,8 @@ if (!process.env.AI_PREDICTION_SERVICE_SECRET_KEY) {
 }
 
 export const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
+export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_MASTER_API_KEY;
 export const AI_PREDICTION_SERVICE_URL = process.env.AI_PREDICTION_SERVICE_URL;
 export const AI_PREDICTION_SERVICE_SECRET_KEY =
   process.env.AI_PREDICTION_SERVICE_SECRET_KEY;
