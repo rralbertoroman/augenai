@@ -8,6 +8,7 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture
 def sample_images() -> List[Image.Image]:
     """
@@ -17,7 +18,7 @@ def sample_images() -> List[Image.Image]:
         List[Image.Image]: List of PIL Image objects
     """
     # You can change this path to point to your actual image directory
-    image_dir = "tests/data/dr_sample"
+    image_dir = "tests/dr_sample"
     image_extensions = {".jpg", ".jpeg", ".png", ".bmp"}
 
     if not os.path.exists(image_dir):
