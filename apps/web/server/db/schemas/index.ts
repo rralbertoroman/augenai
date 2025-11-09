@@ -3,3 +3,4 @@ export { default as ModelsTable } from "./model";
 export { default as PatientsTable } from "./patient";
 export { default as PredictionsTable } from "./prediction";
 export { default as PredictionClassesTable } from "./prediction_class_disease";
+export { default as UserProfilesTable } from "./user_profile";

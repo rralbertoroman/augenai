@@ -63,3 +63,19 @@ export {
   type PredictionClassDiseaseDTO,
   type GetByClassIdAndModelIdInput,
 } from "./prediction_class_disease";
+
+// User Profile schemas
+export {
+  CreateUserProfileSchema,
+  UpdateUserProfileSchema,
+  DeleteUserProfileSchema,
+  UserProfileDTOSchema,
+  GetUserProfileByEmailSchema,
+  GetUserProfilesByRoleSchema,
+  type CreateUserProfileInput,
+  type UpdateUserProfileInput,
+  type DeleteUserProfileInput,
+  type UserProfileDTO,
+  type GetUserProfileByEmailInput,
+  type GetUserProfilesByRoleInput,
+} from "./user_profile";
