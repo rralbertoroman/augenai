@@ -5,8 +5,9 @@ import ModelsTable from "./model";
 import DiseasesTable from "./disease";
 import PredictionsTable from "./prediction";
 
-const PredictionClassesTable = pgTable("prediction_classes", {
+const PredictionClassesTable = pgTable("prediction_class_disease", {
   ...standardSchema,
+  classId: uuid("class_id").notNull(),
   modelId: uuid("model_id")
     .notNull()
     .references(() => ModelsTable.id),

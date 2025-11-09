@@ -8,6 +8,13 @@
       "when": 1762357565278,
       "tag": "0000_init db",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762620979458,
+      "tag": "0001_class_id_deleted_from_prediction_table",
+      "breakpoints": true
     }
   ]
 }
