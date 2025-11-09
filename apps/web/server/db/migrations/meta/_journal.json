@@ -15,6 +15,13 @@
       "when": 1762620979458,
       "tag": "0001_class_id_deleted_from_prediction_table",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762720854364,
+      "tag": "0002_user_profile_module",
+      "breakpoints": true
     }
   ]
 }
