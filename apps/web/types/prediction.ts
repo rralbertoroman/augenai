@@ -17,7 +17,8 @@ export interface PredictionResponse extends AIServicePredictionResponse {
 }
 
 export interface CreatePredictionRequest {
-  image: File | Blob;
+  storage_path: string;
+  bucket_name: string;
   model_id: string;
   patient_id: string;
   user_id: string;
