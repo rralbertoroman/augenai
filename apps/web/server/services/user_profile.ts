@@ -1,0 +1,117 @@
+"use server";
+
+import { eq } from "drizzle-orm";
+import { db } from "../db/client";
+import { UserProfilesTable } from "../db/schemas";
+import {
+  CreateUserProfileSchema,
+  DeleteUserProfileSchema,
+  UpdateUserProfileSchema,
+  GetUserProfileByEmailSchema,
+  GetUserProfilesByRoleSchema,
+  type CreateUserProfileInput,
+  type DeleteUserProfileInput,
+  type UpdateUserProfileInput,
+  type GetUserProfileByEmailInput,
+  type GetUserProfilesByRoleInput,
+  type UserProfileDTO,
+} from "../zod-schemas/user_profile";
+
+export const createUserProfile = async (
+  data: CreateUserProfileInput,
+): Promise<UserProfileDTO> => {
+  const payload = CreateUserProfileSchema.parse(data);
+
+  const [userProfile] = await db
+    .insert(UserProfilesTable)
+    .values(payload)
+    .returning();
+
+  if (!userProfile) {
+    throw new Error("Error creating the user profile");
+  }
+
+  return userProfile;
+};
+
+export const getUserProfileById = async (
+  id: string,
+): Promise<UserProfileDTO | null> => {
+  const [userProfile] = await db
+    .select()
+    .from(UserProfilesTable)
+    .where(eq(UserProfilesTable.id, id));
+
+  if (!userProfile) {
+    return null;
+  }
+
+  return userProfile;
+};
+
+export const getUserProfileByEmail = async (
+  data: GetUserProfileByEmailInput,
+): Promise<UserProfileDTO | null> => {
+  const { email } = GetUserProfileByEmailSchema.parse(data);
+
+  const [userProfile] = await db
+    .select()
+    .from(UserProfilesTable)
+    .where(eq(UserProfilesTable.email, email));
+
+  if (!userProfile) {
+    return null;
+  }
+
+  return userProfile;
+};
+
+export const getAllUserProfiles = async (): Promise<UserProfileDTO[]> => {
+  const userProfiles = await db.select().from(UserProfilesTable);
+  return userProfiles;
+};
+
+export const getUserProfilesByRole = async (
+  data: GetUserProfilesByRoleInput,
+): Promise<UserProfileDTO[]> => {
+  const { role } = GetUserProfilesByRoleSchema.parse(data);
+
+  const userProfiles = await db
+    .select()
+    .from(UserProfilesTable)
+    .where(eq(UserProfilesTable.role, role));
+
+  return userProfiles;
+};
+
+export const updateUserProfile = async (
+  id: string,
+  data: UpdateUserProfileInput,
+): Promise<UserProfileDTO> => {
+  const payload = UpdateUserProfileSchema.parse(data);
+
+  const [userProfile] = await db
+    .update(UserProfilesTable)
+    .set(payload)
+    .where(eq(UserProfilesTable.id, id))
+    .returning();
+
+  if (!userProfile) {
+    throw new Error("User profile not found");
+  }
+
+  return userProfile;
+};
+
+export const deleteUserProfile = async (
+  data: DeleteUserProfileInput,
+): Promise<boolean> => {
+  const { id } = DeleteUserProfileSchema.parse(data);
+
+  const deleted = await db
+    .delete(UserProfilesTable)
+    .where(eq(UserProfilesTable.id, id))
+    .returning({ id: UserProfilesTable.id });
+
+  return deleted.length > 0;
+};
