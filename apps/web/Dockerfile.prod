@@ -1,0 +1,52 @@
+# Multi-stage build: first build the Next.js application
+FROM node:20-alpine AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the root package.json and pnpm-lock.yaml to the container
+COPY package.json pnpm-lock.yaml ./
+
+# Install pnpm globally if not already included in the node image
+RUN npm install -g pnpm
+
+# Copy the pnpm workspace configuration
+COPY pnpm-workspace.yaml ./
+
+# Copy all the apps and packages directories
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+
+# Install dependencies using pnpm
+RUN pnpm install --frozen-lockfile
+
+# Build the Next.js application
+WORKDIR /app/apps/web
+RUN pnpm build
+
+# Production stage: serve the built application
+FROM node:20-alpine AS runner
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy the built application from the builder stage
+COPY --from=builder /app/apps/web/package.json ./package.json
+COPY --from=builder /app/apps/web/.next/standalone/ ./
+COPY --from=builder /app/apps/web/.next/static ./public/_next/static
+
+# Copy a simple health check script
+RUN echo '#!/bin/sh\nwhile ! curl -f http://ai-service:8000/health 2>/dev/null; do\n  echo "Waiting for ai-service to be ready..."\n  sleep 2\ndone\nexec "$@"' > /wait-for-service.sh && chmod +x /wait-for-service.sh
+
+# Expose the port Next.js runs on
+EXPOSE 3000
+
+# Set the default command to start the application
+ENTRYPOINT ["/wait-for-service.sh"]
+CMD ["node", "server.js"]

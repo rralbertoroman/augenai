@@ -1,0 +1,34 @@
+services:
+  ai-service:
+    build:
+      context: ./apps/ai_service
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app/src
+    restart: unless-stopped
+    command: ["uv", "run", "gunicorn", "src.ai_service.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://ai-service:8000
+    restart: unless-stopped
+    command: pnpm --filter web start
+    depends_on:
+      - ai-service
+
+
+volumes:
+  ai-service-data:
+
+ 
+
+volumes:
+  ai-service-data:

@@ -1,7 +1,7 @@
 [project]
-name = "ai-service"
+name = "ai_service"
 version = "0.1.0"
-description = ""
+description = "A FastAPI application for AI-powered image predictions"
 authors = [{name = "rralbertorman", email = "rr.albertorman@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
@@ -11,7 +11,12 @@ dependencies = [
     "torchvision>=0.24.0",
     "transformers>=4.57.1",
     "pydantic-settings>=2.11.0",
+    "gunicorn>=22.0.0",
+    "uvicorn[standard]>=0.34.0",
 ]
+
+[project.scripts]
+ai_service = "ai_service.main:app"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
