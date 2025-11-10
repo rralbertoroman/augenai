@@ -2,7 +2,38 @@
  * Mock data for development and testing
  */
 
-import type { ModelInfo, Prediction, Patient } from "@/types/diagnosis";
+// Mock data types (frontend only)
+interface Disease {
+  name: string;
+  stages: string[];
+}
+
+export interface ModelInfo {
+  name: string;
+  tasks: string[];
+  diseases: Disease[];
+  acceptedImageTypes: string[];
+  latestTraining: Date;
+  accuracy: number;
+  description?: string;
+}
+
+export interface Prediction {
+  id: string;
+  diagnosis: string;
+  model: string;
+  consultationDate: Date;
+}
+
+export interface Patient {
+  id: string;
+  name: string;
+  age: number;
+  gender: "Male" | "Female";
+  disease: string;
+  stage: string;
+  clinicalConditions: string;
+}
 
 // Mock Model Information
 export const mockModelInfo: ModelInfo = {

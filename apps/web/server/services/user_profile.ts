@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
 import { UserProfilesTable } from "../db/schemas";
+import { getCurrentUser, verifyOwnership } from "../auth";
 import {
   CreateUserProfileSchema,
   DeleteUserProfileSchema,
@@ -18,9 +19,26 @@ import {
 } from "../zod-schemas/user_profile";
 
 export const createUserProfile = async (
-  data: CreateUserProfileInput,
+  token: string,
+  data: Omit<CreateUserProfileInput, "id" | "email">,
 ): Promise<UserProfileDTO> => {
-  const payload = CreateUserProfileSchema.parse(data);
+  // Get authenticated user from JWT
+  const currentUser = await getCurrentUser(token);
+
+  // Check if profile already exists
+  const existing = await getUserProfileById(currentUser.userId);
+  if (existing) {
+    return existing;
+  }
+
+  // Merge JWT data with provided data
+  const completeData: CreateUserProfileInput = {
+    id: currentUser.userId,
+    email: currentUser.email,
+    ...data,
+  };
+
+  const payload = CreateUserProfileSchema.parse(completeData);
 
   const [userProfile] = await db
     .insert(UserProfilesTable)
@@ -85,9 +103,14 @@ export const getUserProfilesByRole = async (
 };
 
 export const updateUserProfile = async (
+  token: string,
   id: string,
   data: UpdateUserProfileInput,
 ): Promise<UserProfileDTO> => {
+  // Get authenticated user and verify ownership
+  const currentUser = await getCurrentUser(token);
+  verifyOwnership(currentUser, id);
+
   const payload = UpdateUserProfileSchema.parse(data);
 
   const [userProfile] = await db
@@ -104,9 +127,14 @@ export const updateUserProfile = async (
 };
 
 export const deleteUserProfile = async (
+  token: string,
   data: DeleteUserProfileInput,
 ): Promise<boolean> => {
   const { id } = DeleteUserProfileSchema.parse(data);
+
+  // Get authenticated user and verify ownership
+  const currentUser = await getCurrentUser(token);
+  verifyOwnership(currentUser, id);
 
   const deleted = await db
     .delete(UserProfilesTable)
