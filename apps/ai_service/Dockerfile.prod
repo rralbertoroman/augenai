@@ -1,0 +1,56 @@
+# ---- Builder Stage ----
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim as builder
+
+# Install system dependencies required for building Rust and Python dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust in the builder stage
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set up environment to avoid hardlink warnings
+ENV UV_LINK_MODE=copy
+
+WORKDIR /app
+
+# Copy project files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies using uv with caching, excluding the project itself
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-install-project --all-extras
+
+# Copy source code
+COPY ./src ./src
+
+# Install the project in editable mode
+RUN uv pip install -e .
+
+# ---- Final Stage ----
+FROM python:3.11-slim-bookworm as final
+
+# Set up environment
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+# Copy virtual environment and application code
+COPY --from=builder /app/.venv /app/.venv
+COPY . .
+
+# Create non-root user
+RUN useradd --system --create-home --uid 1000 ai-service \
+    && chown -R ai-service:ai-service /app
+USER ai-service
+
+# Expose port
+EXPOSE 8000
+
+# Run the application with production server
+CMD ["gunicorn", "src.ai_service.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
