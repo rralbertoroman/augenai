@@ -10,15 +10,30 @@ import type {
 import { createPrediction } from "@/server/services/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "@/server/services/prediction_class_disease";
 import { supabaseAdmin } from "@/server/supabase/client";
+import { getCurrentUser } from "@/server/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // Extract JWT from Authorization header
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "Missing or invalid authorization header" },
+        { status: 401 },
+      );
+    }
+
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+
+    // Get authenticated user from JWT
+    const currentUser = await getCurrentUser(token);
+    const userId = currentUser.userId;
+
     const formData = await request.formData();
     const storagePath = formData.get("storage_path") as string;
     const bucketName = formData.get("bucket_name") as string;
     const modelId = formData.get("model_id") as string;
     const patientId = formData.get("patient_id") as string;
-    const userId = formData.get("user_id") as string;
 
     if (!storagePath) {
       return NextResponse.json(
@@ -44,13 +59,6 @@ export async function POST(request: NextRequest) {
     if (!patientId) {
       return NextResponse.json(
         { error: "Patient ID is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
         { status: 400 },
       );
     }
