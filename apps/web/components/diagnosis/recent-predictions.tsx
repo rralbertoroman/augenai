@@ -1,4 +1,3 @@
-import type { RecentPredictionsProps } from "@/types/diagnosis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -8,6 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Prediction } from "@/lib/mock-data";
+
+interface RecentPredictionsProps {
+  predictions: Prediction[];
+}
 
 export function RecentPredictions({ predictions }: RecentPredictionsProps) {
   const formatDate = (date: Date) => {

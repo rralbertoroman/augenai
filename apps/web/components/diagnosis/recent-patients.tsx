@@ -1,4 +1,3 @@
-import type { RecentPatientsProps } from "@/types/diagnosis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -8,6 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Patient } from "@/lib/mock-data";
+
+interface RecentPatientsProps {
+  patients: Patient[];
+}
 
 export function RecentPatients({ patients }: RecentPatientsProps) {
   return (
