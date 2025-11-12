@@ -6,11 +6,13 @@ import { UserProfilesTable } from "../db/schemas";
 import { getCurrentUser, verifyOwnership } from "../auth";
 import {
   CreateUserProfileSchema,
+  CreateUserProfileWithAuthSchema,
   DeleteUserProfileSchema,
   UpdateUserProfileSchema,
   GetUserProfileByEmailSchema,
   GetUserProfilesByRoleSchema,
   type CreateUserProfileInput,
+  type CreateUserProfileWithAuthInput,
   type DeleteUserProfileInput,
   type UpdateUserProfileInput,
   type GetUserProfileByEmailInput,
@@ -20,7 +22,7 @@ import {
 
 export const createUserProfile = async (
   token: string,
-  data: Omit<CreateUserProfileInput, "id" | "email">,
+  data: CreateUserProfileInput,
 ): Promise<UserProfileDTO> => {
   // Get authenticated user from JWT
   const currentUser = await getCurrentUser(token);
@@ -31,14 +33,18 @@ export const createUserProfile = async (
     return existing;
   }
 
+  // Validate input data
+  const validatedData = CreateUserProfileSchema.parse(data);
+
   // Merge JWT data with provided data
-  const completeData: CreateUserProfileInput = {
+  const completeData: CreateUserProfileWithAuthInput = {
     id: currentUser.userId,
     email: currentUser.email,
-    ...data,
+    ...validatedData,
   };
 
-  const payload = CreateUserProfileSchema.parse(completeData);
+  // Validate complete data
+  const payload = CreateUserProfileWithAuthSchema.parse(completeData);
 
   const [userProfile] = await db
     .insert(UserProfilesTable)

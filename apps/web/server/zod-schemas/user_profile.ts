@@ -1,10 +1,15 @@
 import { z } from "zod";
 
 export const CreateUserProfileSchema = z.object({
-  id: z.uuid(), // ID from Supabase auth.users
-  email: z.email(),
   name: z.string().min(1).max(255),
   role: z.string().max(50).default("doctor"), // Expected values: "admin", "doctor", "patient"
+});
+
+export const CreateUserProfileWithAuthSchema = z.object({
+  id: z.uuid(), // ID from Supabase auth.users (from JWT)
+  email: z.email(), // Email from JWT
+  name: z.string().min(1).max(255),
+  role: z.string().max(50).default("doctor"),
 });
 
 export const UpdateUserProfileSchema = z.object({
@@ -36,6 +41,9 @@ export const GetUserProfilesByRoleSchema = z.object({
 
 // INPUT TYPES
 export type CreateUserProfileInput = z.input<typeof CreateUserProfileSchema>;
+export type CreateUserProfileWithAuthInput = z.input<
+  typeof CreateUserProfileWithAuthSchema
+>;
 export type UpdateUserProfileInput = z.input<typeof UpdateUserProfileSchema>;
 export type DeleteUserProfileInput = z.input<typeof DeleteUserProfileSchema>;
 export type GetUserProfileByEmailInput = z.input<
