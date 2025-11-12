@@ -1,6 +1,10 @@
-import type { ModelScorecardProps } from "@/types/diagnosis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { ModelInfo } from "@/lib/mock-data";
+
+interface ModelScorecardProps {
+  modelData: ModelInfo;
+}
 
 export function ModelScorecard({ modelData }: ModelScorecardProps) {
   const formatDate = (date: Date) => {

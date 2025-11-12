@@ -234,12 +234,8 @@
           "name": "prediction_class_disease_model_id_models_id_fk",
           "tableFrom": "prediction_class_disease",
           "tableTo": "models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -247,12 +243,8 @@
           "name": "prediction_class_disease_disease_id_diseases_id_fk",
           "tableFrom": "prediction_class_disease",
           "tableTo": "diseases",
-          "columnsFrom": [
-            "disease_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["disease_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -319,12 +311,8 @@
           "name": "predictions_model_id_models_id_fk",
           "tableFrom": "predictions",
           "tableTo": "models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -332,12 +320,8 @@
           "name": "predictions_patient_id_patients_id_fk",
           "tableFrom": "predictions",
           "tableTo": "patients",
-          "columnsFrom": [
-            "patient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["patient_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -399,9 +383,7 @@
         "user_profiles_email_unique": {
           "name": "user_profiles_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

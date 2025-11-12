@@ -6,7 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { EyeScanUploadProps, ScanData } from "@/types/diagnosis";
+
+interface ScanData {
+  diagnostic: string;
+  stage: string;
+  imageType: string;
+  lesionSummary: string;
+  eyeSelection: "left" | "right";
+  file?: File;
+}
+
+interface EyeScanUploadProps {
+  onSubmit: (data: ScanData) => void;
+  isLoading?: boolean;
+}
 
 export function EyeScanUpload({
   onSubmit,
