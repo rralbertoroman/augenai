@@ -15,29 +15,53 @@ export default function DiagnosisPage() {
   ) => {
     setIsLoading(true);
 
-    // Simulate API call
-    console.log("Scan data submitted:", data);
+    try {
+      if (!data.storagePath || !data.bucketName) {
+        setIsLoading(false);
+        return;
+      }
 
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    setIsLoading(false);
+      if (!session) {
+        setIsLoading(false);
+        return;
+      }
 
-    // Show success message (temporary)
-    alert("Scan submitted successfully!");
+      const formData = new FormData();
+      formData.append("storage_path", data.storagePath);
+      formData.append("bucket_name", data.bucketName);
+      formData.append("model_id", data.modelId);
+      formData.append("patient_id", data.patientId);
+
+      const response = await fetch("/api/predictions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al procesar la predicción");
+      }
+
+      await response.json();
+    } catch (error) {
+      // Error handling can be improved with toast notifications
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
-      {/* Skip to main content link for keyboard navigation */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-      >
-        Skip to main content
-      </a>
-
-      <main id="main-content" className="space-y-8">
+      <main className="space-y-8">
         {/* Main Grid Section - 60/40 split for desktop, stack on mobile */}
         <section
           aria-labelledby="diagnosis-section"
