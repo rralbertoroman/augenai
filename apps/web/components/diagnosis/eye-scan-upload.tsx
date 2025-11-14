@@ -6,14 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { uploadEyeScan } from "@/lib/supabase/storage";
 
 interface ScanData {
-  diagnostic: string;
-  stage: string;
+  modelId: string;
+  patientId: string;
   imageType: string;
   lesionSummary: string;
   eyeSelection: "left" | "right";
   file?: File;
+  storagePath?: string;
+  bucketName?: string;
 }
 
 interface EyeScanUploadProps {
@@ -26,14 +37,17 @@ export function EyeScanUpload({
   isLoading = false,
 }: EyeScanUploadProps) {
   const [formData, setFormData] = React.useState<ScanData>({
-    diagnostic: "",
-    stage: "",
+    modelId: "",
+    patientId: "",
     imageType: "",
     lesionSummary: "",
     eyeSelection: "left",
   });
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = React.useState(0);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [storagePath, setStoragePath] = React.useState<string>("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleInputChange = (
@@ -51,22 +65,70 @@ export function EyeScanUpload({
     }
   };
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user selects
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
   const handleEyeSelection = (eye: "left" | "right") => {
     setFormData((prev) => ({ ...prev, eyeSelection: eye }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      if (errors.file) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.file;
-          return newErrors;
-        });
-      }
+    if (!file) return;
+
+    setSelectedFile(file);
+    if (errors.file) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.file;
+        return newErrors;
+      });
     }
+
+    // Validar que imageType esté seleccionado
+    if (!formData.imageType) {
+      setErrors((prev) => ({
+        ...prev,
+        imageType: "Selecciona el tipo de imagen antes de subir el archivo",
+      }));
+      return;
+    }
+
+    // Determinar tipo de imagen
+    const imageType =
+      formData.imageType.toLowerCase() === "fundus" ? "fundus" : "oct";
+
+    // Iniciar upload
+    setIsUploading(true);
+    setUploadProgress(30);
+
+    const { path, error } = await uploadEyeScan(file, imageType);
+
+    setUploadProgress(100);
+
+    if (error) {
+      setErrors((prev) => ({ ...prev, file: `Error al subir: ${error}` }));
+      setIsUploading(false);
+      setUploadProgress(0);
+      return;
+    }
+
+    setStoragePath(path);
+    setFormData((prev) => ({
+      ...prev,
+      storagePath: path,
+      bucketName: "medical_images",
+    }));
+    setIsUploading(false);
   };
 
   const handleFileAreaClick = () => {
@@ -76,17 +138,20 @@ export function EyeScanUpload({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.diagnostic.trim()) {
-      newErrors.diagnostic = "Este campo es requerido";
+    if (!formData.modelId.trim()) {
+      newErrors.modelId = "Este campo es requerido";
     }
-    if (!formData.stage.trim()) {
-      newErrors.stage = "Este campo es requerido";
+    if (!formData.patientId.trim()) {
+      newErrors.patientId = "Este campo es requerido";
     }
     if (!formData.imageType.trim()) {
       newErrors.imageType = "Este campo es requerido";
     }
     if (!selectedFile) {
       newErrors.file = "Por favor selecciona un archivo";
+    }
+    if (!storagePath) {
+      newErrors.file = "Esperando que termine la subida del archivo";
     }
 
     setErrors(newErrors);
@@ -115,54 +180,54 @@ export function EyeScanUpload({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Diagnostic Field */}
+          {/* Model ID Field */}
           <div className="space-y-2">
-            <Label htmlFor="diagnostic" className="text-sm font-medium">
-              Diagnostic
+            <Label htmlFor="modelId" className="text-sm font-medium">
+              Model ID
             </Label>
             <Input
-              id="diagnostic"
-              name="diagnostic"
-              value={formData.diagnostic}
+              id="modelId"
+              name="modelId"
+              value={formData.modelId}
               onChange={handleInputChange}
-              aria-invalid={!!errors.diagnostic}
-              aria-describedby={
-                errors.diagnostic ? "diagnostic-error" : undefined
-              }
+              aria-invalid={!!errors.modelId}
+              aria-describedby={errors.modelId ? "modelId-error" : undefined}
               aria-required="true"
             />
-            {errors.diagnostic && (
+            {errors.modelId && (
               <p
-                id="diagnostic-error"
+                id="modelId-error"
                 className="text-sm text-destructive"
                 role="alert"
               >
-                {errors.diagnostic}
+                {errors.modelId}
               </p>
             )}
           </div>
 
-          {/* Stage Field */}
+          {/* Patient ID Field */}
           <div className="space-y-2">
-            <Label htmlFor="stage" className="text-sm font-medium">
-              Stage
+            <Label htmlFor="patientId" className="text-sm font-medium">
+              Patient ID
             </Label>
             <Input
-              id="stage"
-              name="stage"
-              value={formData.stage}
+              id="patientId"
+              name="patientId"
+              value={formData.patientId}
               onChange={handleInputChange}
-              aria-invalid={!!errors.stage}
-              aria-describedby={errors.stage ? "stage-error" : undefined}
+              aria-invalid={!!errors.patientId}
+              aria-describedby={
+                errors.patientId ? "patientId-error" : undefined
+              }
               aria-required="true"
             />
-            {errors.stage && (
+            {errors.patientId && (
               <p
-                id="stage-error"
+                id="patientId-error"
                 className="text-sm text-destructive"
                 role="alert"
               >
-                {errors.stage}
+                {errors.patientId}
               </p>
             )}
           </div>
@@ -172,17 +237,25 @@ export function EyeScanUpload({
             <Label htmlFor="imageType" className="text-sm font-medium">
               Image Type
             </Label>
-            <Input
-              id="imageType"
-              name="imageType"
+            <Select
               value={formData.imageType}
-              onChange={handleInputChange}
-              aria-invalid={!!errors.imageType}
-              aria-describedby={
-                errors.imageType ? "imageType-error" : undefined
-              }
-              aria-required="true"
-            />
+              onValueChange={(value) => handleSelectChange("imageType", value)}
+            >
+              <SelectTrigger
+                id="imageType"
+                aria-invalid={!!errors.imageType}
+                aria-describedby={
+                  errors.imageType ? "imageType-error" : undefined
+                }
+                aria-required="true"
+              >
+                <SelectValue placeholder="Select image type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fundus">Fundus</SelectItem>
+                <SelectItem value="oct">OCT</SelectItem>
+              </SelectContent>
+            </Select>
             {errors.imageType && (
               <p
                 id="imageType-error"
@@ -249,7 +322,7 @@ export function EyeScanUpload({
             <Label className="text-sm font-medium">Upload Eye Scan</Label>
             <div
               onClick={handleFileAreaClick}
-              className="border-2 border-dashed border-[#E5E5E5] rounded-lg p-8 text-center cursor-pointer hover:border-[#1A1A1A] transition-colors"
+              className="border-2 border-dashed border-[#E5E5E5] rounded-lg p-28 min-h-[200px] flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#1A1A1A] transition-colors"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -259,8 +332,10 @@ export function EyeScanUpload({
                 }
               }}
             >
-              <p className="text-sm text-[#666666] mb-2">Seleccionar archivo</p>
-              <p className="text-sm font-medium text-[#1A1A1A]">
+              <p className="text-base text-[#666666] mb-3">
+                Seleccionar archivo
+              </p>
+              <p className="text-base font-medium text-[#1A1A1A]">
                 {selectedFile
                   ? selectedFile.name
                   : "Ningún archivo seleccionado"}
@@ -274,7 +349,19 @@ export function EyeScanUpload({
               className="hidden"
               aria-label="Upload eye scan file"
               aria-describedby={errors.file ? "file-error" : undefined}
+              disabled={isUploading}
             />
+            {isUploading && (
+              <div className="space-y-1">
+                <Progress value={uploadProgress} />
+                <p className="text-xs text-[#666666]">Subiendo imagen...</p>
+              </div>
+            )}
+            {storagePath && !isUploading && (
+              <p className="text-xs text-green-600">
+                ✓ Imagen subida correctamente
+              </p>
+            )}
             {errors.file && (
               <p
                 id="file-error"
@@ -287,8 +374,16 @@ export function EyeScanUpload({
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Submitting..." : "Submit"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || isUploading}
+          >
+            {isLoading
+              ? "Submitting..."
+              : isUploading
+                ? "Uploading..."
+                : "Submit"}
           </Button>
         </form>
       </CardContent>

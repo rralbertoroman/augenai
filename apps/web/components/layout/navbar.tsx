@@ -51,7 +51,7 @@ export function Navbar({ currentPath }: NavbarProps) {
           >
             Appointments
           </Link>
-          <Link
+          {/* <Link
             href="/user"
             className={`text-sm font-medium transition-colors hover:text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
               currentPath === "/user" ? "text-[#1A1A1A]" : "text-[#666666]"
@@ -60,7 +60,7 @@ export function Navbar({ currentPath }: NavbarProps) {
             aria-current={currentPath === "/user" ? "page" : undefined}
           >
             User
-          </Link>
+          </Link> */}
         </div>
 
         {/* Search fields */}
