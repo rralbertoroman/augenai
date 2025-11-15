@@ -214,8 +214,6 @@ export async function POST(request: NextRequest) {
         requestId: predictionRequest.id,
         modelId,
         predictionResult: predictionResult.result,
-        status: predictionResult.status,
-        error: predictionResult.error,
       });
 
       const apiResponse: PredictionResponse = {

@@ -29,6 +29,13 @@
       "when": 1763241192694,
       "tag": "0003_size_and_model_params ",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763249940437,
+      "tag": "0004_prediction_request",
+      "breakpoints": true
     }
   ]
 }

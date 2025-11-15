@@ -4,16 +4,12 @@ export const CreatePredictionSchema = z.object({
   requestId: z.uuid(),
   modelId: z.uuid(),
   predictionResult: z.any(),
-  status: z.string().default("success"),
-  error: z.string().nullable().optional(),
 });
 
 export const UpdatePredictionSchema = z.object({
   requestId: z.uuid().optional(),
   modelId: z.uuid().optional(),
   predictionResult: z.any().optional(),
-  status: z.string().optional(),
-  error: z.string().nullable().optional(),
 });
 
 export const DeletePredictionSchema = z.object({
@@ -25,8 +21,6 @@ export const PredictionDTOSchema = z.object({
   requestId: z.uuid(),
   modelId: z.uuid(),
   predictionResult: z.any(),
-  status: z.string(),
-  error: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
