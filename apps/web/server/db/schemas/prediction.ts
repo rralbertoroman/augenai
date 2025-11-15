@@ -13,8 +13,6 @@ const PredictionsTable = pgTable("predictions", {
     .notNull()
     .references(() => ModelsTable.id),
   predictionResult: jsonb("prediction_result").notNull(),
-  status: text("status").notNull().default("success"),
-  error: text("error"),
 });
 
 export const predictionsRelations = relations(PredictionsTable, ({ one }) => ({
