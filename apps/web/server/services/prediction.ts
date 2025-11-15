@@ -7,15 +7,15 @@ import {
   CreatePredictionSchema,
   DeletePredictionSchema,
   GetPredictionsByModelSchema,
-  GetPredictionsByPatientSchema,
+  GetPredictionsByRequestSchema,
   UpdatePredictionSchema,
   type CreatePredictionInput,
   type DeletePredictionInput,
   type GetPredictionsByModelInput,
-  type GetPredictionsByPatientInput,
+  type GetPredictionsByRequestInput,
   type PredictionDTO,
   type UpdatePredictionInput,
-} from "../zod-schemas";
+} from "../zod-schemas/prediction";
 
 export const createPrediction = async (
   data: CreatePredictionInput,
@@ -53,14 +53,14 @@ export const getAllPredictions = async (): Promise<PredictionDTO[]> => {
   return predictions;
 };
 
-export const getPredictionsByPatient = async (
-  data: GetPredictionsByPatientInput,
+export const getPredictionsByRequest = async (
+  data: GetPredictionsByRequestInput,
 ): Promise<PredictionDTO[]> => {
-  const { patientId } = GetPredictionsByPatientSchema.parse(data);
+  const { requestId } = GetPredictionsByRequestSchema.parse(data);
   const predictions = await db
     .select()
     .from(PredictionsTable)
-    .where(eq(PredictionsTable.patientId, patientId));
+    .where(eq(PredictionsTable.requestId, requestId));
   return predictions;
 };
 
