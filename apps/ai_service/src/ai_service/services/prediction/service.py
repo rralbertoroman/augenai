@@ -8,7 +8,7 @@ from .factories import hf
 from .model_pool import ModelPool
 
 
-class ModelService:
+class PredictionService:
     def __init__(self):
         factories = {
             "diabetic-retinopathy-224-procnorm-vit": hf.vit_clsf_model_factory,
