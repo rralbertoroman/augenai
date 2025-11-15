@@ -1,7 +1,5 @@
-import uuid
-from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,16 +16,29 @@ class PredictionRequest(BaseModel):
     model_id: str = Field(..., description="ID of the model to use")
 
 
-class PredictionResult(BaseModel):
-    """Schema for prediction result"""
+class PredictionMetadata(BaseModel):
+    inference_time_ms: float
+    model_version: str
 
+
+class PredictionResult(BaseModel):
+    metadata: PredictionMetadata = Field(..., description="Metadata")
+
+
+class ClassificationObject(BaseModel):
     class_id: int = Field(..., description="Predicted class ID")
     class_name: str = Field(..., description="Human-readable class name")
     confidence: float = Field(
         ..., ge=0, le=1, description="Confidence score between 0 and 1"
     )
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional model-specific metadata"
+
+
+class ClassificationResult(PredictionResult):
+    """Schema for prediction result"""
+
+    predictions: List[ClassificationObject] = Field(
+        ...,
+        description="List of predicted (class_id, class_name, confidence) tuples",
     )
 
 
@@ -35,9 +46,5 @@ class PredictionResponse(BaseModel):
     """Schema for prediction API response"""
 
     status: PredictionStatus
-    result: Optional[PredictionResult] = None
     error: Optional[str] = None
-    request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    model_version: str
-    inference_time_ms: float
-    timestamp: datetime = Field(default_factory=datetime.now)
+    result: PredictionResult = Field(..., description="Prediction result")
