@@ -3,14 +3,18 @@ import {
   AI_PREDICTION_SERVICE_URL,
   AI_PREDICTION_SERVICE_SECRET_KEY,
 } from "@/server/constants";
-import type {
-  AIServicePredictionResponse,
-  PredictionResponse,
+import {
+  PredictionStatus,
+  type AIServicePredictionResponse,
+  type PredictionResponse,
+  type MultiplePredictionsResponse,
 } from "@/types/prediction";
 import { createPrediction } from "@/server/services/prediction";
+import { createPredictionRequest } from "@/server/services/prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "@/server/services/prediction_class_disease";
 import { supabaseAdmin } from "@/server/supabase/client";
 import { getCurrentUser } from "@/server/auth";
+import { selectOptimalModels } from "@/server/services/model";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,8 +36,10 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const storagePath = formData.get("storage_path") as string;
     const bucketName = formData.get("bucket_name") as string;
-    const modelId = formData.get("model_id") as string;
     const patientId = formData.get("patient_id") as string;
+    const task = formData.get("task") as string;
+    const imageType = formData.get("image_type") as string;
+    const diseasesStr = formData.get("diseases") as string;
 
     if (!storagePath) {
       return NextResponse.json(
@@ -49,13 +55,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!modelId) {
-      return NextResponse.json(
-        { error: "Model ID is required" },
-        { status: 400 },
-      );
-    }
-
     if (!patientId) {
       return NextResponse.json(
         { error: "Patient ID is required" },
@@ -63,6 +62,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!task) {
+      return NextResponse.json({ error: "Task is required" }, { status: 400 });
+    }
+
+    if (!imageType) {
+      return NextResponse.json(
+        { error: "Image type is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!diseasesStr) {
+      return NextResponse.json(
+        { error: "Diseases are required" },
+        { status: 400 },
+      );
+    }
+
+    let diseases: string[];
+    try {
+      diseases = JSON.parse(diseasesStr);
+      if (!Array.isArray(diseases) || diseases.length === 0) {
+        throw new Error("Diseases must be a non-empty array");
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid diseases format. Must be a JSON array" },
+        { status: 400 },
+      );
+    }
+
+    // Select optimal models based on task, imageType, and diseases
+    const selectedModelIds = await selectOptimalModels(
+      task,
+      imageType,
+      diseases,
+    );
+
+    if (selectedModelIds.length === 0) {
+      return NextResponse.json(
+        { error: "No suitable models found for the given criteria" },
+        { status: 404 },
+      );
+    }
+
+    // Download image from storage
     const { data: imageBlob, error: downloadError } =
       await supabaseAdmin.storage.from(bucketName).download(storagePath);
 
@@ -84,82 +129,118 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const predictionFormData = new FormData();
-    predictionFormData.append("image", imageBlob, fileName);
-    predictionFormData.append("model_id", modelId);
-
-    const predictionResponse = await fetch(
-      `${AI_PREDICTION_SERVICE_URL}/predictions/predict`,
-      {
-        method: "POST",
-        headers: {
-          "X-API-Key": AI_PREDICTION_SERVICE_SECRET_KEY,
-        },
-        body: predictionFormData,
-      },
-    );
-
-    if (!predictionResponse.ok) {
-      const errorData = await predictionResponse.json().catch(() => ({}));
-      return NextResponse.json(
-        { error: errorData.detail || "AI Service error" },
-        { status: predictionResponse.status },
-      );
-    }
-
-    const predictionResult: AIServicePredictionResponse =
-      await predictionResponse.json();
-
-    if (
-      !predictionResult.result ||
-      typeof predictionResult.result !== "object"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid prediction result format" },
-        { status: 500 },
-      );
-    }
-
-    const classId = (predictionResult.result as Record<string, unknown>)
-      .class_id;
-
-    if (typeof classId !== "string") {
-      return NextResponse.json(
-        { error: "Missing or invalid class_id in prediction result" },
-        { status: 500 },
-      );
-    }
-
-    const predictionClassDisease =
-      await getPredictionClassDiseaseByClassIdAndModelId({
-        classId,
-        modelId,
-      });
-
-    if (!predictionClassDisease) {
-      return NextResponse.json(
-        {
-          error: `Prediction class disease not found for class_id: ${classId} and model_id: ${modelId}`,
-        },
-        { status: 404 },
-      );
-    }
-
-    const savedPrediction = await createPrediction({
-      modelId,
-      patientId,
+    // Create prediction request first
+    const predictionRequest = await createPredictionRequest({
       userId,
-      predictionResult: predictionResult.result,
+      patientId,
+      task,
+      imageType,
+      diseases,
+      storagePath,
+      bucketName,
+      modelsUsed: selectedModelIds,
     });
 
-    const apiResponse: PredictionResponse = {
-      ...predictionResult,
-      db_prediction_id: savedPrediction.id,
-      disease_id: predictionClassDisease.diseaseId,
-      stage_idx: predictionClassDisease.stageIdx,
+    // Run predictions for all selected models
+    const allPredictions: PredictionResponse[] = [];
+
+    for (const modelId of selectedModelIds) {
+      const predictionFormData = new FormData();
+      predictionFormData.append("image", imageBlob, fileName);
+      predictionFormData.append("model_id", modelId);
+
+      const predictionResponse = await fetch(
+        `${AI_PREDICTION_SERVICE_URL}/predictions/predict`,
+        {
+          method: "POST",
+          headers: {
+            "X-API-Key": AI_PREDICTION_SERVICE_SECRET_KEY,
+          },
+          body: predictionFormData,
+        },
+      );
+
+      if (!predictionResponse.ok) {
+        const errorData = await predictionResponse.json().catch(() => ({}));
+        console.error(
+          `Prediction failed for model ${modelId}:`,
+          errorData.detail,
+        );
+        continue; // Skip this model and continue with others
+      }
+
+      const predictionResult: AIServicePredictionResponse =
+        await predictionResponse.json();
+
+      if (predictionResult.status === PredictionStatus.ERROR) {
+        console.error(
+          `Prediction error for model ${modelId}:`,
+          predictionResult.error,
+        );
+        continue;
+      }
+
+      if (
+        !predictionResult.result ||
+        !predictionResult.result.predictions ||
+        predictionResult.result.predictions.length === 0
+      ) {
+        console.error(`No predictions returned for model ${modelId}`);
+        continue;
+      }
+
+      // Get the top prediction (highest confidence)
+      const topPrediction = predictionResult.result.predictions.reduce(
+        (max, pred) => (pred.confidence > max.confidence ? pred : max),
+        predictionResult.result.predictions[0],
+      );
+
+      const classId = topPrediction.class_id.toString();
+
+      const predictionClassDisease =
+        await getPredictionClassDiseaseByClassIdAndModelId({
+          classId,
+          modelId,
+        });
+
+      if (!predictionClassDisease) {
+        console.error(
+          `Prediction class disease not found for class_id: ${classId} and model_id: ${modelId}`,
+        );
+        continue;
+      }
+
+      const savedPrediction = await createPrediction({
+        requestId: predictionRequest.id,
+        modelId,
+        predictionResult: predictionResult.result,
+        status: predictionResult.status,
+        error: predictionResult.error,
+      });
+
+      const apiResponse: PredictionResponse = {
+        ...predictionResult,
+        db_prediction_id: savedPrediction.id,
+        disease_id: predictionClassDisease.diseaseId,
+        stage_idx: predictionClassDisease.stageIdx,
+      };
+
+      allPredictions.push(apiResponse);
+    }
+
+    if (allPredictions.length === 0) {
+      return NextResponse.json(
+        { error: "All model predictions failed" },
+        { status: 500 },
+      );
+    }
+
+    const response: MultiplePredictionsResponse = {
+      predictions: allPredictions,
+      models_used: selectedModelIds,
     };
 
-    return NextResponse.json(apiResponse);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Prediction error:", error);
     const message =

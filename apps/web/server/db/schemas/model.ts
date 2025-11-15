@@ -11,6 +11,8 @@ const ModelsTable = pgTable("models", {
   acceptedImageTypes: text("accepted_image_types").array().notNull(),
   latestTraining: timestamp("latest_training").notNull(),
   accuracy: real("accuracy").notNull(),
+  size: real("size").notNull(), // Model size in MB
+  params: real("params").notNull(), // Number of parameters in millions
 });
 
 export const modelsRelations = relations(ModelsTable, ({ many }) => ({
