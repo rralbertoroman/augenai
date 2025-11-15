@@ -1,19 +1,20 @@
-import { pgTable, uuid, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, uuid, jsonb, text } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { standardSchema } from "./base_schemas";
 import ModelsTable from "./model";
-import PatientsTable from "./patient";
+import PredictionRequestsTable from "./prediction_request";
 
 const PredictionsTable = pgTable("predictions", {
   ...standardSchema,
+  requestId: uuid("request_id")
+    .notNull()
+    .references(() => PredictionRequestsTable.id),
   modelId: uuid("model_id")
     .notNull()
     .references(() => ModelsTable.id),
   predictionResult: jsonb("prediction_result").notNull(),
-  userId: uuid("user_id").notNull(),
-  patientId: uuid("patient_id")
-    .notNull()
-    .references(() => PatientsTable.id),
+  status: text("status").notNull().default("success"),
+  error: text("error"),
 });
 
 export const predictionsRelations = relations(PredictionsTable, ({ one }) => ({
@@ -21,9 +22,9 @@ export const predictionsRelations = relations(PredictionsTable, ({ one }) => ({
     fields: [PredictionsTable.modelId],
     references: [ModelsTable.id],
   }),
-  patient: one(PatientsTable, {
-    fields: [PredictionsTable.patientId],
-    references: [PatientsTable.id],
+  request: one(PredictionRequestsTable, {
+    fields: [PredictionsTable.requestId],
+    references: [PredictionRequestsTable.id],
   }),
 }));
 

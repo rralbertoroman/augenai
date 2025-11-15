@@ -40,13 +40,13 @@ export {
   UpdatePredictionSchema,
   DeletePredictionSchema,
   PredictionDTOSchema,
-  GetPredictionsByPatientSchema,
+  GetPredictionsByRequestSchema,
   GetPredictionsByModelSchema,
   type CreatePredictionInput,
   type UpdatePredictionInput,
   type DeletePredictionInput,
   type PredictionDTO,
-  type GetPredictionsByPatientInput,
+  type GetPredictionsByRequestInput,
   type GetPredictionsByModelInput,
 } from "./prediction";
 
