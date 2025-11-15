@@ -1,0 +1,32 @@
+import json
+import torch
+from pathlib import Path
+from .base_adapter import BaseModelAdapter
+from .decorators import register_adapter
+from .task_mapper import get_model_task
+
+
+@register_adapter("diabetic-retinopathy-224-procnorm-vit")
+class DiabeticRetinopathy224ProcNormVit(BaseModelAdapter):
+    def extract_info(self) -> dict:
+        config_path = self.model_path / "config.json"
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        bin_model_path = self.model_path / "pytorch_model.bin"
+        state_dict = torch.load(bin_model_path, map_location="cpu")
+        num_params = sum(p.numel() for p in state_dict.values())
+
+        last_modified = (self.model_path / "pytorch_model.bin").stat().st_mtime
+
+        task = get_model_task(config["problem_type"])
+
+        return {
+            "id": "diabetic-retinopathy-224-procnorm-vit",
+            "task": task,
+            "classes": {"DR": [(0, 1), (1, 2), (2, 0), (3, 4), (4, 3)]},
+            "image_types": ["Fundus"],
+            "size": bin_model_path.stat().st_size,  # bytes
+            "parameters": num_params,
+            "latest_training": last_modified,
+        }
