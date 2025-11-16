@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 from pathlib import Path
@@ -7,6 +8,40 @@ import pytest
 from PIL import Image
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def sample_bytes_images():
+    image_dir = "tests/dr_sample"
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp"}
+
+    if not os.path.exists(image_dir):
+        pytest.skip(f"Image directory not found: {image_dir}")
+
+    upload_files = []
+
+    for fname in os.listdir(image_dir):
+        path = Path(image_dir) / fname
+        ext = path.suffix.lower()
+
+        if ext in image_extensions:
+            try:
+                # Read file exactly as stored on disk
+                raw = path.read_bytes()
+
+                # Wrap as a file tuple suitable for TestClient
+                file_like = io.BytesIO(raw)
+                mime = f"image/{ext.lstrip('.')}" if ext != ".jpg" else "image/jpeg"
+
+                upload_files.append(("image", (fname, file_like, mime)))
+
+            except Exception as e:
+                print(f"Error reading image {path}: {e}")
+
+    if not upload_files:
+        pytest.skip(f"No valid images found in {image_dir}")
+
+    return upload_files
 
 
 @pytest.fixture

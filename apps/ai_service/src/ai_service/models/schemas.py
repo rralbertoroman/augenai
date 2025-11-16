@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -47,4 +47,6 @@ class PredictionResponse(BaseModel):
 
     status: PredictionStatus
     error: Optional[str] = None
-    result: PredictionResult = Field(..., description="Prediction result")
+    result: PredictionResult | ClassificationResult = Field(
+        ..., description="Prediction result"
+    )
