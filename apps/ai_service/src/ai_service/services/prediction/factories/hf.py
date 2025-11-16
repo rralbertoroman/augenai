@@ -8,7 +8,11 @@ from torch import nn
 from transformers import ViTForImageClassification, ViTImageProcessor
 
 from ai_service.config import settings
-from ai_service.models.schemas import PredictionResult
+from ai_service.models.schemas import (
+    ClassificationResult,
+    ClassificationObject,
+    PredictionMetadata,
+)
 
 from .model_instance import ModelInstance
 
@@ -37,23 +41,34 @@ def vit_clsf_model_factory(model_id: str):
             model_dev = self.model.to(self.device)
             inputs_dev = inputs.to(self.device)
 
+            start_time = datetime.now()
             with torch.no_grad():
                 outputs = model_dev(**inputs_dev)
                 logits = outputs.logits
 
+            # time in milliseconds
+            inference_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+
             # Get predicted class and confidence
-            predicted_class_idx = logits.argmax(-1).item()
-            predicted_class = model_dev.config.id2label[predicted_class_idx]
-            confidence = nn.functional.softmax(logits, dim=-1)[
-                0, predicted_class_idx
-            ].item()
+            confidences = nn.functional.softmax(logits, dim=-1)
+            confidences_with_idx = list(enumerate(confidences[0]))
+            classification_objects = [
+                ClassificationObject(
+                    class_id=idx,
+                    confidence=confidence,
+                    class_name=model_dev.config.id2label[idx],
+                )
+                for idx, confidence in confidences_with_idx
+                if confidence > 0.70
+            ]
 
             # Create prediction result
-            prediction_result = PredictionResult(
-                class_id=predicted_class_idx,
-                class_name=predicted_class,
-                confidence=confidence,
-                model_metadata={},  # Add any relevant metadata here
+            prediction_result = ClassificationResult(
+                predictions=classification_objects,
+                metadata=PredictionMetadata(
+                    model_version="1",
+                    inference_time_ms=inference_time_ms,
+                ),
             )
 
             logger.info(f"Prediction result: {prediction_result}")
