@@ -7,7 +7,12 @@ from PIL import Image as PILImage
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 
 from ..auth.auth import verify_api_key
-from ai_service.models.schemas import PredictionResponse, PredictionStatus
+from ai_service.models.schemas import (
+    PredictionMetadata,
+    PredictionResult,
+    PredictionResponse,
+    PredictionStatus,
+)
 from ai_service.services import PredictionService
 
 router = APIRouter(tags=["predictions"])
@@ -32,47 +37,70 @@ async def predict(
     Requires authentication via X-API-Key header.
     """
     # Validate model ID
-    if not model_id:
-        raise HTTPException(status_code=400, detail="Model ID is required")
+    try:
+        # Validate model ID
+        if not model_id:
+            raise HTTPException(status_code=400, detail="Model ID is required")
 
-    logger.info("Received model id")
+        logger.info("Received model id")
 
-    # Validate file type
-    if not image.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
+        # Validate file type
+        if not image.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="File must be an image")
 
-    logger.info("Received image file")
+        logger.info("Received image file")
 
-    # Read the image file content
-    image_content = await image.read()
-    file_size_mb = len(image_content) / (1024 * 1024)
+        # Read the image file content
+        image_content = await image.read()
+        file_size_mb = len(image_content) / (1024 * 1024)
 
-    # Validate file size (limit to 10MB)
-    if file_size_mb > 10:
-        raise HTTPException(
-            status_code=400,
-            detail=f"File size exceeds 10MB limit, received {file_size_mb:.2f}MB",
+        # Validate file size (limit to 10MB)
+        if file_size_mb > 10:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File size exceeds 10MB limit, received {file_size_mb:.2f}MB",
+            )
+
+        logger.info(f"Received image with size: {file_size_mb:.2f}MB")
+        # Load the image using PIL
+        try:
+            image = PILImage.open(io.BytesIO(image_content))
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, detail=f"Error loading image: {str(e)}"
+            )
+
+        try:
+            # Run prediction using the model handler
+            result = prediction_service.predict(image, model_id, is_mocked)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+        response = PredictionResponse(
+            status=PredictionStatus.SUCCESS,
+            result=result,
         )
 
-    logger.info(f"Received image with size: {file_size_mb:.2f}MB")
-    # Load the image using PIL
-    try:
-        image = PILImage.open(io.BytesIO(image_content))
+        return response
+
+    except HTTPException as e:
+        return PredictionResponse(
+            status=PredictionStatus.ERROR,
+            error=f"{e.status_code} - {e.detail}",
+            result=PredictionResult(
+                metadata=PredictionMetadata(inference_time_ms="-1", model_version="-1"),
+                predictions=[],
+            ),
+        )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error loading image: {str(e)}")
-
-    try:
-        # Run prediction using the model handler
-        result = prediction_service.predict(image, model_id, is_mocked)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
-    response = PredictionResponse(
-        status=PredictionStatus.SUCCESS,
-        result=result,
-    )
-
-    return response
+        return PredictionResponse(
+            status=PredictionStatus.ERROR,
+            error=f"500 - Unexpected error: {str(e)}",
+            result=PredictionResult(
+                metadata=PredictionMetadata(inference_time_ms="-1", model_version="-1"),
+                predictions=[],
+            ),
+        )
 
 
 # Additional utility endpoints could be added here
