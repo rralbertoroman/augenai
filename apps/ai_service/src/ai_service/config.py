@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Add your configuration variables here
     weights_dir: str = "weights"
-    
+
     # API Security
     ai_prediction_service_secret_key: str = ""
 
