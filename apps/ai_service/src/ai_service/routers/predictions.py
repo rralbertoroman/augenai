@@ -21,6 +21,7 @@ prediction_service = PredictionService()
 async def predict(
     model_id: str = Form(..., description="ID of the model to use for prediction"),
     image: UploadFile = File(..., description="Image file to analyze"),
+    is_mocked: bool = Form(False, description="Mock the prediction result"),
     api_key: str = Depends(verify_api_key),
 ):
     """
@@ -63,7 +64,7 @@ async def predict(
 
     try:
         # Run prediction using the model handler
-        result = prediction_service.predict(image, model_id)
+        result = prediction_service.predict(image, model_id, is_mocked)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
