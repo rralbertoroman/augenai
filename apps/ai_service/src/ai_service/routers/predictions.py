@@ -6,7 +6,6 @@ from PIL import Image as PILImage
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 
-from ..utils.model_handler import model_handler
 from ..auth.auth import verify_api_key
 from ai_service.models.schemas import PredictionResponse, PredictionStatus
 from ai_service.services import PredictionService
