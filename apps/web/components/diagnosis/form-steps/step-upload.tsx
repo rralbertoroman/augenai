@@ -1,93 +1,42 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { DiseaseMultiSelect } from "./disease-multi-select";
 
-interface StepImageProps {
-  imageType: string;
-  task: string;
+interface StepUploadProps {
   eyeSelection: "left" | "right";
   selectedFile: File | null;
   isUploading: boolean;
   uploadProgress: number;
   storagePath: string;
+  imagePreview: string;
+  selectedDiseases: string[];
   errors: Record<string, string>;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
-  onSelectChange: (name: string, value: string) => void;
   onEyeSelection: (eye: "left" | "right") => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFileAreaClick: () => void;
+  onDiseasesChange: (diseases: string[]) => void;
 }
 
-export function StepImage({
-  imageType,
-  task,
+export function StepUpload({
   eyeSelection,
   selectedFile,
   isUploading,
   uploadProgress,
   storagePath,
+  imagePreview,
+  selectedDiseases,
   errors,
   fileInputRef,
-  onSelectChange,
   onEyeSelection,
   onFileChange,
   onFileAreaClick,
-}: StepImageProps) {
+  onDiseasesChange,
+}: StepUploadProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="imageType" className="text-sm font-medium">
-          Image Type
-        </Label>
-        <Select
-          value={imageType}
-          onValueChange={(value) => onSelectChange("imageType", value)}
-        >
-          <SelectTrigger id="imageType">
-            <SelectValue placeholder="Select image type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="fundus">Fundus</SelectItem>
-            <SelectItem value="oct">OCT</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.imageType && (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.imageType}
-          </p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="task" className="text-sm font-medium">
-          Task
-        </Label>
-        <Select
-          value={task}
-          onValueChange={(value) => onSelectChange("task", value)}
-        >
-          <SelectTrigger id="task">
-            <SelectValue placeholder="Select task" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="classification">Classification</SelectItem>
-            <SelectItem value="detection">Detection</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.task && (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.task}
-          </p>
-        )}
-      </div>
-
+    <div className="space-y-4 w-full">
       <div className="space-y-2">
         <Label className="text-sm font-medium">Eye Selection</Label>
         <div className="flex gap-3">
@@ -114,7 +63,7 @@ export function StepImage({
         <Label className="text-sm font-medium">Upload Eye Scan</Label>
         <div
           onClick={onFileAreaClick}
-          className="border-2 border-dashed border-[#E5E5E5] rounded-lg p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#1A1A1A] transition-colors"
+          className="border-2 border-dashed border-[#E5E5E5] rounded-lg p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#1A1A1A] transition-colors"
           role="button"
           tabIndex={0}
         >
@@ -148,6 +97,35 @@ export function StepImage({
           </p>
         )}
       </div>
+
+      {storagePath && !isUploading && (
+        <>
+          {/* Image Preview */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Image Preview</Label>
+            <div
+              className="border-2 border-gray-200 rounded-lg overflow-hidden bg-muted relative w-full"
+              style={{ minHeight: "200px" }}
+            >
+              <Image
+                src={imagePreview}
+                alt="Eye scan preview"
+                width={800}
+                height={600}
+                className="w-full h-auto max-h-96 object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
+
+          {/* Diseases Multi-Select */}
+          <DiseaseMultiSelect
+            selectedDiseases={selectedDiseases}
+            onChange={onDiseasesChange}
+            error={errors.diseases}
+          />
+        </>
+      )}
     </div>
   );
 }

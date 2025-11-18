@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       if (!Array.isArray(diseases) || diseases.length === 0) {
         throw new Error("Diseases must be a non-empty array");
       }
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Invalid diseases format. Must be a JSON array" },
         { status: 400 },
@@ -241,10 +241,10 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
-    console.error("Prediction error:", error);
+  } catch (err) {
+    console.error("Prediction error:", err);
     const message =
-      error instanceof Error ? error.message : "Failed to process prediction";
+      err instanceof Error ? err.message : "Failed to process prediction";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

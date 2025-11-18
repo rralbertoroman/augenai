@@ -5,17 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useDiagnosisForm } from "@/hooks/use-diagnosis-form";
 import { StepIndicator } from "./form-steps/step-indicator";
 import { StepPatient } from "./form-steps/step-patient";
-import { StepImage } from "./form-steps/step-image";
-import { StepDetails } from "./form-steps/step-details";
-import { StepReview } from "./form-steps/step-review";
+import { StepTask } from "./form-steps/step-task";
+import { StepUpload } from "./form-steps/step-upload";
 
 interface ScanData {
   patientId: string;
   task: string;
   imageType: string;
   diseases: string[];
-  lesionSummary: string;
   eyeSelection: "left" | "right";
+  includeDetection: boolean;
   file?: File;
   storagePath?: string;
   bucketName?: string;
@@ -28,9 +27,8 @@ interface EyeScanUploadProps {
 
 const STEPS = [
   { number: 1, title: "Patient" },
-  { number: 2, title: "Image" },
-  { number: 3, title: "Details" },
-  { number: 4, title: "Review" },
+  { number: 2, title: "Task" },
+  { number: 3, title: "Upload" },
 ];
 
 export function EyeScanUpload({
@@ -45,12 +43,13 @@ export function EyeScanUpload({
     uploadProgress,
     isUploading,
     storagePath,
+    imagePreview,
     fileInputRef,
-    handleInputChange,
     handleSelectChange,
     handleEyeSelection,
     handleDiseasesChange,
     handleFileChange,
+    handleCheckboxChange,
     handleNext,
     handleBack,
     handleSubmit,
@@ -71,46 +70,36 @@ export function EyeScanUpload({
             <StepPatient
               patientId={formData.patientId}
               error={errors.patientId}
-              onChange={handleInputChange}
+              onChange={(value) => handleSelectChange("patientId", value)}
             />
           )}
 
           {currentStep === 2 && (
-            <StepImage
+            <StepTask
               imageType={formData.imageType}
               task={formData.task}
+              includeDetection={formData.includeDetection}
+              errors={errors}
+              onSelectChange={handleSelectChange}
+              onCheckboxChange={handleCheckboxChange}
+            />
+          )}
+
+          {currentStep === 3 && (
+            <StepUpload
               eyeSelection={formData.eyeSelection}
               selectedFile={selectedFile}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
               storagePath={storagePath}
+              imagePreview={imagePreview}
+              selectedDiseases={formData.diseases}
               errors={errors}
               fileInputRef={fileInputRef}
-              onSelectChange={handleSelectChange}
               onEyeSelection={handleEyeSelection}
               onFileChange={handleFileChange}
               onFileAreaClick={handleFileAreaClick}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <StepDetails
-              lesionSummary={formData.lesionSummary}
-              errors={errors}
-              onInputChange={handleInputChange}
               onDiseasesChange={handleDiseasesChange}
-            />
-          )}
-
-          {currentStep === 4 && (
-            <StepReview
-              patientId={formData.patientId}
-              imageType={formData.imageType}
-              task={formData.task}
-              eyeSelection={formData.eyeSelection}
-              fileName={selectedFile?.name}
-              diseases={formData.diseases}
-              lesionSummary={formData.lesionSummary}
             />
           )}
 
@@ -126,7 +115,7 @@ export function EyeScanUpload({
                 Back
               </Button>
             )}
-            {currentStep < 4 ? (
+            {currentStep < 3 ? (
               <Button
                 type="button"
                 onClick={handleNext}
@@ -139,7 +128,12 @@ export function EyeScanUpload({
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={isLoading || isUploading}
+                disabled={
+                  isLoading ||
+                  isUploading ||
+                  !storagePath ||
+                  formData.diseases.length === 0
+                }
               >
                 {isLoading ? "Submitting..." : "Submit Diagnosis"}
               </Button>
