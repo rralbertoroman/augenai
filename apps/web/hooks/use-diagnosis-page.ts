@@ -1,13 +1,13 @@
 import { useState } from "react";
-import type { MultiplePredictionsResponse } from "@/types/prediction";
+import { usePrediction } from "@/contexts/prediction-context";
 
 interface ScanData {
   patientId: string;
   task: string;
   imageType: string;
   diseases: string[];
-  lesionSummary: string;
   eyeSelection: "left" | "right";
+  includeDetection: boolean;
   file?: File;
   storagePath?: string;
   bucketName?: string;
@@ -15,10 +15,13 @@ interface ScanData {
 
 export function useDiagnosisPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [predictionResults, setPredictionResults] =
-    useState<MultiplePredictionsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showResultsModal, setShowResultsModal] = useState(false);
+  const {
+    latestPrediction,
+    setLatestPrediction,
+    showResultsModal,
+    setShowResultsModal,
+  } = usePrediction();
 
   const handleScanSubmit = async (data: ScanData) => {
     setIsLoading(true);
@@ -65,11 +68,11 @@ export function useDiagnosisPage() {
       }
 
       const result = await response.json();
-      setPredictionResults(result);
+      setLatestPrediction(result);
       setShowResultsModal(true);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Error desconocido");
-      setPredictionResults(null);
+      setLatestPrediction(null);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +80,7 @@ export function useDiagnosisPage() {
 
   return {
     isLoading,
-    predictionResults,
+    latestPrediction,
     error,
     showResultsModal,
     setShowResultsModal,

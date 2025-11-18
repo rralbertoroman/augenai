@@ -14,7 +14,7 @@ import { useDiagnosisPage } from "@/hooks/use-diagnosis-page";
 export function DiagnosisContainer() {
   const {
     isLoading,
-    predictionResults,
+    latestPrediction,
     error,
     showResultsModal,
     setShowResultsModal,
@@ -37,11 +37,8 @@ export function DiagnosisContainer() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Latest Prediction</h3>
-            {predictionResults && predictionResults.predictions.length > 0 ? (
-              <PredictionResults
-                prediction={predictionResults.predictions[0]}
-              />
+            {latestPrediction && latestPrediction.predictions.length > 0 ? (
+              <PredictionResults prediction={latestPrediction.predictions[0]} />
             ) : (
               <Card className="shadow-sm">
                 <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -71,10 +68,8 @@ export function DiagnosisContainer() {
                 🎉 Prediction Complete!
               </DialogTitle>
             </DialogHeader>
-            {predictionResults && predictionResults.predictions.length > 0 && (
-              <PredictionResults
-                prediction={predictionResults.predictions[0]}
-              />
+            {latestPrediction && latestPrediction.predictions.length > 0 && (
+              <PredictionResults prediction={latestPrediction.predictions[0]} />
             )}
           </DialogContent>
         </Dialog>

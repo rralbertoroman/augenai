@@ -10,9 +10,13 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between w-full">
       {steps.map((step, index) => (
-        <div key={step.number} className="flex items-center flex-1">
+        <div
+          key={step.number}
+          className="flex items-center"
+          style={{ flex: index === steps.length - 1 ? "0 0 auto" : "1 1 0%" }}
+        >
           <div className="flex flex-col items-center">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
@@ -23,11 +27,11 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
             >
               {step.number}
             </div>
-            <span className="text-xs mt-1">{step.title}</span>
+            <span className="text-xs mt-1 whitespace-nowrap">{step.title}</span>
           </div>
           {index < steps.length - 1 && (
             <div
-              className={`flex-1 h-0.5 mx-2 ${
+              className={`flex-1 h-0.5 mx-4 ${
                 currentStep > step.number ? "bg-primary" : "bg-muted"
               }`}
             />

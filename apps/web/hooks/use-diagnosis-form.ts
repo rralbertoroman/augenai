@@ -6,8 +6,8 @@ interface ScanData {
   task: string;
   imageType: string;
   diseases: string[];
-  lesionSummary: string;
   eyeSelection: "left" | "right";
+  includeDetection: boolean;
   file?: File;
   storagePath?: string;
   bucketName?: string;
@@ -20,14 +20,15 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     task: "",
     imageType: "",
     diseases: [],
-    lesionSummary: "",
     eyeSelection: "left",
+    includeDetection: false,
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [storagePath, setStoragePath] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (
@@ -59,12 +60,8 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     setFormData((prev) => ({ ...prev, eyeSelection: eye }));
   };
 
-  const handleDiseasesChange = (value: string) => {
-    const diseasesArray = value
-      .split(",")
-      .map((d) => d.trim())
-      .filter((d) => d.length > 0);
-    setFormData((prev) => ({ ...prev, diseases: diseasesArray }));
+  const handleDiseasesChange = (diseases: string[]) => {
+    setFormData((prev) => ({ ...prev, diseases }));
     if (errors.diseases) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -95,6 +92,10 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       return;
     }
 
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
     const imageType =
       formData.imageType.toLowerCase() === "fundus" ? "fundus" : "oct";
 
@@ -109,6 +110,8 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       setErrors((prev) => ({ ...prev, file: `Error al subir: ${error}` }));
       setIsUploading(false);
       setUploadProgress(0);
+      URL.revokeObjectURL(previewUrl);
+      setImagePreview("");
       return;
     }
 
@@ -121,12 +124,16 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     setIsUploading(false);
   };
 
+  const handleCheckboxChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, includeDetection: checked }));
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
       if (!formData.patientId.trim()) {
-        newErrors.patientId = "Patient ID is required";
+        newErrors.patientId = "Patient is required";
       }
     } else if (step === 2) {
       if (!formData.task.trim()) {
@@ -135,13 +142,13 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       if (!formData.imageType.trim()) {
         newErrors.imageType = "Image type is required";
       }
+    } else if (step === 3) {
       if (!selectedFile) {
         newErrors.file = "Please select a file";
       }
       if (!storagePath) {
         newErrors.file = "Waiting for upload to complete";
       }
-    } else if (step === 3) {
       if (formData.diseases.length === 0) {
         newErrors.diseases = "Select at least one disease";
       }
@@ -153,7 +160,7 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+      setCurrentStep((prev) => Math.min(prev + 1, 3));
     }
   };
 
@@ -188,12 +195,14 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     uploadProgress,
     isUploading,
     storagePath,
+    imagePreview,
     fileInputRef,
     handleInputChange,
     handleSelectChange,
     handleEyeSelection,
     handleDiseasesChange,
     handleFileChange,
+    handleCheckboxChange,
     handleNext,
     handleBack,
     handleSubmit,
