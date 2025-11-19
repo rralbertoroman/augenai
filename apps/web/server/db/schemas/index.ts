@@ -5,3 +5,4 @@ export { default as PredictionsTable } from "./prediction";
 export { default as PredictionRequestsTable } from "./prediction_request";
 export { default as PredictionClassesTable } from "./prediction_class_disease";
 export { default as UserProfilesTable } from "./user_profile";
+export { default as FeedbackTable } from "./feedback";

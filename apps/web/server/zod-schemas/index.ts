@@ -79,3 +79,21 @@ export {
   type GetUserProfileByEmailInput,
   type GetUserProfilesByRoleInput,
 } from "./user_profile";
+
+// Feedback schemas
+export {
+  CreateFeedbackSchema,
+  UpdateFeedbackSchema,
+  DeleteFeedbackSchema,
+  FeedbackDTOSchema,
+  GetFeedbackByPredictionSchema,
+  GetFeedbackByUserSchema,
+  type CreateFeedbackInput,
+  type UpdateFeedbackInput,
+  type DeleteFeedbackInput,
+  type FeedbackDTO,
+  type GetFeedbackByPredictionInput,
+  type GetFeedbackByUserInput,
+  type FeedbackItem,
+  type FeedbackItemContent,
+} from "./feedback";
