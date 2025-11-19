@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navbar } from "@/components/layout/navbar";
 import { AppProviders } from "@/components/providers/app-providers";
 import "./globals.css";
 
@@ -29,18 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppProviders>
-          <div className="min-h-screen bg-background">
-            <Navbar />
-            <main
-              id="main-content"
-              className="container mx-auto px-6 py-8"
-              role="main"
-            >
-              {children}
-            </main>
-          </div>
-        </AppProviders>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
