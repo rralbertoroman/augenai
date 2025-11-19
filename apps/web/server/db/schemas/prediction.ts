@@ -1,4 +1,4 @@
-import { pgTable, uuid, jsonb, text } from "drizzle-orm/pg-core";
+import { pgTable, uuid, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { standardSchema } from "./base_schemas";
 import ModelsTable from "./model";
