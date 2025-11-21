@@ -36,9 +36,9 @@ export function PatientDetail({ patient }: PatientDetailProps) {
         </div>
 
         <div>
-          <p className="text-sm text-muted-foreground">Clinical Conditions</p>
+          <p className="text-sm text-muted-foreground">Condiciones clínicas</p>
           <p className="text-sm mt-1">
-            {patient.clinicalConditions.join(", ") || "None"}
+            {patient.clinicalConditions.join(", ") || "Ninguna"}
           </p>
         </div>
 

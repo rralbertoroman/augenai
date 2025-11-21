@@ -57,7 +57,7 @@ export function DiseaseMultiSelect({
 
   return (
     <div className="space-y-2 w-full">
-      <Label className="text-sm font-medium">Suspected Diseases</Label>
+      <Label className="text-sm font-medium">Enfermedades sospechadas</Label>
 
       <div className="relative" ref={containerRef}>
         {/* Input-like container with tags */}
@@ -87,7 +87,9 @@ export function DiseaseMultiSelect({
               );
             })
           ) : (
-            <span className="text-muted-foreground">Select diseases...</span>
+            <span className="text-muted-foreground">
+              Selecciona enfermedades...
+            </span>
           )}
           <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />
         </div>
@@ -107,7 +109,7 @@ export function DiseaseMultiSelect({
               ))
             ) : (
               <div className="px-3 py-2 text-sm text-muted-foreground">
-                All diseases selected
+                Todas las enfermedades seleccionadas
               </div>
             )}
           </div>

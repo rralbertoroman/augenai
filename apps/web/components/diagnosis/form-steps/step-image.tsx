@@ -44,14 +44,14 @@ export function StepImage({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="imageType" className="text-sm font-medium">
-          Image Type
+          Tipo de imagen
         </Label>
         <Select
           value={imageType}
           onValueChange={(value) => onSelectChange("imageType", value)}
         >
           <SelectTrigger id="imageType">
-            <SelectValue placeholder="Select image type" />
+            <SelectValue placeholder="Selecciona tipo de imagen" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="fundus">Fundus</SelectItem>
@@ -67,18 +67,18 @@ export function StepImage({
 
       <div className="space-y-2">
         <Label htmlFor="task" className="text-sm font-medium">
-          Task
+          Tarea
         </Label>
         <Select
           value={task}
           onValueChange={(value) => onSelectChange("task", value)}
         >
           <SelectTrigger id="task">
-            <SelectValue placeholder="Select task" />
+            <SelectValue placeholder="Selecciona tarea" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="classification">Classification</SelectItem>
-            <SelectItem value="detection">Detection</SelectItem>
+            <SelectItem value="classification">Clasificación</SelectItem>
+            <SelectItem value="detection">Detección</SelectItem>
           </SelectContent>
         </Select>
         {errors.task && (
@@ -89,7 +89,7 @@ export function StepImage({
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Eye Selection</Label>
+        <Label className="text-sm font-medium">Selección de ojo</Label>
         <div className="flex gap-3">
           <Button
             type="button"
@@ -97,7 +97,7 @@ export function StepImage({
             onClick={() => onEyeSelection("left")}
             className="flex-1"
           >
-            Left Eye
+            Ojo izquierdo
           </Button>
           <Button
             type="button"
@@ -105,22 +105,24 @@ export function StepImage({
             onClick={() => onEyeSelection("right")}
             className="flex-1"
           >
-            Right Eye
+            Ojo derecho
           </Button>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Upload Eye Scan</Label>
+        <Label className="text-sm font-medium">Subir escaneo ocular</Label>
         <div
           onClick={onFileAreaClick}
           className="border-2 border-dashed border-[#E5E5E5] rounded-lg p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#1A1A1A] transition-colors"
           role="button"
           tabIndex={0}
         >
-          <p className="text-sm text-[#666666] mb-2">Click to select file</p>
+          <p className="text-sm text-[#666666] mb-2">
+            Haz clic para seleccionar archivo
+          </p>
           <p className="text-sm font-medium text-[#1A1A1A]">
-            {selectedFile ? selectedFile.name : "No file selected"}
+            {selectedFile ? selectedFile.name : "Ningún archivo seleccionado"}
           </p>
         </div>
         <input
@@ -134,13 +136,11 @@ export function StepImage({
         {isUploading && (
           <div className="space-y-1">
             <Progress value={uploadProgress} />
-            <p className="text-xs text-[#666666]">Uploading...</p>
+            <p className="text-xs text-[#666666]">Subiendo...</p>
           </div>
         )}
         {storagePath && !isUploading && (
-          <p className="text-xs text-green-600">
-            ✓ Image uploaded successfully
-          </p>
+          <p className="text-xs text-green-600">✓ Imagen subida exitosamente</p>
         )}
         {errors.file && (
           <p className="text-sm text-destructive" role="alert">
