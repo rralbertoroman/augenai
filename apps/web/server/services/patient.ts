@@ -5,25 +5,17 @@ import { db } from "../db/client";
 import { PatientsTable } from "../db/schemas";
 import {
   CreatePatientSchema,
-  DeletePatientSchema,
   UpdatePatientSchema,
+  DeletePatientSchema,
   type CreatePatientInput,
+  type UpdatePatientInput,
   type DeletePatientInput,
   type PatientDTO,
-  type UpdatePatientInput,
-} from "../zod-schemas";
+} from "../zod-schemas/patient";
 
-export const createPatient = async (
-  data: CreatePatientInput,
-): Promise<PatientDTO> => {
-  const payload = CreatePatientSchema.parse(data);
-  const [patient] = await db.insert(PatientsTable).values(payload).returning();
-
-  if (!patient) {
-    throw new Error("Error creating the patient");
-  }
-
-  return patient;
+export const getPatients = async (): Promise<PatientDTO[]> => {
+  const patients = await db.select().from(PatientsTable);
+  return patients;
 };
 
 export const getPatientById = async (
@@ -33,46 +25,36 @@ export const getPatientById = async (
     .select()
     .from(PatientsTable)
     .where(eq(PatientsTable.id, id));
-
-  if (!patient) {
-    throw new Error("Patient not found");
-  }
-
-  return patient;
+  return patient || null;
 };
 
-export const getAllPatients = async (): Promise<PatientDTO[]> => {
-  const patients = await db.select().from(PatientsTable);
-  return patients;
+export const createPatient = async (
+  data: CreatePatientInput,
+): Promise<PatientDTO> => {
+  const validatedData = CreatePatientSchema.parse(data);
+  const [patient] = await db
+    .insert(PatientsTable)
+    .values(validatedData)
+    .returning();
+  return patient;
 };
 
 export const updatePatient = async (
   id: string,
   data: UpdatePatientInput,
 ): Promise<PatientDTO> => {
-  const payload = UpdatePatientSchema.parse(data);
-
+  const validatedData = UpdatePatientSchema.parse(data);
   const [patient] = await db
     .update(PatientsTable)
-    .set(payload)
+    .set(validatedData)
     .where(eq(PatientsTable.id, id))
     .returning();
-
-  if (!patient) {
-    throw new Error("Patient not found");
-  }
-
   return patient;
 };
 
 export const deletePatient = async (
   data: DeletePatientInput,
-): Promise<boolean> => {
+): Promise<void> => {
   const { id } = DeletePatientSchema.parse(data);
-
-  const deleted = await db
-    .delete(PatientsTable)
-    .where(eq(PatientsTable.id, id))
-    .returning({ id: PatientsTable.id });
-  return deleted.length > 0;
+  await db.delete(PatientsTable).where(eq(PatientsTable.id, id));
 };
