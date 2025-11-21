@@ -29,24 +29,24 @@ export function FixedParameters({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Disease</p>
+          <p className="text-sm text-muted-foreground">Enfermedad</p>
           <p className="text-base font-medium">{diseaseId}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Stage</p>
+          <p className="text-sm text-muted-foreground">Etapa</p>
           <p className="text-base font-medium">{stageIdx}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Predicted Class</p>
+          <p className="text-sm text-muted-foreground">Clase predicha</p>
           <p className="text-base font-medium">
             {topPrediction?.class_name || "N/A"}
           </p>
         </div>
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Confidence</p>
+          <p className="text-sm text-muted-foreground">Confianza</p>
           <div className="flex items-center gap-2">
             <p className="text-base font-medium">
               {topPrediction
@@ -64,13 +64,13 @@ export function FixedParameters({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Status</p>
+          <p className="text-sm text-muted-foreground">Estado</p>
           <Badge variant={status === "success" ? "default" : "destructive"}>
             {status}
           </Badge>
         </div>
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Prediction ID</p>
+          <p className="text-sm text-muted-foreground">ID de predicción</p>
           <p className="text-xs font-mono text-muted-foreground">
             {predictionId}
           </p>

@@ -19,16 +19,16 @@ export function StepDetails({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="diseases" className="text-sm font-medium">
-          Suspected Diseases
+          Enfermedades sospechadas
         </Label>
         <Input
           id="diseases"
           name="diseases"
-          placeholder="e.g., diabetic_retinopathy, glaucoma"
+          placeholder="ej., diabetic_retinopathy, glaucoma"
           onChange={(e) => onDiseasesChange(e.target.value)}
         />
         <p className="text-xs text-muted-foreground">
-          Separate multiple diseases with commas
+          Separa múltiples enfermedades con comas
         </p>
         {errors.diseases && (
           <p className="text-sm text-destructive" role="alert">
@@ -39,7 +39,7 @@ export function StepDetails({
 
       <div className="space-y-2">
         <Label htmlFor="lesionSummary" className="text-sm font-medium">
-          Lesion Summary (Optional)
+          Resumen de lesión (Opcional)
         </Label>
         <Textarea
           id="lesionSummary"
@@ -47,7 +47,7 @@ export function StepDetails({
           value={lesionSummary}
           onChange={onInputChange}
           rows={4}
-          placeholder="Enter any additional notes or observations..."
+          placeholder="Ingresa notas u observaciones adicionales..."
         />
       </div>
     </div>

@@ -44,11 +44,11 @@ export function DiagnosisContainer() {
                 <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="text-6xl mb-4">🔬</div>
                   <h3 className="text-lg font-semibold mb-2">
-                    No predictions yet
+                    Sin predicciones aún
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-sm">
-                    Complete the diagnosis form to generate your first
-                    prediction. Results will appear here.
+                    Completa el formulario de diagnóstico para generar tu
+                    primera predicción. Los resultados aparecerán aquí.
                   </p>
                 </CardContent>
               </Card>
@@ -65,7 +65,7 @@ export function DiagnosisContainer() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl">
-                🎉 Prediction Complete!
+                🎉 ¡Predicción completada!
               </DialogTitle>
             </DialogHeader>
             {latestPrediction && latestPrediction.predictions.length > 0 && (

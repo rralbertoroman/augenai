@@ -26,9 +26,9 @@ interface EyeScanUploadProps {
 }
 
 const STEPS = [
-  { number: 1, title: "Patient" },
-  { number: 2, title: "Task" },
-  { number: 3, title: "Upload" },
+  { number: 1, title: "Paciente" },
+  { number: 2, title: "Tarea" },
+  { number: 3, title: "Subir" },
 ];
 
 export function EyeScanUpload({
@@ -59,7 +59,7 @@ export function EyeScanUpload({
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-2xl">Eye Diagnosis</CardTitle>
+        <CardTitle className="text-2xl">Diagnóstico ocular</CardTitle>
         <div className="mt-4">
           <StepIndicator steps={STEPS} currentStep={currentStep} />
         </div>
@@ -112,7 +112,7 @@ export function EyeScanUpload({
                 className="flex-1"
                 disabled={isLoading}
               >
-                Back
+                Atrás
               </Button>
             )}
             {currentStep < 3 ? (
@@ -122,7 +122,7 @@ export function EyeScanUpload({
                 className="flex-1"
                 disabled={isUploading}
               >
-                Next
+                Siguiente
               </Button>
             ) : (
               <Button
@@ -135,7 +135,7 @@ export function EyeScanUpload({
                   formData.diseases.length === 0
                 }
               >
-                {isLoading ? "Submitting..." : "Submit Diagnosis"}
+                {isLoading ? "Enviando..." : "Enviar diagnóstico"}
               </Button>
             )}
           </div>

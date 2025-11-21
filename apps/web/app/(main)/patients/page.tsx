@@ -30,7 +30,7 @@ export default function PatientsPage() {
           <div className="relative flex-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search patients..."
+              placeholder="Buscar pacientes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -44,11 +44,11 @@ export default function PatientsPage() {
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <p className="text-center text-muted-foreground py-8">
-              Loading patients...
+              Cargando pacientes...
             </p>
           ) : filteredPatients.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No patients found
+              No se encontraron pacientes
             </p>
           ) : (
             <PatientList
@@ -66,7 +66,7 @@ export default function PatientsPage() {
           <PatientDetail patient={selectedPatient} />
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            Select a patient to view details
+            Selecciona un paciente para ver los detalles
           </div>
         )}
       </div>
