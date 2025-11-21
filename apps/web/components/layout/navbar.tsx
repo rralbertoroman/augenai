@@ -36,6 +36,18 @@ export function Navbar({ currentPath }: NavbarProps) {
           >
             Patients
           </Link>
+          <Link
+            href="/appointments"
+            className={`text-md font-medium transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
+              currentPath === "/appointments"
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }`}
+            role="menuitem"
+            aria-current={currentPath === "/appointments" ? "page" : undefined}
+          >
+            Appointments
+          </Link>
         </div>
 
         {/* Theme toggle and user menu */}
