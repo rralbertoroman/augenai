@@ -35,11 +35,11 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
     <div className="space-y-4 w-full">
       <div className="space-y-2">
         <Label htmlFor="patientId" className="text-sm font-medium">
-          Select Patient
+          Selecciona paciente
         </Label>
         <Select value={patientId} onValueChange={onChange}>
           <SelectTrigger id="patientId" className="w-full">
-            <SelectValue placeholder="Choose a patient" />
+            <SelectValue placeholder="Elige un paciente" />
           </SelectTrigger>
           <SelectContent>
             {mockPatients.map((patient) => (
@@ -61,19 +61,19 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
           <CardContent className="pt-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted-foreground">Name</p>
+                <p className="text-xs text-muted-foreground">Nombre</p>
                 <p className="font-medium">{selectedPatient.name}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Patient ID</p>
+                <p className="text-xs text-muted-foreground">ID Paciente</p>
                 <p className="font-medium">{selectedPatient.id}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Age</p>
-                <p className="font-medium">{selectedPatient.age} years</p>
+                <p className="text-xs text-muted-foreground">Edad</p>
+                <p className="font-medium">{selectedPatient.age} años</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Gender</p>
+                <p className="text-xs text-muted-foreground">Género</p>
                 <p className="font-medium">{selectedPatient.gender}</p>
               </div>
             </div>

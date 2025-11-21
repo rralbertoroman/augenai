@@ -46,7 +46,7 @@ export function UserMenu() {
             variant="ghost"
             size="icon"
             className="w-8 h-8"
-            title="Settings"
+            title="Configuración"
           >
             <Settings className="w-4 h-4" />
           </Button>
@@ -55,7 +55,7 @@ export function UserMenu() {
             size="icon"
             className="w-8 h-8"
             onClick={handleLogout}
-            title="Logout"
+            title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />
           </Button>

@@ -28,14 +28,14 @@ export function StepTask({
     <div className="space-y-4 w-full">
       <div className="space-y-2">
         <Label htmlFor="imageType" className="text-sm font-medium">
-          Image Type
+          Tipo de imagen
         </Label>
         <Select
           value={imageType}
           onValueChange={(value) => onSelectChange("imageType", value)}
         >
           <SelectTrigger id="imageType" className="w-full">
-            <SelectValue placeholder="Select image type" />
+            <SelectValue placeholder="Selecciona tipo de imagen" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="fundus">Fundus</SelectItem>
@@ -51,18 +51,18 @@ export function StepTask({
 
       <div className="space-y-2">
         <Label htmlFor="task" className="text-sm font-medium">
-          Task
+          Tarea
         </Label>
         <Select
           value={task}
           onValueChange={(value) => onSelectChange("task", value)}
         >
           <SelectTrigger id="task" className="w-full">
-            <SelectValue placeholder="Select task" />
+            <SelectValue placeholder="Selecciona tarea" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="classification">Classification</SelectItem>
-            <SelectItem value="detection">Detection</SelectItem>
+            <SelectItem value="classification">Clasificación</SelectItem>
+            <SelectItem value="detection">Detección</SelectItem>
           </SelectContent>
         </Select>
         {errors.task && (
@@ -85,7 +85,7 @@ export function StepTask({
             htmlFor="includeDetection"
             className="text-sm font-medium cursor-pointer"
           >
-            Also perform detection
+            También realizar detección
           </Label>
         </div>
       )}
