@@ -21,7 +21,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-2xl">Prediction Details</CardTitle>
+        <CardTitle className="text-2xl">Detalles de la predicción</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <FixedParameters

@@ -66,16 +66,16 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
       <DialogTrigger asChild>
         <Button className="w-full">
           <Plus className="w-4 h-4 mr-2" />
-          Add Patient
+          Agregar paciente
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Patient</DialogTitle>
+          <DialogTitle>Agregar nuevo paciente</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nombre</Label>
             <Input
               id="name"
               value={formData.name}
@@ -87,7 +87,7 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Label htmlFor="dateOfBirth">Fecha de nacimiento</Label>
             <Input
               id="dateOfBirth"
               type="date"
@@ -100,7 +100,7 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
+            <Label htmlFor="gender">Género</Label>
             <Select
               value={formData.gender}
               onValueChange={(value) =>
@@ -108,18 +108,18 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
               }
             >
               <SelectTrigger id="gender">
-                <SelectValue placeholder="Select gender" />
+                <SelectValue placeholder="Selecciona género" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="male">Masculino</SelectItem>
+                <SelectItem value="female">Femenino</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="conditions">
-              Clinical Conditions (comma separated)
+              Condiciones clínicas (separadas por comas)
             </Label>
             <Input
               id="conditions"
@@ -130,12 +130,12 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
                   clinicalConditions: e.target.value,
                 })
               }
-              placeholder="Diabetes, Hypertension"
+              placeholder="Diabetes, Hipertensión"
             />
           </div>
 
           <Button type="submit" className="w-full">
-            Add Patient
+            Agregar paciente
           </Button>
         </form>
       </DialogContent>

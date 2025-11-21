@@ -34,7 +34,7 @@ export function Navbar({ currentPath }: NavbarProps) {
             role="menuitem"
             aria-current={currentPath === "/patients" ? "page" : undefined}
           >
-            Patients
+            Pacientes
           </Link>
         </div>
 
