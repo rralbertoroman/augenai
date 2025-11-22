@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 export const CreatePredictionClassDiseaseSchema = z.object({
-  classId: z.uuid(),
+  classId: z.number().int(),
   modelId: z.uuid(),
   diseaseId: z.uuid(),
   stageIdx: z.number().int(),
 });
 
 export const UpdatePredictionClassDiseaseSchema = z.object({
-  classId: z.uuid().optional(),
+  classId: z.number().int().optional(),
   modelId: z.uuid().optional(),
   diseaseId: z.uuid().optional(),
   stageIdx: z.number().int().optional(),
@@ -20,7 +20,7 @@ export const DeletePredictionClassDiseaseSchema = z.object({
 
 export const PredictionClassDiseaseDTOSchema = z.object({
   id: z.uuid(),
-  classId: z.uuid(),
+  classId: z.number().int(),
   modelId: z.uuid(),
   diseaseId: z.uuid(),
   stageIdx: z.number().int(),
@@ -29,7 +29,7 @@ export const PredictionClassDiseaseDTOSchema = z.object({
 });
 
 export const GetByClassIdAndModelIdSchema = z.object({
-  classId: z.uuid(),
+  classId: z.number().int(),
   modelId: z.uuid(),
 });
 

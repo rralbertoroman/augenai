@@ -1,6 +1,6 @@
 {
-  "id": "8d989ec1-3de6-40ab-805b-0f74ea8e51bf",
-  "prevId": "636e26f2-67f3-40f6-8528-74c69f425047",
+  "id": "21544c25-ef1d-4232-92c3-c2b4fb12f47d",
+  "prevId": "8d989ec1-3de6-40ab-805b-0f74ea8e51bf",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -304,7 +304,7 @@
         },
         "class_id": {
           "name": "class_id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   AI_PREDICTION_SERVICE_URL,
   AI_PREDICTION_SERVICE_SECRET_KEY,
+  NODE_ENV,
 } from "@/server/constants";
 import {
   PredictionStatus,
@@ -94,13 +95,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Select optimal models based on task, imageType, and diseases
-    const selectedModelIds = await selectOptimalModels(
+    const selectedModelNames = await selectOptimalModels(
       task,
       imageType,
       diseases,
     );
 
-    if (selectedModelIds.length === 0) {
+    if (selectedModelNames.length === 0) {
       return NextResponse.json(
         { error: "No suitable models found for the given criteria" },
         { status: 404 },
@@ -138,19 +139,22 @@ export async function POST(request: NextRequest) {
       diseases,
       storagePath,
       bucketName,
-      modelsUsed: selectedModelIds,
+      modelsUsed: selectedModelNames,
     });
 
     // Run predictions for all selected models
     const allPredictions: PredictionResponse[] = [];
 
-    for (const modelId of selectedModelIds) {
+    for (const modelName of selectedModelNames) {
       const predictionFormData = new FormData();
       predictionFormData.append("image", imageBlob, fileName);
-      predictionFormData.append("model_id", modelId);
+      predictionFormData.append("model_id", modelName);
+      if (NODE_ENV === "test") {
+        predictionFormData.append("is_mocked", "true");
+      }
 
       const predictionResponse = await fetch(
-        `${AI_PREDICTION_SERVICE_URL}/predictions/predict`,
+        `${AI_PREDICTION_SERVICE_URL}/predict`,
         {
           method: "POST",
           headers: {
@@ -186,12 +190,12 @@ export async function POST(request: NextRequest) {
         predictionResult.result.predictions[0],
       );
 
-      const classId = topPrediction.class_id.toString();
+      const classId = topPrediction.class_id;
 
       const predictionClassDisease =
         await getPredictionClassDiseaseByClassIdAndModelId({
           classId,
-          modelId,
+          modelId: modelName,
         });
 
       if (!predictionClassDisease) {
@@ -200,7 +204,7 @@ export async function POST(request: NextRequest) {
 
       const savedPrediction = await createPrediction({
         requestId: predictionRequest.id,
-        modelId,
+        modelId: modelName,
         predictionResult: predictionResult.result,
       });
 
@@ -223,7 +227,7 @@ export async function POST(request: NextRequest) {
 
     const response: MultiplePredictionsResponse = {
       predictions: allPredictions,
-      models_used: selectedModelIds,
+      models_used: selectedModelNames,
     };
 
     return NextResponse.json(response);
