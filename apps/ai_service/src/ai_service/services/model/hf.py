@@ -30,3 +30,29 @@ class DiabeticRetinopathy224ProcNormVit(BaseModelAdapter):
             "parameters": num_params,
             "latest_training": last_modified,
         }
+
+
+@register_adapter("swinv2_tiny_for_glaucoma_classification")
+class Swinv2TinyForGlaucomaClassification(BaseModelAdapter):
+    def extract_info(self) -> dict:
+        config_path = self.model_path / "config.json"
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        bin_model_path = self.model_path / "pytorch_model.bin"
+        state_dict = torch.load(bin_model_path, map_location="cpu")
+        num_params = sum(p.numel() for p in state_dict.values())
+
+        last_modified = (self.model_path / "pytorch_model.bin").stat().st_mtime
+
+        task = get_model_task(config["problem_type"])
+
+        return {
+            "id": "swinv2_tiny_for_glaucoma_classification",
+            "task": task,
+            "classes": {"Glaucoma": [(0, 1)]},
+            "image_types": ["Fundus"],
+            "size": bin_model_path.stat().st_size,  # bytes
+            "parameters": num_params,
+            "latest_training": last_modified,
+        }
