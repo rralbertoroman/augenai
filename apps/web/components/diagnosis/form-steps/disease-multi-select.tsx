@@ -35,9 +35,9 @@ export function DiseaseMultiSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (value: string) => {
-    if (!selectedDiseases.includes(value)) {
-      onChange([...selectedDiseases, value]);
+  const handleSelect = (id: string) => {
+    if (!selectedDiseases.includes(id)) {
+      onChange([...selectedDiseases, id]);
     }
   };
 
@@ -46,7 +46,7 @@ export function DiseaseMultiSelect({
   };
 
   const availableOptions = diseases.filter(
-    (disease) => !selectedDiseases.includes(disease.value),
+    (disease) => !selectedDiseases.includes(disease.id),
   );
 
   return (
@@ -60,17 +60,20 @@ export function DiseaseMultiSelect({
           className="min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer hover:border-ring transition-colors flex flex-wrap gap-2 items-center"
         >
           {selectedDiseases.length > 0 ? (
-            selectedDiseases.map((disease) => {
-              const diseaseLabel =
-                diseases.find((d) => d.value === disease)?.name || disease;
+            selectedDiseases.map((diseaseId) => {
+              const disease = diseases.find((d) => d.id === diseaseId);
               return (
-                <Badge key={disease} variant="secondary" className="gap-1 h-6">
-                  {diseaseLabel}
+                <Badge
+                  key={diseaseId}
+                  variant="secondary"
+                  className="gap-1 h-6"
+                >
+                  {disease?.name || diseaseId}
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemove(disease);
+                      handleRemove(diseaseId);
                     }}
                     className="ml-1 hover:text-destructive"
                   >
@@ -101,8 +104,8 @@ export function DiseaseMultiSelect({
             ) : availableOptions.length > 0 ? (
               availableOptions.map((disease) => (
                 <div
-                  key={disease.value}
-                  onClick={() => handleSelect(disease.value)}
+                  key={disease.id}
+                  onClick={() => handleSelect(disease.id)}
                   className="px-3 py-2 text-sm hover:bg-accent cursor-pointer transition-colors"
                 >
                   {disease.name}
