@@ -5,8 +5,6 @@ import { getPatientById } from "@/server/services/patient";
 
 export async function GET() {
   try {
-    console.log("GET /api/predictions/list - Fetching all predictions");
-
     // Get all predictions with their request details
     const predictions = await getAllPredictions();
     const predictionRequests = await getAllPredictionRequests();
@@ -24,8 +22,8 @@ export async function GET() {
           try {
             const patient = await getPatientById(request.patientId);
             patientName = patient?.name || "Unknown";
-          } catch (err) {
-            console.error("Error fetching patient:", err);
+          } catch {
+            // Error fetching patient
           }
         }
 
@@ -42,10 +40,8 @@ export async function GET() {
       }),
     );
 
-    console.log("Predictions fetched:", enrichedPredictions.length);
     return NextResponse.json(enrichedPredictions);
   } catch (error) {
-    console.error("Error fetching predictions:", error);
     const message =
       error instanceof Error ? error.message : "Failed to fetch predictions";
     return NextResponse.json({ error: message }, { status: 500 });

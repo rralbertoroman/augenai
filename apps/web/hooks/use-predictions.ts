@@ -26,30 +26,20 @@ export function usePredictions() {
   const fetchPredictions = async () => {
     setIsLoading(true);
     try {
-      console.log("Fetching predictions from /api/predictions/list");
       const response = await fetch("/api/predictions/list");
-      console.log("Response status:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Predictions fetched:", data);
         // Transform dates
-        const transformedData = data.map((item: any) => ({
+        const transformedData = data.map((item: Prediction) => ({
           ...item,
           createdAt: new Date(item.createdAt),
           updatedAt: new Date(item.updatedAt),
         }));
         setPredictions(transformedData);
-      } else {
-        try {
-          const errorData = await response.json();
-          console.error("Failed to fetch predictions:", errorData);
-        } catch {
-          console.error("Failed to fetch predictions. Status:", response.status);
-        }
       }
-    } catch (error) {
-      console.error("Error fetching predictions:", error);
+    } catch {
+      // Error fetching predictions
     } finally {
       setIsLoading(false);
     }

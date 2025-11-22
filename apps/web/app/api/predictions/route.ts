@@ -161,11 +161,7 @@ export async function POST(request: NextRequest) {
       );
 
       if (!predictionResponse.ok) {
-        const errorData = await predictionResponse.json().catch(() => ({}));
-        console.error(
-          `Prediction failed for model ${modelId}:`,
-          errorData.detail,
-        );
+        await predictionResponse.json().catch(() => ({}));
         continue; // Skip this model and continue with others
       }
 
@@ -173,10 +169,6 @@ export async function POST(request: NextRequest) {
         await predictionResponse.json();
 
       if (predictionResult.status === PredictionStatus.ERROR) {
-        console.error(
-          `Prediction error for model ${modelId}:`,
-          predictionResult.error,
-        );
         continue;
       }
 
@@ -185,7 +177,6 @@ export async function POST(request: NextRequest) {
         !predictionResult.result.predictions ||
         predictionResult.result.predictions.length === 0
       ) {
-        console.error(`No predictions returned for model ${modelId}`);
         continue;
       }
 
@@ -204,9 +195,6 @@ export async function POST(request: NextRequest) {
         });
 
       if (!predictionClassDisease) {
-        console.error(
-          `Prediction class disease not found for class_id: ${classId} and model_id: ${modelId}`,
-        );
         continue;
       }
 
@@ -240,7 +228,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (err) {
-    console.error("Prediction error:", err);
     const message =
       err instanceof Error ? err.message : "Failed to process prediction";
     return NextResponse.json({ error: message }, { status: 500 });

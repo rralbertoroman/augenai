@@ -29,8 +29,8 @@ export function usePatients() {
         const data = await response.json();
         setPatients(data);
       }
-    } catch (error) {
-      console.error("Error fetching patients:", error);
+    } catch {
+      // Error fetching patients
     } finally {
       setIsLoading(false);
     }
