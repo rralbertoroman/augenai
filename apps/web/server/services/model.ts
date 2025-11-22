@@ -119,7 +119,8 @@ export const selectOptimalModels = async (
   }
 
   // Greedy algorithm to select minimum models covering all diseases
-  const selectedModelIds: string[] = [];
+  const selectedModelNames: string[] = [];
+  const selectedModelIds = new Set<string>();
   const coveredDiseases = new Set<string>();
   const targetDiseases = new Set(diseases);
 
@@ -131,7 +132,7 @@ export const selectOptimalModels = async (
     // Find model that covers the most uncovered diseases
     // Priority: 1) Most diseases covered, 2) Smallest size, 3) Fewest params
     for (const model of candidateModels) {
-      if (selectedModelIds.includes(model.id)) continue;
+      if (selectedModelIds.has(model.id)) continue;
 
       const newDiseases = model.diseases.filter(
         (disease) =>
@@ -166,7 +167,8 @@ export const selectOptimalModels = async (
     }
 
     // Add best model and update covered diseases
-    selectedModelIds.push(bestModel.id);
+    selectedModelIds.add(bestModel.id);
+    selectedModelNames.push(bestModel.modelName);
     bestModel.diseases.forEach((disease) => {
       if (targetDiseases.has(disease)) {
         coveredDiseases.add(disease);
@@ -174,5 +176,5 @@ export const selectOptimalModels = async (
     });
   }
 
-  return selectedModelIds;
+  return selectedModelNames;
 };
