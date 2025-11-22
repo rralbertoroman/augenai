@@ -37,6 +37,19 @@ export function usePredictions() {
           updatedAt: new Date(item.updatedAt),
         }));
         setPredictions(transformedData);
+<<<<<<< HEAD
+=======
+      } else {
+        try {
+          const errorData = await response.json();
+          console.error("Failed to fetch predictions:", errorData);
+        } catch {
+          console.error(
+            "Failed to fetch predictions. Status:",
+            response.status,
+          );
+        }
+>>>>>>> 82e7714 (feat: prediction sharing module)
       }
     } catch {
       // Error fetching predictions
