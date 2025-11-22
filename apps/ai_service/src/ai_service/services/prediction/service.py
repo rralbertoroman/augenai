@@ -43,8 +43,11 @@ class PredictionService:
         logger.info("Prediction service initialized")
 
     def predict(self, image: Image, model_id: str, is_mocked: bool) -> PredictionResult:
+        if is_mocked:
+            return get_mocked_classification()
+
         model: ModelInstance = self._model_pool.get_model(model_id)
         logger.info(f"Model with id '{model_id}' is ready for prediction")
 
-        result = model.run(image) if not is_mocked else get_mocked_classification()
+        result = model.run(image)
         return result
