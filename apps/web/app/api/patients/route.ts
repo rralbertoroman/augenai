@@ -6,7 +6,6 @@ export async function GET() {
     const patients = await getPatients();
     return NextResponse.json(patients);
   } catch (error) {
-    console.error("Error fetching patients:", error);
     const message =
       error instanceof Error ? error.message : "Failed to fetch patients";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
     const patient = await createPatient(data);
     return NextResponse.json(patient);
   } catch (error) {
-    console.error("Error creating patient:", error);
     const message =
       error instanceof Error ? error.message : "Failed to create patient";
     return NextResponse.json({ error: message }, { status: 500 });
