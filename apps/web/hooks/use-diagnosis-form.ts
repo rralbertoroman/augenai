@@ -75,6 +75,17 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset previous upload state when changing file
+    setStoragePath("");
+    setUploadProgress(0);
+    setIsUploading(false);
+
+    // Revoke previous preview URL if it exists
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview("");
+
     setSelectedFile(file);
     if (errors.file) {
       setErrors((prev) => {
@@ -112,6 +123,12 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       setUploadProgress(0);
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
+      setStoragePath("");
+      setFormData((prev) => ({
+        ...prev,
+        storagePath: "",
+        bucketName: "",
+      }));
       return;
     }
 
