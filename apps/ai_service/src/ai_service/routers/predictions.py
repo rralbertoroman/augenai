@@ -13,7 +13,7 @@ from ai_service.models.schemas import (
     PredictionResponse,
     PredictionStatus,
 )
-from ai_service.services import PredictionService
+from ai_service.services import PredictionService, ModelService
 
 router = APIRouter(tags=["predictions"])
 
@@ -107,4 +107,5 @@ async def predict(
 @router.get("/models")
 async def list_models(api_key: str = Depends(verify_api_key)):
     """List available models"""
-    return {"models": model_handler.get_available_models()}
+    model_service = ModelService()
+    return {"models": model_service.get_all_models_info()}
