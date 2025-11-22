@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # API Security
     ai_prediction_service_secret_key: str = ""
 
+    # Model
+    confidence_threshold: float = 0.70
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
