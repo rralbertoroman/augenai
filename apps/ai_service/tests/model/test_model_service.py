@@ -15,10 +15,11 @@ def test_get_all_models_info():
 
     for name, info in models_info.items():
         transformed_info = info.copy()
-        transformed_info["size"] = round(info["size"] / (1024 * 1024), 2)
+        transformed_info["size"] = f"{round(info['size'] / (1024 * 1024), 2)} MB"
         transformed_info["latest_training"] = datetime.fromtimestamp(
             info["latest_training"]
         ).strftime("%Y_%m_%d_%H_%M_%S")
+        transformed_info["parameters"] = f"{round(info['parameters'] / 1000000, 2)} M"
         transformed_models_info[name] = transformed_info
 
     logger.info(
