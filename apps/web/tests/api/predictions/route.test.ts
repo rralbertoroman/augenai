@@ -41,7 +41,9 @@ const MOCK_DISEASES = ["melanoma"];
 const MOCK_STORAGE_PATH = "path/to/image.png";
 
 // Model Service Fixtures
-const MOCK_SELECTED_MODELS = ["diabetic-retinopathy-224-procnorm-vit"];
+const MOCK_MODEL_ID = "model-1";
+const MOCK_MODEL_NAME = "diabetic-retinopathy-224-procnorm-vit";
+const MOCK_SELECTED_MODELS = [{ id: MOCK_MODEL_ID, name: MOCK_MODEL_NAME }];
 
 // Prediction Request Service Fixtures
 const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
@@ -53,7 +55,7 @@ const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
   diseases: MOCK_DISEASES,
   storagePath: MOCK_STORAGE_PATH,
   bucketName: MOCK_BUCKET_NAME,
-  modelsUsed: MOCK_SELECTED_MODELS,
+  modelsUsed: [MOCK_MODEL_ID],
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
 };
@@ -62,7 +64,7 @@ const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
 const MOCK_CLASS_DISEASE: PredictionClassDiseaseDTO = {
   id: "class-disease-1",
   classId: 1,
-  modelId: "model-1",
+  modelId: MOCK_MODEL_ID,
   diseaseId: "disease-1",
   stageIdx: 0,
   createdAt: new Date("2024-01-01"),
@@ -73,7 +75,7 @@ const MOCK_CLASS_DISEASE: PredictionClassDiseaseDTO = {
 const MOCK_SAVED_PREDICTION: PredictionDTO = {
   id: "pred-123",
   requestId: MOCK_PREDICTION_REQUEST.id,
-  modelId: "model-1",
+  modelId: MOCK_MODEL_ID,
   predictionResult: {
     classId: "class-1",
     confidence: 0.95,
@@ -149,15 +151,15 @@ describe("POST /api/predictions", () => {
     const mockDownload = vi
       .fn()
       .mockResolvedValue({ data: imageBlob, error: null });
-    
+
     const mockStorageFileApi = {
       download: mockDownload,
     };
-    
+
     // @ts-expect-error - Mocking storage property for testing
     supabaseClient.supabaseAdmin.storage = {
       from: vi.fn(() => mockStorageFileApi) as unknown as (
-        id: string
+        id: string,
       ) => ReturnType<typeof supabaseClient.supabaseAdmin.storage.from>,
     };
 
