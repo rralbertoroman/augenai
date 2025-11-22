@@ -24,6 +24,7 @@ export async function verifySupabaseToken(token: string): Promise<JWTPayload> {
 
     return payload as unknown as JWTPayload;
   } catch (error) {
+    console.error("Token validation error:", error);
     if (error instanceof Error) {
       throw new Error(`Token validation failed: ${error.message}`);
     }
