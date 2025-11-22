@@ -26,28 +26,60 @@ export function PatientList({
   };
 
   return (
-    <div className="space-y-2">
-      {patients.map((patient) => (
-        <button
-          key={patient.id}
-          onClick={() => onSelectPatient(patient)}
-          className={`w-full text-left p-4 rounded-lg border transition-colors ${
-            selectedPatient?.id === patient.id
-              ? "border-primary bg-accent"
-              : "border-border hover:border-primary/50"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{patient.name}</p>
-              <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                <span>{calculateAge(patient.dateOfBirth)} años</span>
-                <span>{patient.gender === "male" ? "M" : "F"}</span>
-              </div>
-            </div>
-          </div>
-        </button>
-      ))}
-    </div>
+    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+      <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <tr>
+          <th className="px-6 py-3" scope="col">
+            Nombre
+          </th>
+          <th className="px-6 py-3" scope="col">
+            Edad
+          </th>
+          <th className="px-6 py-3" scope="col">
+            Género
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {patients.map((patient, idx) => (
+          <tr
+            key={patient.id}
+            onClick={() => onSelectPatient(patient)}
+            className={`cursor-pointer ${
+              idx === patients.length - 1 ? "" : "border-b"
+            } ${
+              selectedPatient?.id === patient.id
+                ? "bg-primary/20 hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+                : "bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+            }`}
+          >
+            <th
+              className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+              scope="row"
+            >
+              {patient.name}
+            </th>
+            <td
+              className={`px-6 py-4 ${
+                selectedPatient?.id === patient.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
+              {calculateAge(patient.dateOfBirth)}
+            </td>
+            <td
+              className={`px-6 py-4 ${
+                selectedPatient?.id === patient.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
+              {patient.gender === "male" ? "Masculino" : "Femenino"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
