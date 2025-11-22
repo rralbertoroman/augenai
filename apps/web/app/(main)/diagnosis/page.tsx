@@ -34,7 +34,7 @@ export default function DiagnosisPage() {
             </div>
           </div>
           <Link href="/diagnosis/create">
-            <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-primary-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/90">
+            <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/25 text-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground">
               <span className="text-lg">+</span>
               <span className="truncate">Nueva Predicción</span>
             </button>
