@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getAllDiseases } from "@/server/services/disease";
 
 export interface Disease {
   id: string;
   name: string;
-  value: string;
+  stages: string[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function useDiseases() {
@@ -19,11 +22,8 @@ export function useDiseases() {
   const fetchDiseases = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/diseases");
-      if (response.ok) {
-        const data = await response.json();
-        setDiseases(data);
-      }
+      const data = await getAllDiseases();
+      setDiseases(data);
     } catch {
       // Error fetching diseases - keep diseases empty
       setDiseases([]);
