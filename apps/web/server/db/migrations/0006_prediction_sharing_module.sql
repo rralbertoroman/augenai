@@ -22,3 +22,6 @@ ALTER TABLE "feedback" ADD CONSTRAINT "feedback_user_profile_id_user_profiles_id
 ALTER TABLE "prediction_sharings" ADD CONSTRAINT "prediction_sharings_prediction_id_predictions_id_fk" FOREIGN KEY ("prediction_id") REFERENCES "public"."predictions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prediction_sharings" ADD CONSTRAINT "prediction_sharings_user_id_user_profiles_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user_profiles"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prediction_requests" ADD CONSTRAINT "prediction_requests_user_id_user_profiles_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user_profiles"("id") ON DELETE no action ON UPDATE no action;
+
+ALTER TABLE "prediction_class_disease" DROP COLUMN "class_id";
+ALTER TABLE "prediction_class_disease" ADD COLUMN "class_id" integer NOT NULL;
