@@ -37,8 +37,6 @@ export function usePredictions() {
           updatedAt: new Date(item.updatedAt),
         }));
         setPredictions(transformedData);
-<<<<<<< HEAD
-=======
       } else {
         try {
           const errorData = await response.json();
@@ -49,7 +47,6 @@ export function usePredictions() {
             response.status,
           );
         }
->>>>>>> 82e7714 (feat: prediction sharing module)
       }
     } catch {
       // Error fetching predictions
