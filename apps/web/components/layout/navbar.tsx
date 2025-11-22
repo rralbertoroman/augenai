@@ -25,6 +25,18 @@ export function Navbar({ currentPath }: NavbarProps) {
         {/* Navigation links */}
         <div className="flex items-center gap-6 ml-8" role="menubar">
           <Link
+            href="/diagnosis"
+            className={`text-md font-medium transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
+              currentPath === "/diagnosis"
+                ? "text-foreground"
+                : "text-muted-foreground"
+            }`}
+            role="menuitem"
+            aria-current={currentPath === "/diagnosis" ? "page" : undefined}
+          >
+            Diagnósticos
+          </Link>
+          <Link
             href="/patients"
             className={`text-md font-medium transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
               currentPath === "/patients"
