@@ -102,7 +102,7 @@ export const selectOptimalModels = async (
   task: string,
   imageType: string,
   diseases: string[],
-): Promise<string[]> => {
+): Promise<{ id: string; name: string }[]> => {
   // Get all models that match task and imageType
   const allModels = await db.select().from(ModelsTable);
 
@@ -176,5 +176,9 @@ export const selectOptimalModels = async (
     });
   }
 
-  return selectedModelNames;
+  return selectedModelNames.map((name) => {
+    const model = candidateModels.find((m) => m.modelName === name);
+    if (!model) throw new Error(`Model ${name} not found in candidates`);
+    return { id: model.id, name: model.modelName };
+  });
 };
