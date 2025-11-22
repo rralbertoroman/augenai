@@ -1,3 +1,6 @@
 [submodule "apps/ai_service/weights/diabetic-retinopathy-224-procnorm-vit"]
 	path = apps/ai_service/weights/diabetic-retinopathy-224-procnorm-vit
 	url = https://huggingface.co/rafalosa/diabetic-retinopathy-224-procnorm-vit
+[submodule "apps/ai_service/weights/swinv2_tiny_for_glaucoma_classification"]
+	path = apps/ai_service/weights/swinv2_tiny_for_glaucoma_classification
+	url = https://huggingface.co/pamixsun/swinv2_tiny_for_glaucoma_classification
