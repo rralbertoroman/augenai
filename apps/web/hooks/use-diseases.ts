@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getAllDiseases } from "@/server/services/disease";
+import { useAuth } from "@/contexts/auth-context";
 
 export interface Disease {
   id: string;
@@ -12,17 +13,14 @@ export interface Disease {
 }
 
 export function useDiseases() {
+  const { accessToken } = useAuth();
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDiseases();
-  }, []);
-
-  const fetchDiseases = async () => {
+  const fetchDiseases = async (token: string) => {
     setIsLoading(true);
     try {
-      const data = await getAllDiseases();
+      const data = await getAllDiseases(token);
       setDiseases(data);
     } catch {
       // Error fetching diseases - keep diseases empty
@@ -32,9 +30,15 @@ export function useDiseases() {
     }
   };
 
+  useEffect(() => {
+    if (accessToken) {
+      fetchDiseases(accessToken);
+    }
+  }, [accessToken]);
+
   return {
     diseases,
     isLoading,
-    refreshDiseases: fetchDiseases,
+    refreshDiseases: () => accessToken && fetchDiseases(accessToken),
   };
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePrediction } from "@/contexts/prediction-context";
+import { translateErrorMessage } from "@/lib/error-translator";
 
 interface ScanData {
   patientId: string;
@@ -16,12 +16,7 @@ interface ScanData {
 export function useDiagnosisPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    latestPrediction,
-    setLatestPrediction,
-    showResultsModal,
-    setShowResultsModal,
-  } = usePrediction();
+  const [showResultsModal, setShowResultsModal] = useState(false);
 
   const handleScanSubmit = async (data: ScanData) => {
     setIsLoading(true);
@@ -29,7 +24,7 @@ export function useDiagnosisPage() {
 
     try {
       if (!data.storagePath || !data.bucketName) {
-        setError("No se ha subido la imagen correctamente");
+        setError(translateErrorMessage("Imagen no cargada correctamente"));
         setIsLoading(false);
         return;
       }
@@ -41,7 +36,7 @@ export function useDiagnosisPage() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        setError("No estás autenticado");
+        setError(translateErrorMessage("No autenticado"));
         setIsLoading(false);
         return;
       }
@@ -64,15 +59,18 @@ export function useDiagnosisPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Error al procesar la predicción");
+        const errorMessage =
+          errorData.error || "Error al procesar la predicción";
+        throw new Error(errorMessage);
       }
 
-      const result = await response.json();
-      setLatestPrediction(result);
+      // Prediction submitted successfully, show modal
       setShowResultsModal(true);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Error desconocido");
-      setLatestPrediction(null);
+      const userFriendlyError = translateErrorMessage(
+        error instanceof Error ? error.message : "Error desconocido",
+      );
+      setError(userFriendlyError);
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +78,6 @@ export function useDiagnosisPage() {
 
   return {
     isLoading,
-    latestPrediction,
     error,
     showResultsModal,
     setShowResultsModal,

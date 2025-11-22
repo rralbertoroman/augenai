@@ -1,6 +1,10 @@
 "use client";
 
-import { usePatients } from "@/hooks/use-patients";
+import {
+  calculateAge,
+  translateGender,
+  usePatients,
+} from "@/hooks/use-patients";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -82,12 +86,16 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
                 <p className="font-medium">{selectedPatient.name}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">ID Paciente</p>
-                <p className="font-medium">{selectedPatient.id}</p>
+                <p className="text-xs text-muted-foreground">Edad</p>
+                <p className="font-medium">
+                  {calculateAge(selectedPatient.dateOfBirth)} años
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Género</p>
-                <p className="font-medium">{selectedPatient.gender}</p>
+                <p className="font-medium">
+                  {translateGender(selectedPatient.gender)}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Condiciones</p>

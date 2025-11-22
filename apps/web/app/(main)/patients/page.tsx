@@ -13,6 +13,7 @@ export default function PatientsPage() {
     selectedPatient,
     setSelectedPatient,
     isLoading,
+    error,
     createPatient,
   } = usePatients();
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,7 +26,7 @@ export default function PatientsPage() {
     return (
       <main className="flex-1 flex-col p-6">
         <SkeletonLoader width="100%" height={60} className="mb-6" />
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 items-start">
           <SkeletonLoader
             width="100%"
             height={320}
@@ -58,14 +59,23 @@ export default function PatientsPage() {
         </div>
       </div>
       <div className="flex-1 p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 lg:col-span-3 animate-fadein">
-            {filteredPatients.length === 0 ? (
+        <div className="flex gap-6">
+          <div className="flex-1 rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 animate-fadein overflow-hidden">
+            {error && (
+              <div className="p-4 bg-destructive/10 border-b border-destructive rounded-t">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+            {isLoading ? (
+              <p className="text-center text-muted-foreground py-8">
+                Cargando pacientes...
+              </p>
+            ) : filteredPatients.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No se encontraron pacientes
               </p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto h-full">
                 <PatientList
                   patients={filteredPatients}
                   selectedPatient={selectedPatient}
@@ -74,11 +84,14 @@ export default function PatientsPage() {
               </div>
             )}
           </div>
-          <div className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 lg:col-span-2 animate-fadein">
+          <div
+            className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 animate-fadein self-start w-fit"
+            style={{ alignSelf: "flex-start" }}
+          >
             {selectedPatient ? (
               <PatientDetail patient={selectedPatient} />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="flex items-center justify-center h-full text-muted-foreground min-w-[430px]">
                 Selecciona un paciente para ver los detalles
               </div>
             )}
