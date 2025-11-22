@@ -21,7 +21,7 @@ export function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
                 currentStep >= step.number
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary/25 text-black"
                   : "bg-muted text-muted-foreground"
               }`}
             >
