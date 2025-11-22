@@ -43,6 +43,13 @@
       "when": 1763342872170,
       "tag": "0005_deleted_status_from_predictions_table",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763827149983,
+      "tag": "0006_prediction_sharing_module",
+      "breakpoints": true
     }
   ]
 }
