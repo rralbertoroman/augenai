@@ -53,7 +53,7 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-primary-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/90">
+        <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/25 text-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground">
           <span className="text-lg">+</span>
           <span className="truncate">Agregar Paciente</span>
         </button>
@@ -143,7 +143,7 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
+              className="px-4 py-2 rounded-lg bg-primary/25 text-foreground hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground text-sm font-medium"
             >
               Guardar
             </button>

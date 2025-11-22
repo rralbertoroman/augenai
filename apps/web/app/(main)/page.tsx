@@ -66,13 +66,18 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-3">
-        <p className="text-foreground dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-          Bienvenido, Dr. {displayName}
-        </p>
-        <p className="text-muted-foreground dark:text-gray-400 text-base font-normal leading-normal">
-          Aquí está un resumen de los datos de tus pacientes.
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-3">
+          <p className="text-foreground dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+            Bienvenido, Dr. {displayName}
+          </p>
+        </div>
+        <Link
+          href="/diagnosis/create"
+          className="shrink-0 px-4 py-2 bg-primary/25 text-foreground  rounded-lg font-medium hover:bg-primary/35 transition-colors dark:border-gray-800/50 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground"
+        >
+          Generar nueva predicción
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -94,7 +99,7 @@ export default function HomePage() {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-4 rounded-lg border border-primary/50 bg-primary/20 p-6 dark:border-primary/50 dark:bg-primary/30">
           <p className="text-foreground dark:text-gray-200 text-base font-medium leading-normal">
-            Confianza Promedio de Predicción
+            Confianza promedio de predicción
           </p>
           <div className="flex items-end gap-3">
             <p className="text-green-800 dark:text-primary tracking-tight text-5xl font-bold leading-none">
@@ -115,20 +120,20 @@ export default function HomePage() {
       <div className="mt-6">
         <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
           <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">
-            Predicciones Recientes de Pacientes
+            Predicciones recientes de pacientes
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
                 <tr>
                   <th className="px-6 py-3" scope="col">
-                    Nombre del Paciente
+                    Nombre del paciente
                   </th>
                   <th className="px-6 py-3" scope="col">
-                    Fecha de Predicción
+                    Fecha de predicción
                   </th>
                   <th className="px-6 py-3" scope="col">
-                    Resultado Predicho
+                    Resultado
                   </th>
                   <th className="px-6 py-3" scope="col">
                     Confianza
