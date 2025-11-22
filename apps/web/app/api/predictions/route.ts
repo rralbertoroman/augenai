@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   AI_PREDICTION_SERVICE_URL,
   AI_PREDICTION_SERVICE_SECRET_KEY,
-  NODE_ENV,
+  ENVIRONMENT,
 } from "@/server/constants";
 import {
   PredictionStatus,
@@ -14,7 +14,7 @@ import { createPrediction } from "@/server/services/prediction";
 import { createPredictionRequest } from "@/server/services/prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "@/server/services/prediction_class_disease";
 import { supabaseAdmin } from "@/server/supabase/client";
-import { getCurrentUser } from "@/server/auth";
+import { getCurrentUser, AuthError } from "@/server/auth";
 import { selectOptimalModels } from "@/server/services/model";
 
 export async function POST(request: NextRequest) {
@@ -95,13 +95,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Select optimal models based on task, imageType, and diseases
-    const selectedModelNames = await selectOptimalModels(
-      task,
-      imageType,
-      diseases,
-    );
+    const selectedModels = await selectOptimalModels(task, imageType, diseases);
 
-    if (selectedModelNames.length === 0) {
+    if (selectedModels.length === 0) {
       return NextResponse.json(
         { error: "No suitable models found for the given criteria" },
         { status: 404 },
@@ -139,17 +135,17 @@ export async function POST(request: NextRequest) {
       diseases,
       storagePath,
       bucketName,
-      modelsUsed: selectedModelNames,
+      modelsUsed: selectedModels.map((m) => m.id),
     });
 
     // Run predictions for all selected models
     const allPredictions: PredictionResponse[] = [];
 
-    for (const modelName of selectedModelNames) {
+    for (const model of selectedModels) {
       const predictionFormData = new FormData();
       predictionFormData.append("image", imageBlob, fileName);
-      predictionFormData.append("model_id", modelName);
-      if (NODE_ENV === "test") {
+      predictionFormData.append("model_id", model.name);
+      if (ENVIRONMENT === "test") {
         predictionFormData.append("is_mocked", "true");
       }
 
@@ -195,7 +191,7 @@ export async function POST(request: NextRequest) {
       const predictionClassDisease =
         await getPredictionClassDiseaseByClassIdAndModelId({
           classId,
-          modelId: modelName,
+          modelId: model.id,
         });
 
       if (!predictionClassDisease) {
@@ -204,7 +200,7 @@ export async function POST(request: NextRequest) {
 
       const savedPrediction = await createPrediction({
         requestId: predictionRequest.id,
-        modelId: modelName,
+        modelId: model.id,
         predictionResult: predictionResult.result,
       });
 
@@ -227,11 +223,17 @@ export async function POST(request: NextRequest) {
 
     const response: MultiplePredictionsResponse = {
       predictions: allPredictions,
-      models_used: selectedModelNames,
+      models_used: selectedModels.map((m) => m.name),
     };
 
     return NextResponse.json(response);
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json(
+        { error: err.message },
+        { status: err.statusCode },
+      );
+    }
     const message =
       err instanceof Error ? err.message : "Failed to process prediction";
     return NextResponse.json({ error: message }, { status: 500 });
