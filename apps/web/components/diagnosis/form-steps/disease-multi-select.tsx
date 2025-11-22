@@ -1,23 +1,16 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { X, ChevronDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useDiseases } from "@/hooks/use-diseases";
 
 interface DiseaseMultiSelectProps {
   selectedDiseases: string[];
   onChange: (diseases: string[]) => void;
   error?: string;
 }
-
-// Common eye diseases - can be fetched from API later
-const AVAILABLE_DISEASES = [
-  { value: "diabetic_retinopathy", label: "Diabetic Retinopathy" },
-  { value: "glaucoma", label: "Glaucoma" },
-  { value: "age_related_macular_degeneration", label: "AMD" },
-  { value: "cataract", label: "Cataract" },
-  { value: "retinal_detachment", label: "Retinal Detachment" },
-  { value: "hypertensive_retinopathy", label: "Hypertensive Retinopathy" },
-];
 
 export function DiseaseMultiSelect({
   selectedDiseases,
@@ -26,6 +19,7 @@ export function DiseaseMultiSelect({
 }: DiseaseMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { diseases, isLoading } = useDiseases();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,7 +45,7 @@ export function DiseaseMultiSelect({
     onChange(selectedDiseases.filter((d) => d !== disease));
   };
 
-  const availableOptions = AVAILABLE_DISEASES.filter(
+  const availableOptions = diseases.filter(
     (disease) => !selectedDiseases.includes(disease.value),
   );
 
@@ -63,13 +57,12 @@ export function DiseaseMultiSelect({
         {/* Input-like container with tags */}
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className="min-h-[40px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer hover:border-ring transition-colors flex flex-wrap gap-2 items-center"
+          className="min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm cursor-pointer hover:border-ring transition-colors flex flex-wrap gap-2 items-center"
         >
           {selectedDiseases.length > 0 ? (
             selectedDiseases.map((disease) => {
               const diseaseLabel =
-                AVAILABLE_DISEASES.find((d) => d.value === disease)?.label ||
-                disease;
+                diseases.find((d) => d.value === disease)?.name || disease;
               return (
                 <Badge key={disease} variant="secondary" className="gap-1 h-6">
                   {diseaseLabel}
@@ -97,14 +90,22 @@ export function DiseaseMultiSelect({
         {/* Dropdown */}
         {isOpen && (
           <div className="absolute z-50 w-full bottom-full mb-1 bg-popover border rounded-md shadow-md max-h-60 overflow-auto">
-            {availableOptions.length > 0 ? (
+            {isLoading ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                Cargando enfermedades...
+              </div>
+            ) : diseases.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                No hay enfermedades disponibles
+              </div>
+            ) : availableOptions.length > 0 ? (
               availableOptions.map((disease) => (
                 <div
                   key={disease.value}
                   onClick={() => handleSelect(disease.value)}
                   className="px-3 py-2 text-sm hover:bg-accent cursor-pointer transition-colors"
                 >
-                  {disease.label}
+                  {disease.name}
                 </div>
               ))
             ) : (
