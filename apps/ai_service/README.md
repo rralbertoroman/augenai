@@ -68,6 +68,7 @@ uv run fastapi dev src/ai_service/main.py
 ```
 
 Or using npm scripts if available:
+
 ```bash
 npm run dev
 ```

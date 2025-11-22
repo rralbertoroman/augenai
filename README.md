@@ -30,23 +30,23 @@ At this point, you should have the project installed and ready to run.
 
 Run the development version of the system with hot-reloading:
 
-   ```bash
-   pnpm run dev
-   ```
+```bash
+pnpm run dev
+```
 
 Or you can run the AI service directly using uv from the project root directory:
 
-   ```bash
-   cd apps/ai-service && uv run fastapi dev src/ai_service/main.py
-   ```
+```bash
+cd apps/ai-service && uv run fastapi dev src/ai_service/main.py
+```
 
 ### Production
 
 For production deployment, run using uvicorn:
 
-   ```bash
-   cd apps/ai-service && uv run uvicorn src.ai_service.main:app --host 0.0.0.0 --port 8000
-   ```
+```bash
+cd apps/ai-service && uv run uvicorn src.ai_service.main:app --host 0.0.0.0 --port 8000
+```
 
 ## Docker Setup
 
@@ -60,6 +60,7 @@ This monorepo uses Docker Compose to manage services and handle dependencies lik
 ### Quick Start
 
 1. Build and start all services:
+
    ```bash
    pnpm run docker:dev
    # or directly:
@@ -74,6 +75,7 @@ This monorepo uses Docker Compose to manage services and handle dependencies lik
 ### Development with Docker
 
 For development with hot-reloading:
+
 ```bash
 docker-compose up --build
 ```
@@ -83,6 +85,7 @@ The source code is mounted as a volume, so changes will be reflected immediately
 ### Production Build with Docker
 
 To build for production:
+
 ```bash
 pnpm run docker:prod
 # or directly:

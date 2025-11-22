@@ -37,20 +37,17 @@ export async function sendPredictionSharedEmail(
       html: emailContent.html,
     };
 
-    const { data, error } = await resend.emails.send(emailOptions);
+    const { error } = await resend.emails.send(emailOptions);
 
     if (error) {
-      console.error("Error sending email:", error);
       return {
         success: false,
         error: error.message || "Unknown Resend error",
       };
     }
 
-    console.log("Email sent successfully:", data);
     return { success: true };
   } catch (error) {
-    console.error("Unexpected error sending email:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

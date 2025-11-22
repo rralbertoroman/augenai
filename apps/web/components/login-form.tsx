@@ -57,9 +57,8 @@ export function LoginForm({
               // Call server action directly to create profile
               await createUserProfile(accessToken, { name });
             }
-          } catch (error) {
-            // Silent fail - profile creation is not critical for login
-            console.warn("Profile creation failed:", error);
+          } catch {
+            // Silent fail - profile creation is not critical
           } finally {
             // Always clear pending data
             localStorage.removeItem("pending_profile");
