@@ -1,7 +1,6 @@
 "use client";
 
-import { User, LogOut, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 
@@ -24,43 +23,25 @@ export function UserMenu() {
     user.user_metadata?.name ||
     user.email?.split("@")[0] ||
     "User";
-  const email = user.email || "";
 
   return (
-    <div className="flex items-center gap-3">
-      {/* User Info */}
-      <div className="hidden md:block text-right">
-        <p className="text-sm font-medium text-foreground">{displayName}</p>
-        <p className="text-xs text-muted-foreground">{email}</p>
+    <div className="flex items-center gap-2">
+      <div className="hidden md:flex items-center gap-2">
+        <span className="font-medium text-sm">{displayName}</span>
       </div>
-
-      {/* Avatar */}
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <User className="w-5 h-5 text-primary" />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8"
-            title="Configuración"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-8 h-8"
-            onClick={handleLogout}
-            title="Cerrar sesión"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+      <button
+        className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300"
+        title="Perfil"
+      >
+        <User className="w-4 h-4" />
+      </button>
+      <button
+        onClick={handleLogout}
+        className="p-2 text-foreground rounded-full hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        title="Cerrar sesión"
+      >
+        <LogOut className="w-5 h-5" />
+      </button>
     </div>
   );
 }
