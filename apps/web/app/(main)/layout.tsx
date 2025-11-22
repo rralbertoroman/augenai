@@ -6,15 +6,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       <Navbar />
-      <main
-        id="main-content"
-        className="container mx-auto px-6 py-8"
-        role="main"
-      >
-        {children}
-      </main>
+      {children}
     </div>
   );
 }

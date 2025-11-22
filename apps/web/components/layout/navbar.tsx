@@ -1,62 +1,80 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { LayoutDashboard, Users, PieChart } from "lucide-react";
 
-interface NavbarProps {
-  currentPath?: string;
-}
+export function Navbar() {
+  const pathname = usePathname();
 
-export function Navbar({ currentPath }: NavbarProps) {
+  const isActive = (path: string) => {
+    return pathname === path || pathname?.startsWith(path + "/");
+  };
+
   return (
-    <nav
-      className="border-b bg-card shadow-sm"
-      role="navigation"
-      aria-label="Main navigation"
-    >
-      <div className="flex h-16 items-center gap-6 px-6">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="text-2xl font-semibold text-foreground hover:text-foreground/80 transition-colors"
-        >
-          AugenAi
-        </Link>
+    <header className="sticky top-0 z-10 w-full border-b border-border bg-card px-4 py-3 dark:border-gray-700 dark:bg-gray-900 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
+              style={{
+                backgroundImage:
+                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgpGMb8JuRm8aA4YrXreUmL5y0Dfpv1w9_ltrBK6ypk1eBya1Vu6vACGPRQaOJbk2gFVPyUetD1Rs6hvnlfsAn8pTw2X7LtOCDttL0SV71WXvLWSC1BT2FgaScswcNxAIjC45jPAlEm57tr-6T-gCTjdETQH6B2CV51a9EPhdkQPVcm8mYcpic7rbfGcsoUjea3vsqxpAXzSu53tr1sCrJGNNzr4uihF8AGbnQyCHPwxvxKoy6B-CngUbnEGudMbuM4zaIqttXwkc")',
+              }}
+            />
+            <h1 className="text-base font-bold leading-normal text-foreground dark:text-gray-200">
+              AugenAI
+            </h1>
+          </Link>
 
-        {/* Navigation links */}
-        <div className="flex items-center gap-6 ml-8" role="menubar">
-          <Link
-            href="/diagnosis"
-            className={`text-md font-medium transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
-              currentPath === "/diagnosis"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }`}
-            role="menuitem"
-            aria-current={currentPath === "/diagnosis" ? "page" : undefined}
-          >
-            Diagnósticos
-          </Link>
-          <Link
-            href="/patients"
-            className={`text-md font-medium transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded px-2 py-1 ${
-              currentPath === "/patients"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }`}
-            role="menuitem"
-            aria-current={currentPath === "/patients" ? "page" : undefined}
-          >
-            Pacientes
-          </Link>
+          {/* Navigation links */}
+          <nav className="hidden items-center gap-2 lg:flex">
+            <Link
+              href="/"
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive("/") && pathname === "/"
+                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
+                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              href="/patients"
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive("/patients")
+                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
+                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              <span>Pacientes</span>
+            </Link>
+            <Link
+              href="/diagnosis"
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive("/diagnosis")
+                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
+                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              }`}
+            >
+              <PieChart className="w-5 h-5" />
+              <span>Predicciones</span>
+            </Link>
+          </nav>
         </div>
 
-        {/* Theme toggle and user menu */}
-        <div className="flex items-center gap-4 ml-auto">
+        {/* Right side actions */}
+        <div className="flex items-center gap-4">
           <ThemeToggle />
-          <div className="h-8 w-px bg-border" />
           <UserMenu />
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

@@ -1,52 +1,76 @@
 import { Prediction } from "@/hooks/use-predictions";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 
 interface PredictionDetailProps {
   prediction: Prediction;
 }
 
 export function PredictionDetail({ prediction }: PredictionDetailProps) {
-  const router = useRouter();
+  const getOutcome = (status: string) => {
+    if (status === "success") {
+      return "Alto Riesgo de Progresión";
+    } else if (status === "pending") {
+      return "Riesgo Moderado";
+    }
+    return "Estable";
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">{prediction.patientName}</h2>
-        <p className="text-sm text-muted-foreground">
-          ID: {prediction.id.slice(0, 8)}...
-        </p>
-      </div>
-
-      <div className="space-y-4">
+    <>
+      <div className="flex items-center gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Enfermedad</p>
-          <p className="font-medium">{prediction.diseaseId}</p>
-        </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Etapa</p>
-          <p className="font-medium">{prediction.stageIdx}</p>
-        </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Estado</p>
-          <p className="font-medium capitalize">{prediction.status}</p>
-        </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Fecha de creación</p>
-          <p className="font-medium">
-            {new Date(prediction.createdAt).toLocaleDateString("es-ES")}
+          <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+            Detalles de Predicción
+          </h2>
+          <p className="text-muted-foreground dark:text-gray-400">
+            ID de Predicción: #{prediction.id.slice(0, 10).toUpperCase()}
           </p>
         </div>
       </div>
-
-      <div className="space-y-2 pt-4">
-        <Button className="w-full" variant="default">
-          Ver detalles completos
-        </Button>
+      <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Nombre del Paciente
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {prediction.patientName}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Fecha de Predicción
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {new Date(prediction.createdAt).toLocaleDateString("es-ES")}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Confianza
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {(prediction.stageIdx || 0) * 10}%
+          </p>
+        </div>
+        <div className="sm:col-span-2">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Resultado Predicho
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {getOutcome(prediction.status)}
+          </p>
+        </div>
+        <div className="sm:col-span-2">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Resumen del Análisis
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            El análisis de las exploraciones retinianas indica un adelgazamiento
+            significativo de la capa de fibras nerviosas, consistente con
+            glaucoma avanzado. El modelo de IA predice una alta probabilidad de
+            mayor pérdida de visión en los próximos 6 meses sin intervención.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

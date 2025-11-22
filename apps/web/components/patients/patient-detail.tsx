@@ -1,5 +1,5 @@
 import { Patient } from "@/hooks/use-patients";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface PatientDetailProps {
   patient: Patient;
@@ -21,47 +21,58 @@ export function PatientDetail({ patient }: PatientDetailProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">{patient.name}</h2>
-        <p className="text-sm text-muted-foreground">
-          {patient.gender === "male" ? "M" : "F"}
-        </p>
-      </div>
-
-      <div className="space-y-4">
+    <>
+      <Link
+        href="/diagnosis/create"
+        className="absolute right-6 top-6 flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-5 py-3 text-center text-sm font-bold leading-tight tracking-[0.015em] text-primary-foreground hover:bg-primary/90"
+      >
+        <span className="text-lg">🔍</span>
+        <span>Analizar</span>
+      </Link>
+      <div className="flex items-center gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Edad</p>
-          <p className="font-medium">{calculateAge(patient.dateOfBirth)}</p>
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-foreground dark:text-white">
+            {patient.name}
+          </h2>
+          <p className="text-muted-foreground dark:text-gray-400">
+            ID: #{patient.id.slice(0, 6)}
+          </p>
         </div>
-
+      </div>
+      <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="text-sm text-muted-foreground">Condiciones clínicas</p>
-          <p className="text-sm mt-1">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Edad
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {calculateAge(patient.dateOfBirth)}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Género
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {patient.gender === "male" ? "Masculino" : "Femenino"}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Contacto
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
+            {patient.id.slice(0, 10)}
+          </p>
+        </div>
+        <div className="sm:col-span-2">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            Condiciones Clínicas
+          </p>
+          <p className="mt-1 text-base text-gray-900 dark:text-white">
             {patient.clinicalConditions.join(", ") || "Ninguna"}
           </p>
         </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">Enfermedades</p>
-          <div className="flex flex-wrap gap-2">
-            {patient.clinicalConditions.map((condition, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs"
-              >
-                {condition}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
-
-      <div className="space-y-2 pt-4">
-        <Button className="w-full" variant="default">
-          Analizar
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }

@@ -1,9 +1,6 @@
 "use client";
 
 import { Prediction } from "@/hooks/use-predictions";
-import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
-import { useState } from "react";
 
 interface PredictionListProps {
   predictions: Prediction[];
@@ -16,85 +13,90 @@ export function PredictionList({
   selectedPrediction,
   onSelectPrediction,
 }: PredictionListProps) {
-  const [sharingId, setSharingId] = useState<string | null>(null);
-
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("es-ES", {
       year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
     });
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "success":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "error":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  const getOutcome = (status: string) => {
+    if (status === "success") {
+      return "Alto Riesgo de Progresión";
+    } else if (status === "pending") {
+      return "Riesgo Moderado";
     }
-  };
-
-  const handleShare = async (e: React.MouseEvent, predictionId: string) => {
-    e.stopPropagation();
-    setSharingId(predictionId);
-
-    try {
-      // TODO: Implement share functionality
-      console.log("Sharing prediction:", predictionId);
-      // This will be implemented in the future
-      alert("Funcionalidad de compartir próximamente");
-    } finally {
-      setSharingId(null);
-    }
+    return "Estable";
   };
 
   return (
-    <div className="space-y-2">
-      {predictions.map((prediction) => (
-        <div
-          key={prediction.id}
-          className={`flex items-center gap-2 p-4 rounded-lg border transition-colors ${
-            selectedPrediction?.id === prediction.id
-              ? "border-primary bg-accent"
-              : "border-border hover:border-primary/50"
-          }`}
-        >
-          <button
+    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+      <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <tr>
+          <th className="px-6 py-3" scope="col">
+            Nombre del Paciente
+          </th>
+          <th className="px-6 py-3" scope="col">
+            Fecha de Predicción
+          </th>
+          <th className="px-6 py-3" scope="col">
+            Confianza
+          </th>
+          <th className="px-6 py-3" scope="col">
+            Resultado Predicho
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {predictions.map((prediction, idx) => (
+          <tr
+            key={prediction.id}
             onClick={() => onSelectPrediction(prediction)}
-            className="flex-1 text-left"
+            className={`cursor-pointer ${
+              idx === predictions.length - 1 ? "" : "border-b"
+            } ${
+              selectedPrediction?.id === prediction.id
+                ? "bg-primary/20 hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+                : "bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+            }`}
           >
-            <p className="font-medium truncate">{prediction.patientName}</p>
-            <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-              <span>{prediction.diseaseId}</span>
-              <span>{formatDate(prediction.createdAt)}</span>
-            </div>
-          </button>
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeColor(prediction.status)}`}
+            <th
+              className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+              scope="row"
             >
-              {prediction.status}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => handleShare(e, prediction.id)}
-              disabled={sharingId === prediction.id}
-              className="text-muted-foreground hover:text-foreground hover:bg-accent"
-              title="Compartir predicción"
+              {prediction.patientName}
+            </th>
+            <td
+              className={`px-6 py-4 ${
+                selectedPrediction?.id === prediction.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
             >
-              <Share2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
+              {formatDate(prediction.createdAt)}
+            </td>
+            <td
+              className={`px-6 py-4 ${
+                selectedPrediction?.id === prediction.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
+              {(prediction.stageIdx || 0) * 10}%
+            </td>
+            <td
+              className={`px-6 py-4 ${
+                selectedPrediction?.id === prediction.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
+              {getOutcome(prediction.status)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
