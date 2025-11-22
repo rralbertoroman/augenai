@@ -13,9 +13,17 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    await getCurrentUser(token);
 
-    const formData = await request.formData();
+    // Validate auth before reading body
+    try {
+      await getCurrentUser(token);
+    } catch (authError) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Clone the request to avoid body being locked
+    const clonedRequest = request.clone();
+    const formData = await clonedRequest.formData();
     const file = formData.get("file") as File;
     const imageType = formData.get("imageType") as string;
 
