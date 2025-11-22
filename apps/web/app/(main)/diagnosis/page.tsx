@@ -6,15 +6,19 @@ import { PredictionDetail } from "@/components/predictions/prediction-detail";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function DiagnosisPage() {
-  const { predictions, selectedPrediction, setSelectedPrediction, isLoading } =
-    usePredictions();
+  const {
+    selectedPrediction,
+    setSelectedPrediction,
+    isLoading,
+    error,
+    getFilteredPredictions,
+  } = usePredictions();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPredictions = predictions.filter((prediction) =>
-    prediction.patientName.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredPredictions = getFilteredPredictions(searchQuery);
 
   if (isLoading) {
     return (
@@ -49,18 +53,29 @@ export default function DiagnosisPage() {
               />
             </div>
           </div>
-          <Link href="/diagnosis/create">
-            <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/25 text-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground">
-              <span className="text-lg">+</span>
-              <span className="truncate">Nueva Predicción</span>
-            </button>
-          </Link>
+          <div className="max-w-[480px] w-full ml-auto">
+            <Link href="/diagnosis/create" className="w-full">
+              <Button variant="default" size="lg" className="w-full">
+                <span className="text-lg">+</span>
+                <span className="truncate">Nueva Predicción</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
       <div className="flex-1 p-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 lg:col-span-3 animate-fadein">
-            {filteredPredictions.length === 0 ? (
+          <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 lg:col-span-3">
+            {error && (
+              <div className="p-4 bg-destructive/10 border-b border-destructive rounded-t">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+            {isLoading ? (
+              <p className="text-center text-muted-foreground py-8">
+                Cargando predicciones...
+              </p>
+            ) : filteredPredictions.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No se encontraron predicciones
               </p>
@@ -78,7 +93,7 @@ export default function DiagnosisPage() {
             {selectedPrediction ? (
               <PredictionDetail prediction={selectedPrediction} />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="flex items-center justify-center text-muted-foreground">
                 Selecciona una predicción para ver los detalles
               </div>
             )}
