@@ -1,3 +1,6 @@
+"use client";
+
+import { usePatients } from "@/hooks/use-patients";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -8,28 +11,15 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface Patient {
-  id: string;
-  name: string;
-  age: number;
-  gender: string;
-}
-
 interface StepPatientProps {
   patientId: string;
   error?: string;
   onChange: (value: string) => void;
 }
 
-// Mock patients - Replace with real data from API
-const mockPatients: Patient[] = [
-  { id: "P001", name: "John Doe", age: 45, gender: "Male" },
-  { id: "P002", name: "Jane Smith", age: 52, gender: "Female" },
-  { id: "P003", name: "Robert Johnson", age: 38, gender: "Male" },
-];
-
 export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
-  const selectedPatient = mockPatients.find((p) => p.id === patientId);
+  const { patients, isLoading } = usePatients();
+  const selectedPatient = patients.find((p) => p.id === patientId);
 
   return (
     <div className="space-y-4 w-full">
@@ -37,16 +27,26 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
         <Label htmlFor="patientId" className="text-sm font-medium">
           Selecciona paciente
         </Label>
-        <Select value={patientId} onValueChange={onChange}>
+        <Select value={patientId} onValueChange={onChange} disabled={isLoading}>
           <SelectTrigger id="patientId" className="w-full">
-            <SelectValue placeholder="Elige un paciente" />
+            <SelectValue
+              placeholder={
+                isLoading ? "Cargando pacientes..." : "Elige un paciente"
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {mockPatients.map((patient) => (
-              <SelectItem key={patient.id} value={patient.id}>
-                {patient.name} ({patient.id})
-              </SelectItem>
-            ))}
+            {patients.length === 0 ? (
+              <div className="p-2 text-sm text-muted-foreground text-center">
+                No hay pacientes disponibles
+              </div>
+            ) : (
+              patients.map((patient) => (
+                <SelectItem key={patient.id} value={patient.id}>
+                  {patient.name}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
         {error && (
@@ -69,12 +69,16 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
                 <p className="font-medium">{selectedPatient.id}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Edad</p>
-                <p className="font-medium">{selectedPatient.age} años</p>
-              </div>
-              <div>
                 <p className="text-xs text-muted-foreground">Género</p>
                 <p className="font-medium">{selectedPatient.gender}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Condiciones</p>
+                <p className="font-medium">
+                  {selectedPatient.clinicalConditions?.length > 0
+                    ? selectedPatient.clinicalConditions.join(", ")
+                    : "N/A"}
+                </p>
               </div>
             </div>
           </CardContent>
