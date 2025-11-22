@@ -3,10 +3,13 @@ import { relations } from "drizzle-orm";
 import { standardSchema } from "./base_schemas";
 import PatientsTable from "./patient";
 import PredictionsTable from "./prediction";
+import UserProfilesTable from "./user_profile";
 
 const PredictionRequestsTable = pgTable("prediction_requests", {
   ...standardSchema,
-  userId: uuid("user_id").notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserProfilesTable.id),
   patientId: uuid("patient_id")
     .notNull()
     .references(() => PatientsTable.id),
@@ -26,6 +29,10 @@ export const predictionRequestsRelations = relations(
       references: [PatientsTable.id],
     }),
     predictions: many(PredictionsTable),
+    user: one(UserProfilesTable, {
+      fields: [PredictionRequestsTable.userId],
+      references: [UserProfilesTable.id],
+    }),
   }),
 );
 
