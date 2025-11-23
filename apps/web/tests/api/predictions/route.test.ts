@@ -8,7 +8,7 @@ import * as predictionRequestService from "@/server/services/prediction_request"
 import * as predictionService from "@/server/services/prediction";
 import * as classDiseaseService from "@/server/services/prediction_class_disease";
 import type { PredictionRequestDTO } from "@/server/zod-schemas/prediction_request";
-import type { PredictionClassDiseaseDTO } from "@/server/zod-schemas/prediction_class_disease";
+
 import type { PredictionDTO } from "@/server/zod-schemas/prediction";
 
 // --- Mocks Configuration ---
@@ -56,17 +56,6 @@ const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
   storagePath: MOCK_STORAGE_PATH,
   bucketName: MOCK_BUCKET_NAME,
   modelsUsed: [MOCK_MODEL_ID],
-  createdAt: new Date("2024-01-01"),
-  updatedAt: new Date("2024-01-01"),
-};
-
-// Class Disease Service Fixtures
-const MOCK_CLASS_DISEASE: PredictionClassDiseaseDTO = {
-  id: "class-disease-1",
-  classId: 1,
-  modelId: MOCK_MODEL_ID,
-  diseaseId: "disease-1",
-  stageIdx: 0,
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
 };
@@ -170,10 +159,46 @@ describe("POST /api/predictions", () => {
 
     // NO MOCK for global.fetch - we want to hit the real service
 
-    // 5. Setup Class Disease Lookup Mock
+    // 5. Setup Class Disease Lookup Mock - return different data based on classId
     vi.mocked(
       classDiseaseService.getPredictionClassDiseaseByClassIdAndModelId,
-    ).mockResolvedValue(MOCK_CLASS_DISEASE);
+    ).mockImplementation(async ({ classId }) => {
+      if (classId === 1) {
+        return {
+          classId: 1,
+          modelId: MOCK_MODEL_ID,
+          diseaseId: "disease-1",
+          stageIdx: 1,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
+          diseaseName: "Melanoma",
+          diseaseStages: ["Benign", "Malignant"],
+        };
+      } else if (classId === 0) {
+        return {
+          classId: 0,
+          modelId: MOCK_MODEL_ID,
+          diseaseId: "disease-1",
+          stageIdx: 0,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
+          diseaseName: "Melanoma",
+          diseaseStages: ["Benign", "Malignant"],
+        };
+      } else if (classId === 2) {
+        return {
+          classId: 2,
+          modelId: MOCK_MODEL_ID,
+          diseaseId: "disease-1",
+          stageIdx: 2,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
+          diseaseName: "Melanoma",
+          diseaseStages: ["Benign", "Malignant", "Advanced"],
+        };
+      }
+      return null;
+    });
 
     // 6. Setup Prediction Saving Mock
     vi.mocked(predictionService.createPrediction).mockResolvedValue(
@@ -212,5 +237,25 @@ describe("POST /api/predictions", () => {
     const body = await res.json();
     expect(body.predictions).toHaveLength(1);
     expect(body.predictions[0].db_prediction_id).toBe(MOCK_SAVED_PREDICTION.id);
+
+    // Check enriched predictions
+    const enrichedPredictions = body.predictions[0].result.predictions;
+    expect(enrichedPredictions.length).toBeGreaterThan(0);
+
+    // Each prediction should have disease info
+    enrichedPredictions.forEach(
+      (pred: {
+        class_id: number;
+        disease_name: string;
+        disease_id: string;
+        stage_idx: number;
+        stage_content: string;
+      }) => {
+        expect(pred.disease_id).toBeDefined();
+        expect(pred.disease_name).toBeDefined();
+        expect(pred.stage_idx).toBeGreaterThanOrEqual(0);
+        expect(pred.stage_content).toBeDefined();
+      },
+    );
   });
 });

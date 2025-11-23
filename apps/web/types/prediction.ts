@@ -40,10 +40,26 @@ export interface AIServicePredictionResponse {
 /**
  * Single prediction response enriched with database info
  */
-export interface PredictionResponse extends AIServicePredictionResponse {
-  db_prediction_id: string;
+export interface EnrichedClassificationObject extends ClassificationObject {
   disease_id: string;
+  disease_name: string;
   stage_idx: number;
+  stage_content: string;
+}
+
+export interface EnrichedClassificationResult {
+  predictions: EnrichedClassificationObject[];
+  metadata: PredictionMetadata;
+}
+
+/**
+ * Single prediction response enriched with database info
+ */
+export interface PredictionResponse {
+  status: PredictionStatus;
+  error?: string;
+  result: EnrichedClassificationResult;
+  db_prediction_id: string;
 }
 
 /**

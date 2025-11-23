@@ -1,8 +1,8 @@
 "use server";
 
-import { eq, and } from "drizzle-orm";
+import { eq, and, getTableColumns } from "drizzle-orm";
 import { db } from "../db/client";
-import { PredictionClassesTable } from "../db/schemas";
+import { PredictionClassesTable, DiseasesTable } from "../db/schemas";
 import {
   CreatePredictionClassDiseaseSchema,
   DeletePredictionClassDiseaseSchema,
@@ -13,6 +13,7 @@ import {
   type UpdatePredictionClassDiseaseInput,
   type GetByClassIdAndModelIdInput,
   type PredictionClassDiseaseDTO,
+  type PredictionClassDiseaseWithDisease,
 } from "../zod-schemas/prediction_class_disease";
 
 export const createPredictionClassDisease = async (
@@ -31,29 +32,22 @@ export const createPredictionClassDisease = async (
   return predictionClass;
 };
 
-export const getPredictionClassDiseaseById = async (
-  id: string,
-): Promise<PredictionClassDiseaseDTO | null> => {
-  const [predictionClass] = await db
-    .select()
-    .from(PredictionClassesTable)
-    .where(eq(PredictionClassesTable.id, id));
-
-  if (!predictionClass) {
-    throw new Error("Prediction class disease not found");
-  }
-
-  return predictionClass;
-};
-
 export const getPredictionClassDiseaseByClassIdAndModelId = async (
   data: GetByClassIdAndModelIdInput,
-): Promise<PredictionClassDiseaseDTO | null> => {
+): Promise<PredictionClassDiseaseWithDisease | null> => {
   const { classId, modelId } = GetByClassIdAndModelIdSchema.parse(data);
 
-  const [predictionClass] = await db
-    .select()
+  const [result] = await db
+    .select({
+      ...getTableColumns(PredictionClassesTable),
+      diseaseName: DiseasesTable.name,
+      diseaseStages: DiseasesTable.stages,
+    })
     .from(PredictionClassesTable)
+    .innerJoin(
+      DiseasesTable,
+      eq(PredictionClassesTable.diseaseId, DiseasesTable.id),
+    )
     .where(
       and(
         eq(PredictionClassesTable.classId, classId),
@@ -61,11 +55,11 @@ export const getPredictionClassDiseaseByClassIdAndModelId = async (
       ),
     );
 
-  if (!predictionClass) {
+  if (!result) {
     return null;
   }
 
-  return predictionClass;
+  return result;
 };
 
 export const getAllPredictionClassDiseases = async (): Promise<
@@ -76,15 +70,21 @@ export const getAllPredictionClassDiseases = async (): Promise<
 };
 
 export const updatePredictionClassDisease = async (
-  id: string,
+  identifiers: GetByClassIdAndModelIdInput,
   data: UpdatePredictionClassDiseaseInput,
 ): Promise<PredictionClassDiseaseDTO> => {
+  const { classId, modelId } = GetByClassIdAndModelIdSchema.parse(identifiers);
   const payload = UpdatePredictionClassDiseaseSchema.parse(data);
 
   const [predictionClass] = await db
     .update(PredictionClassesTable)
     .set(payload)
-    .where(eq(PredictionClassesTable.id, id))
+    .where(
+      and(
+        eq(PredictionClassesTable.classId, classId),
+        eq(PredictionClassesTable.modelId, modelId),
+      ),
+    )
     .returning();
 
   if (!predictionClass) {
@@ -97,11 +97,19 @@ export const updatePredictionClassDisease = async (
 export const deletePredictionClassDisease = async (
   data: DeletePredictionClassDiseaseInput,
 ): Promise<boolean> => {
-  const { id } = DeletePredictionClassDiseaseSchema.parse(data);
+  const { classId, modelId } = DeletePredictionClassDiseaseSchema.parse(data);
 
   const deleted = await db
     .delete(PredictionClassesTable)
-    .where(eq(PredictionClassesTable.id, id))
-    .returning({ id: PredictionClassesTable.id });
+    .where(
+      and(
+        eq(PredictionClassesTable.classId, classId),
+        eq(PredictionClassesTable.modelId, modelId),
+      ),
+    )
+    .returning({
+      classId: PredictionClassesTable.classId,
+      modelId: PredictionClassesTable.modelId,
+    });
   return deleted.length > 0;
 };
