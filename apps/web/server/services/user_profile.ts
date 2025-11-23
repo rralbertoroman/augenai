@@ -10,13 +10,11 @@ import {
   DeleteUserProfileSchema,
   UpdateUserProfileSchema,
   GetUserProfileByEmailSchema,
-  GetUserProfilesByRoleSchema,
   type CreateUserProfileInput,
   type CreateUserProfileWithAuthInput,
   type DeleteUserProfileInput,
   type UpdateUserProfileInput,
   type GetUserProfileByEmailInput,
-  type GetUserProfilesByRoleInput,
   type UserProfileDTO,
 } from "../zod-schemas/user_profile";
 
@@ -88,24 +86,6 @@ export const getUserProfileByEmail = async (
   }
 
   return userProfile;
-};
-
-export const getAllUserProfiles = async (): Promise<UserProfileDTO[]> => {
-  const userProfiles = await db.select().from(UserProfilesTable);
-  return userProfiles;
-};
-
-export const getUserProfilesByRole = async (
-  data: GetUserProfilesByRoleInput,
-): Promise<UserProfileDTO[]> => {
-  const { role } = GetUserProfilesByRoleSchema.parse(data);
-
-  const userProfiles = await db
-    .select()
-    .from(UserProfilesTable)
-    .where(eq(UserProfilesTable.role, role));
-
-  return userProfiles;
 };
 
 export const updateUserProfile = async (

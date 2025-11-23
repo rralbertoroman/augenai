@@ -1,15 +1,10 @@
-import { EmailType } from "@/types/email";
-
-export interface PredictionSharedTemplateProps {
-  sharedByName: string;
-  predictionUrl: string;
-  recipientName?: string;
-}
+import type { PredictionSharedTemplateProps } from "../schemas";
 
 export function PredictionSharedTemplate({
-  sharedByName,
-  predictionUrl,
+  senderName,
+  senderEmail,
   recipientName,
+  predictionUrl,
 }: PredictionSharedTemplateProps): {
   subject: string;
   html: string;
@@ -130,7 +125,7 @@ export function PredictionSharedTemplate({
             ${recipientName ? `<p class="greeting">Hola ${recipientName},</p>` : '<p class="greeting">Hola,</p>'}
             
             <p class="message">
-              <span class="highlight">${sharedByName}</span> ha compartido una predicción contigo.
+              <span class="highlight">${senderName}</span> (<span class="highlight">${senderEmail}</span>) ha compartido una predicción contigo.
               Esta predicción podría ser de tu interés y está disponible para que la revises.
             </p>
 
@@ -172,19 +167,4 @@ export function PredictionSharedTemplate({
     subject,
     html,
   };
-}
-
-export function generateEmailTemplate(
-  type: EmailType,
-  props: PredictionSharedTemplateProps,
-): {
-  subject: string;
-  html: string;
-} {
-  switch (type) {
-    case EmailType.PREDICTION_SHARED:
-      return PredictionSharedTemplate(props);
-    default:
-      throw new Error(`Template type not supported: ${type}`);
-  }
 }
