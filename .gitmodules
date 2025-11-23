@@ -4,3 +4,6 @@
 [submodule "apps/ai_service/weights/swinv2_tiny_for_glaucoma_classification"]
 	path = apps/ai_service/weights/swinv2_tiny_for_glaucoma_classification
 	url = https://huggingface.co/pamixsun/swinv2_tiny_for_glaucoma_classification
+[submodule "apps/ai_service/weights/Diabetic_RetinoPathy_detection"]
+	path = apps/ai_service/weights/Diabetic_RetinoPathy_detection
+	url = https://huggingface.co/AsmaaElnagger/Diabetic_RetinoPathy_detection
