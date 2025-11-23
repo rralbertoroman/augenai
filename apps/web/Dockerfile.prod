@@ -1,24 +1,23 @@
 # Multi-stage build: first build the Next.js application
 FROM node:20-alpine AS builder
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the root package.json and pnpm-lock.yaml to the container
-COPY package.json pnpm-lock.yaml ./
+# Copy root files needed for pnpm workspace
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install pnpm globally if not already included in the node image
-RUN npm install -g pnpm
+# Copy only the web app directory (not other apps that may have Python deps)
+COPY apps/web ./apps/web
 
-# Copy the pnpm workspace configuration
-COPY pnpm-workspace.yaml ./
-
-# Copy all the apps and packages directories
-COPY apps/ ./apps/
+# Copy shared packages if they exist
 COPY packages/ ./packages/
 
-# Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+# Install only the web app dependencies, skipping prepare scripts that might invoke Python
+RUN pnpm install --frozen-lockfile --filter web... --ignore-scripts
 
 # Build the Next.js application
 WORKDIR /app/apps/web
@@ -42,7 +41,7 @@ COPY --from=builder /app/apps/web/.next/standalone/ ./
 COPY --from=builder /app/apps/web/.next/static ./public/_next/static
 
 # Copy a simple health check script
-RUN echo '#!/bin/sh\nwhile ! curl -f http://ai-service:8000/health 2>/dev/null; do\n  echo "Waiting for ai-service to be ready..."\n  sleep 2\ndone\nexec "$@"' > /wait-for-service.sh && chmod +x /wait-for-service.sh
+RUN printf '#!/bin/sh\nwhile ! curl -f http://ai-service:8000/health 2>/dev/null; do\n  echo "Waiting for ai-service to be ready..."\n  sleep 2\ndone\nexec "$@"' > /wait-for-service.sh && chmod +x /wait-for-service.sh
 
 # Expose the port Next.js runs on
 EXPOSE 3000

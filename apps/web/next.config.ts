@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Only use standalone output for production environment
+  ...(process.env.ENVIRONMENT === 'production' && {
+    output: "standalone"
+  }),
   async rewrites() {
     return [
       {

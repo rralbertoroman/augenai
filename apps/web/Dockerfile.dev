@@ -1,37 +1,29 @@
 # Use the official Node.js image for development
 FROM node:20-alpine
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install pnpm globally
+RUN npm install -g pnpm
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the root package.json and pnpm-lock.yaml to the container
-COPY package.json pnpm-lock.yaml ./
+# Copy root files needed for pnpm workspace
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install pnpm globally if not already included in the node image
-RUN npm install -g pnpm
+# Copy only the web app directory (not other apps that may have Python deps)
+COPY apps/web ./apps/web
 
-# Copy the pnpm workspace configuration
-COPY pnpm-workspace.yaml ./
-
-# Copy all the apps and packages directories
-COPY apps/ ./apps/
+# Copy shared packages if they exist
 COPY packages/ ./packages/
 
-# Install dependencies using pnpm
-RUN pnpm install --frozen-lockfile
+# Install only the web app dependencies, skipping prepare scripts that might invoke Python
+RUN pnpm install --frozen-lockfile --filter web... --ignore-scripts
 
 # Set the working directory to the web app
 WORKDIR /app/apps/web
-
-# Copy a simple health check script
-RUN echo '#!/bin/sh\nwhile ! curl -f http://ai-service:8000/health 2>/dev/null; do\n  echo "Waiting for ai-service to be ready..."\n  sleep 2\ndone\nexec "$@"' > /wait-for-service.sh && chmod +x /wait-for-service.sh
 
 # Expose the port Next.js runs on
 EXPOSE 3000
 
 # Set the default command to run the development server
-ENTRYPOINT ["/wait-for-service.sh"]
-CMD ["pnpm", "dev", "--turbo"]
+CMD ["pnpm", "dev"]
