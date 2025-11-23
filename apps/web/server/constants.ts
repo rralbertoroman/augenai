@@ -42,6 +42,10 @@ if (!process.env.RESEND_FROM_EMAIL) {
   throw new Error("RESEND_FROM_EMAIL is not set in environment variables");
 }
 
+if (!process.env.CONTACT_EMAIL) {
+  throw new Error("CONTACT_EMAIL is not set in environment variables");
+}
+
 export const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_MASTER_API_KEY;
@@ -51,4 +55,5 @@ export const AI_PREDICTION_SERVICE_SECRET_KEY =
   process.env.AI_PREDICTION_SERVICE_SECRET_KEY;
 export const RESEND_API_KEY = process.env.RESEND_API_KEY;
 export const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+export const CONTACT_EMAIL = process.env.CONTACT_EMAIL;
 export const ENVIRONMENT = process.env.ENVIRONMENT;

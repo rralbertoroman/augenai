@@ -11,21 +11,6 @@ export const CreatePredictionRequestSchema = z.object({
   modelsUsed: z.array(z.uuid()).min(1),
 });
 
-export const UpdatePredictionRequestSchema = z.object({
-  userId: z.uuid().optional(),
-  patientId: z.uuid().optional(),
-  task: z.string().min(1).optional(),
-  imageType: z.string().min(1).optional(),
-  diseases: z.array(z.string()).min(1).optional(),
-  storagePath: z.string().min(1).optional(),
-  bucketName: z.string().min(1).optional(),
-  modelsUsed: z.array(z.uuid()).min(1).optional(),
-});
-
-export const DeletePredictionRequestSchema = z.object({
-  id: z.uuid(),
-});
-
 export const PredictionRequestDTOSchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
@@ -40,29 +25,9 @@ export const PredictionRequestDTOSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const GetPredictionRequestsByPatientSchema = z.object({
-  patientId: z.uuid(),
-});
-
-export const GetPredictionRequestsByUserSchema = z.object({
-  userId: z.uuid(),
-});
-
 // INPUT TYPES
 export type CreatePredictionRequestInput = z.input<
   typeof CreatePredictionRequestSchema
->;
-export type UpdatePredictionRequestInput = z.input<
-  typeof UpdatePredictionRequestSchema
->;
-export type DeletePredictionRequestInput = z.input<
-  typeof DeletePredictionRequestSchema
->;
-export type GetPredictionRequestsByPatientInput = z.input<
-  typeof GetPredictionRequestsByPatientSchema
->;
-export type GetPredictionRequestsByUserInput = z.input<
-  typeof GetPredictionRequestsByUserSchema
 >;
 
 // OUTPUT TYPES

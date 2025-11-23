@@ -1,14 +1,23 @@
 import { verifySupabaseToken } from "./jwt-validator";
-import type { AuthenticatedUser } from "./types";
+import type { AuthenticatedUser } from "./schemas";
+import { headers } from "next/headers";
 
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number = 401,
-  ) {
-    super(message);
-    this.name = "AuthError";
+import { AuthError } from "./exceptions";
+
+/**
+ * Extracts token from request headers
+ * @returns JWT token string without "Bearer" prefix
+ * @throws AuthError if token is missing or invalid
+ */
+export async function getTokenFromHeaders(): Promise<string> {
+  const headersList = await headers();
+  const authHeader = headersList.get("authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new AuthError("Unauthorized: No token provided", 401);
   }
+
+  return authHeader.split(" ")[1];
 }
 
 /**

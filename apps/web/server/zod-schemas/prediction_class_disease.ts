@@ -1,24 +1,5 @@
 import { z } from "zod";
 
-export const CreatePredictionClassDiseaseSchema = z.object({
-  classId: z.number().int(),
-  modelId: z.uuid(),
-  diseaseId: z.uuid(),
-  stageIdx: z.number().int(),
-});
-
-export const UpdatePredictionClassDiseaseSchema = z.object({
-  classId: z.number().int().optional(),
-  modelId: z.uuid().optional(),
-  diseaseId: z.uuid().optional(),
-  stageIdx: z.number().int().optional(),
-});
-
-export const DeletePredictionClassDiseaseSchema = z.object({
-  classId: z.number().int(),
-  modelId: z.uuid(),
-});
-
 export const PredictionClassDiseaseDTOSchema = z.object({
   classId: z.number().int(),
   modelId: z.uuid(),
@@ -34,15 +15,6 @@ export const GetByClassIdAndModelIdSchema = z.object({
 });
 
 // INPUT TYPES
-export type CreatePredictionClassDiseaseInput = z.input<
-  typeof CreatePredictionClassDiseaseSchema
->;
-export type UpdatePredictionClassDiseaseInput = z.input<
-  typeof UpdatePredictionClassDiseaseSchema
->;
-export type DeletePredictionClassDiseaseInput = z.input<
-  typeof DeletePredictionClassDiseaseSchema
->;
 export type GetByClassIdAndModelIdInput = z.input<
   typeof GetByClassIdAndModelIdSchema
 >;

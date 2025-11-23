@@ -1,6 +1,6 @@
 import { importJWK, jwtVerify } from "jose";
 import { SUPABASE_JWT_JWK } from "../constants";
-import type { JWTPayload } from "./types";
+import type { JWTPayload } from "./schemas";
 
 /**
  * Validates a Supabase JWT and returns the payload

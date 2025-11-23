@@ -15,7 +15,8 @@ const FeedbackTable = pgTable(
     userProfileId: uuid("user_profile_id")
       .notNull()
       .references(() => UserProfilesTable.id),
-    isMain: boolean("is_main").default(true).notNull(),
+    isMainUser: boolean("is_main_user").default(true).notNull(),
+    isMainData: boolean("is_main_data").default(false).notNull(),
     feedbackData: jsonb("feedback_data").$type<FeedbackItem[]>().notNull(),
   },
   (t) => [primaryKey({ columns: [t.predictionId, t.userProfileId] })],

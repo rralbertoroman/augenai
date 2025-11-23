@@ -8,56 +8,80 @@ import {
 import {
   PredictionStatus,
   type AIServicePredictionResponse,
-  type PredictionResponse,
-  type MultiplePredictionsResponse,
+  type ClassificationObject,
+  type EnrichedClassificationObject,
 } from "@/types/prediction";
 import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
+import { type OptimalModel } from "../zod-schemas/model";
 
 import {
   PredictionWorkflowInputSchema,
   type PredictionWorkflowInput,
+  type PredictionResponse,
+  type MultiplePredictionsResponse,
 } from "../zod-schemas/prediction_workflow";
 
 export async function processPredictionRequest(
   input: PredictionWorkflowInput,
 ): Promise<MultiplePredictionsResponse> {
-  const { userId, formData } = PredictionWorkflowInputSchema.parse(input);
-  const storagePath = formData.get("storage_path") as string;
-  const bucketName = formData.get("bucket_name") as string;
-  const patientId = formData.get("patient_id") as string;
-  const task = formData.get("task") as string;
-  const imageType = formData.get("image_type") as string;
-  const diseasesStr = formData.get("diseases") as string;
+  const validatedInput = PredictionWorkflowInputSchema.parse(input);
+  const { task, imageType, diseases, storagePath, bucketName } = validatedInput;
 
-  if (!storagePath) throw new Error("Storage path is required");
-  if (!bucketName) throw new Error("Bucket name is required");
-  if (!patientId) throw new Error("Patient ID is required");
-  if (!task) throw new Error("Task is required");
-  if (!imageType) throw new Error("Image type is required");
-  if (!diseasesStr) throw new Error("Diseases are required");
-
-  let diseases: string[];
-  try {
-    diseases = JSON.parse(diseasesStr);
-    if (!Array.isArray(diseases) || diseases.length === 0) {
-      throw new Error("Diseases must be a non-empty array");
-    }
-  } catch {
-    throw new Error("Invalid diseases format. Must be a JSON array");
-  }
-
-  // Select optimal models based on task, imageType, and diseases
+  // 1. Select optimal models
   const selectedModels = await selectOptimalModels(task, imageType, diseases);
 
   if (selectedModels.length === 0) {
     throw new Error("No suitable models found for the given criteria");
   }
 
-  // Download image from storage
+  // 2. Download image
+  const { imageBlob, fileName } = await downloadImageFromStorage(
+    bucketName,
+    storagePath,
+  );
+
+  // 3. Create prediction request record
+  const predictionRequest = await savePredictionRequest(
+    validatedInput,
+    selectedModels,
+  );
+
+  // 4. Run predictions
+  const allPredictions: PredictionResponse[] = [];
+
+  for (const model of selectedModels) {
+    const predictionResponse = await processModelPrediction(
+      model,
+      imageBlob,
+      fileName,
+      predictionRequest.id,
+    );
+
+    if (predictionResponse) {
+      allPredictions.push(predictionResponse);
+    }
+  }
+
+  if (allPredictions.length === 0) {
+    throw new Error("All model predictions failed");
+  }
+
+  return {
+    predictions: allPredictions,
+    models_used: selectedModels.map((m) => m.name),
+  };
+}
+
+// --- Helper Functions ---
+
+async function downloadImageFromStorage(
+  bucketName: string,
+  storagePath: string,
+): Promise<{ imageBlob: Blob; fileName: string }> {
   const { data: imageBlob, error: downloadError } = await supabaseAdmin.storage
     .from(bucketName)
     .download(storagePath);
@@ -69,34 +93,118 @@ export async function processPredictionRequest(
   }
 
   const fileName = storagePath.split("/").pop();
-
   if (!fileName) {
     throw new Error("Invalid storage path: cannot extract filename");
   }
 
-  // Create prediction request first
-  const predictionRequest = await createPredictionRequest({
-    userId,
-    patientId,
-    task,
-    imageType,
-    diseases,
-    storagePath,
-    bucketName,
+  return { imageBlob, fileName };
+}
+
+async function savePredictionRequest(
+  input: PredictionWorkflowInput,
+  selectedModels: OptimalModel[],
+) {
+  return await createPredictionRequest({
+    userId: input.userId,
+    patientId: input.patientId,
+    task: input.task,
+    imageType: input.imageType,
+    diseases: input.diseases,
+    storagePath: input.storagePath,
+    bucketName: input.bucketName,
     modelsUsed: selectedModels.map((m) => m.id),
   });
+}
 
-  // Run predictions for all selected models
-  const allPredictions: PredictionResponse[] = [];
+async function processModelPrediction(
+  model: OptimalModel,
+  imageBlob: Blob,
+  fileName: string,
+  requestId: string,
+): Promise<PredictionResponse | null> {
+  // 1. Fetch from AI Service
+  const predictionResult = await fetchPredictionFromAIService(
+    imageBlob,
+    fileName,
+    model.name,
+  );
 
-  for (const model of selectedModels) {
-    const predictionFormData = new FormData();
-    predictionFormData.append("image", imageBlob, fileName);
-    predictionFormData.append("model_id", model.name);
-    if (ENVIRONMENT === "test") {
-      predictionFormData.append("is_mocked", "true");
+  if (
+    !predictionResult ||
+    predictionResult.status === PredictionStatus.ERROR ||
+    !predictionResult.result?.predictions?.length
+  ) {
+    return null;
+  }
+
+  // 2. Save to DB
+  const savedPrediction = await createPrediction({
+    requestId,
+    modelId: model.id,
+    predictionResult: predictionResult.result,
+  });
+
+  // 3. Enrich Data
+  const enrichedPredictions = await enrichPredictionData(
+    predictionResult.result.predictions,
+    model.id,
+  );
+
+  return {
+    status: predictionResult.status,
+    error: predictionResult.error,
+    result: {
+      predictions: enrichedPredictions,
+      metadata: predictionResult.result.metadata,
+    },
+    db_prediction_id: savedPrediction.id,
+  };
+}
+
+async function enrichPredictionData(
+  predictions: ClassificationObject[],
+  modelId: string,
+): Promise<EnrichedClassificationObject[]> {
+  const enrichedPredictions: EnrichedClassificationObject[] = [];
+
+  for (const pred of predictions) {
+    const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+      classId: pred.class_id,
+      modelId: modelId,
+    });
+
+    if (!classInfo) {
+      throw new Error(
+        `Disease mapping not found for class_id ${pred.class_id} and model ${modelId}`,
+      );
     }
 
+    enrichedPredictions.push({
+      ...pred,
+      disease_id: classInfo.diseaseId,
+      disease_name: classInfo.diseaseName,
+      stage_idx: classInfo.stageIdx,
+      stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+    });
+  }
+
+  return enrichedPredictions;
+}
+
+async function fetchPredictionFromAIService(
+  imageBlob: Blob,
+  fileName: string,
+  modelName: string,
+): Promise<AIServicePredictionResponse | null> {
+  const predictionFormData = new FormData();
+  predictionFormData.append("image", imageBlob, fileName);
+  predictionFormData.append("model_id", modelName);
+
+  if (ENVIRONMENT === "test") {
+    predictionFormData.append("is_mocked", "true");
+  }
+
+  try {
     const predictionResponse = await fetch(
       `${AI_PREDICTION_SERVICE_URL}/predict`,
       {
@@ -110,73 +218,12 @@ export async function processPredictionRequest(
 
     if (!predictionResponse.ok) {
       await predictionResponse.json().catch(() => ({}));
-      continue; // Skip this model and continue with others
+      return null;
     }
 
-    const predictionResult: AIServicePredictionResponse =
-      await predictionResponse.json();
-
-    if (predictionResult.status === PredictionStatus.ERROR) {
-      continue;
-    }
-
-    if (
-      !predictionResult.result ||
-      !predictionResult.result.predictions ||
-      predictionResult.result.predictions.length === 0
-    ) {
-      continue;
-    }
-
-    const savedPrediction = await createPrediction({
-      requestId: predictionRequest.id,
-      modelId: model.id,
-      predictionResult: predictionResult.result,
-    });
-
-    // Enrich predictions with disease info
-    const enrichedPredictions = [];
-
-    for (const pred of predictionResult.result.predictions) {
-      const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-        classId: pred.class_id,
-        modelId: model.id,
-      });
-
-      if (!classInfo) {
-        throw new Error(
-          `Disease mapping not found for class_id ${pred.class_id} and model ${model.id}`,
-        );
-      }
-
-      enrichedPredictions.push({
-        ...pred,
-        disease_id: classInfo.diseaseId,
-        disease_name: classInfo.diseaseName,
-        stage_idx: classInfo.stageIdx,
-        stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-      });
-    }
-
-    const apiResponse: PredictionResponse = {
-      status: predictionResult.status,
-      error: predictionResult.error,
-      result: {
-        predictions: enrichedPredictions,
-        metadata: predictionResult.result.metadata,
-      },
-      db_prediction_id: savedPrediction.id,
-    };
-
-    allPredictions.push(apiResponse);
+    return await predictionResponse.json();
+  } catch (error) {
+    console.error(`Error fetching prediction from model ${modelName}:`, error);
+    return null;
   }
-
-  if (allPredictions.length === 0) {
-    throw new Error("All model predictions failed");
-  }
-
-  return {
-    predictions: allPredictions,
-    models_used: selectedModels.map((m) => m.name),
-  };
 }

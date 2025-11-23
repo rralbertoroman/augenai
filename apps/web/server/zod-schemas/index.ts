@@ -1,25 +1,14 @@
 // Disease schemas
-export {
-  CreateDiseaseSchema,
-  UpdateDiseaseSchema,
-  DeleteDiseaseSchema,
-  DiseaseDTOSchema,
-  type CreateDiseaseInput,
-  type UpdateDiseaseInput,
-  type DeleteDiseaseInput,
-  type DiseaseDTO,
-} from "./disease";
+export { type DiseaseDTO } from "./disease";
 
 // Model schemas
 export {
-  CreateModelSchema,
-  UpdateModelSchema,
-  DeleteModelSchema,
-  ModelDTOSchema,
-  type CreateModelInput,
-  type UpdateModelInput,
-  type DeleteModelInput,
-  type ModelDTO,
+  SelectOptimalModelsSchema,
+  OptimalModelSchema,
+  SelectOptimalModelsResponseSchema,
+  type SelectOptimalModelsInput,
+  type OptimalModel,
+  type SelectOptimalModelsResponse,
 } from "./model";
 
 // Patient schemas
@@ -37,29 +26,15 @@ export {
 // Prediction schemas
 export {
   CreatePredictionSchema,
-  UpdatePredictionSchema,
-  DeletePredictionSchema,
   PredictionDTOSchema,
-  GetPredictionsByRequestSchema,
-  GetPredictionsByModelSchema,
   type CreatePredictionInput,
-  type UpdatePredictionInput,
-  type DeletePredictionInput,
   type PredictionDTO,
-  type GetPredictionsByRequestInput,
-  type GetPredictionsByModelInput,
 } from "./prediction";
 
 // Prediction Class Disease schemas
 export {
-  CreatePredictionClassDiseaseSchema,
-  UpdatePredictionClassDiseaseSchema,
-  DeletePredictionClassDiseaseSchema,
   PredictionClassDiseaseDTOSchema,
   GetByClassIdAndModelIdSchema,
-  type CreatePredictionClassDiseaseInput,
-  type UpdatePredictionClassDiseaseInput,
-  type DeletePredictionClassDiseaseInput,
   type PredictionClassDiseaseDTO,
   type GetByClassIdAndModelIdInput,
 } from "./prediction_class_disease";
@@ -71,29 +46,21 @@ export {
   DeleteUserProfileSchema,
   UserProfileDTOSchema,
   GetUserProfileByEmailSchema,
-  GetUserProfilesByRoleSchema,
   type CreateUserProfileInput,
   type UpdateUserProfileInput,
   type DeleteUserProfileInput,
   type UserProfileDTO,
   type GetUserProfileByEmailInput,
-  type GetUserProfilesByRoleInput,
 } from "./user_profile";
 
 // Feedback schemas
 export {
   CreateFeedbackSchema,
-  UpdateFeedbackSchema,
-  DeleteFeedbackSchema,
   FeedbackDTOSchema,
   GetFeedbackByPredictionSchema,
-  GetFeedbackByUserSchema,
   type CreateFeedbackInput,
-  type UpdateFeedbackInput,
-  type DeleteFeedbackInput,
   type FeedbackDTO,
   type GetFeedbackByPredictionInput,
-  type GetFeedbackByUserInput,
   type FeedbackItem,
   type FeedbackItemContent,
 } from "./feedback";
@@ -101,5 +68,25 @@ export {
 // Prediction Workflow schemas
 export {
   PredictionWorkflowInputSchema,
+  PredictionResponseSchema,
+  MultiplePredictionsResponseSchema,
   type PredictionWorkflowInput,
+  type PredictionResponse,
+  type MultiplePredictionsResponse,
 } from "./prediction_workflow";
+
+// Prediction Request schemas
+export {
+  CreatePredictionRequestSchema,
+  PredictionRequestDTOSchema,
+  type CreatePredictionRequestInput,
+  type PredictionRequestDTO,
+} from "./prediction_request";
+
+// Prediction Sharing schemas
+export {
+  CreatePredictionSharingSchema,
+  PredictionSharingDTOSchema,
+  type CreatePredictionSharingInput,
+  type PredictionSharingDTO,
+} from "./prediction_sharing";

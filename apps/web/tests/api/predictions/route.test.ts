@@ -12,7 +12,15 @@ import type { PredictionRequestDTO } from "@/server/zod-schemas/prediction_reque
 import type { PredictionDTO } from "@/server/zod-schemas/prediction";
 
 // --- Mocks Configuration ---
-vi.mock("@/server/auth");
+// --- Mocks Configuration ---
+vi.mock("@/server/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/server/auth")>();
+  return {
+    ...actual,
+    getCurrentUser: vi.fn(),
+    getTokenFromHeaders: vi.fn(),
+  };
+});
 vi.mock("@/server/supabase/client");
 vi.mock("@/server/services/model");
 vi.mock("@/server/services/prediction_request");
@@ -23,7 +31,7 @@ vi.mock("@/server/services/prediction_class_disease");
 
 // Auth Fixtures
 const MOCK_USER: auth.AuthenticatedUser = {
-  userId: "user-123",
+  userId: "123e4567-e89b-12d3-a456-426614174000",
   email: "test@example.com",
   role: "authenticated",
   aud: "authenticated",
@@ -34,20 +42,20 @@ const MOCK_TOKEN = "valid-token";
 
 // Request Fixtures
 const MOCK_BUCKET_NAME = "predictions";
-const MOCK_PATIENT_ID = "patient-123";
+const MOCK_PATIENT_ID = "123e4567-e89b-12d3-a456-426614174001";
 const MOCK_TASK = "classification";
 const MOCK_IMAGE_TYPE = "dermoscopy";
 const MOCK_DISEASES = ["melanoma"];
 const MOCK_STORAGE_PATH = "path/to/image.png";
 
 // Model Service Fixtures
-const MOCK_MODEL_ID = "model-1";
+const MOCK_MODEL_ID = "123e4567-e89b-12d3-a456-426614174002";
 const MOCK_MODEL_NAME = "diabetic-retinopathy-224-procnorm-vit";
 const MOCK_SELECTED_MODELS = [{ id: MOCK_MODEL_ID, name: MOCK_MODEL_NAME }];
 
 // Prediction Request Service Fixtures
 const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
-  id: "req-123",
+  id: "123e4567-e89b-12d3-a456-426614174003",
   userId: MOCK_USER.userId,
   patientId: MOCK_PATIENT_ID,
   task: MOCK_TASK,
@@ -62,7 +70,7 @@ const MOCK_PREDICTION_REQUEST: PredictionRequestDTO = {
 
 // Prediction Service Fixtures
 const MOCK_SAVED_PREDICTION: PredictionDTO = {
-  id: "pred-123",
+  id: "123e4567-e89b-12d3-a456-426614174004",
   requestId: MOCK_PREDICTION_REQUEST.id,
   modelId: MOCK_MODEL_ID,
   predictionResult: {
@@ -88,9 +96,14 @@ const createMockImageBlob = () => {
 describe("POST /api/predictions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(auth.getTokenFromHeaders).mockResolvedValue(MOCK_TOKEN);
   });
 
   it("should return 401 if authorization header is missing", async () => {
+    vi.mocked(auth.getTokenFromHeaders).mockRejectedValue(
+      new auth.AuthError("Missing or invalid authorization header", 401),
+    );
+
     const req = new NextRequest("http://localhost/api/predictions", {
       method: "POST",
     });

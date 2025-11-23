@@ -6,15 +6,6 @@ export const CreatePredictionSharingSchema = z.object({
   hasFeedback: z.boolean().optional(),
 });
 
-export const UpdatePredictionSharingSchema = z.object({
-  hasFeedback: z.boolean().optional(),
-});
-
-export const DeletePredictionSharingSchema = z.object({
-  predictionId: z.uuid(),
-  userId: z.uuid(),
-});
-
 export const PredictionSharingDTOSchema = z.object({
   predictionId: z.uuid(),
   userId: z.uuid(),
@@ -39,12 +30,6 @@ export const GetPredictionSharingByIdsSchema = z.object({
 // INPUT TYPES
 export type CreatePredictionSharingInput = z.input<
   typeof CreatePredictionSharingSchema
->;
-export type UpdatePredictionSharingInput = z.input<
-  typeof UpdatePredictionSharingSchema
->;
-export type DeletePredictionSharingInput = z.input<
-  typeof DeletePredictionSharingSchema
 >;
 export type GetPredictionSharingsByPredictionInput = z.input<
   typeof GetPredictionSharingsByPredictionSchema

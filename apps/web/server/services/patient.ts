@@ -13,21 +13,6 @@ import {
   type PatientDTO,
 } from "../zod-schemas/patient";
 
-export const getPatients = async (): Promise<PatientDTO[]> => {
-  const patients = await db.select().from(PatientsTable);
-  return patients;
-};
-
-export const getPatientById = async (
-  id: string,
-): Promise<PatientDTO | null> => {
-  const [patient] = await db
-    .select()
-    .from(PatientsTable)
-    .where(eq(PatientsTable.id, id));
-  return patient || null;
-};
-
 export const createPatient = async (
   data: CreatePatientInput,
 ): Promise<PatientDTO> => {
