@@ -20,7 +20,6 @@ class ModelPool:
         return model
 
     def get_model(self, model_id: str) -> ModelInstance:
-
         if (model := self._models_in_use.get(model_id)) is not None:
             model.update_last_used()
             return model

@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict
 from .decorators import ADAPTER_REGISTRY
-from .hf import *
 
 
 def load_all_models(weights_dir: str) -> Dict[str, dict]:
