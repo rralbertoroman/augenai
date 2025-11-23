@@ -35,10 +35,6 @@ export const GetUserProfileByEmailSchema = z.object({
   email: z.email(),
 });
 
-export const GetUserProfilesByRoleSchema = z.object({
-  role: z.string().max(50), // Expected values: "admin", "doctor", "patient"
-});
-
 // INPUT TYPES
 export type CreateUserProfileInput = z.input<typeof CreateUserProfileSchema>;
 export type CreateUserProfileWithAuthInput = z.input<
@@ -48,9 +44,6 @@ export type UpdateUserProfileInput = z.input<typeof UpdateUserProfileSchema>;
 export type DeleteUserProfileInput = z.input<typeof DeleteUserProfileSchema>;
 export type GetUserProfileByEmailInput = z.input<
   typeof GetUserProfileByEmailSchema
->;
-export type GetUserProfilesByRoleInput = z.input<
-  typeof GetUserProfilesByRoleSchema
 >;
 
 // OUTPUT TYPES

@@ -1,3 +1,8 @@
 export { verifySupabaseToken } from "./jwt-validator";
-export { getCurrentUser, verifyOwnership, AuthError } from "./dependencies";
-export type { AuthenticatedUser, JWTPayload } from "./types";
+export {
+  getCurrentUser,
+  verifyOwnership,
+  getTokenFromHeaders,
+} from "./dependencies";
+export { AuthError } from "./exceptions";
+export type { AuthenticatedUser, JWTPayload } from "./schemas";
