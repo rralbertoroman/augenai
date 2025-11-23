@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - .:/app
+      - ./apps/web:/app/apps/web
       - /app/node_modules
       - /app/apps/web/node_modules
     environment:
@@ -33,7 +33,6 @@ services:
     restart: unless-stopped
     stdin_open: true
     tty: true
-    command: pnpm --filter web dev --turbo
     depends_on:
       - ai-service
 
