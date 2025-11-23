@@ -1,6 +1,5 @@
 import json
 import torch
-from pathlib import Path
 from .base_adapter import BaseModelAdapter
 from .decorators import register_adapter
 from .task_mapper import get_model_task
