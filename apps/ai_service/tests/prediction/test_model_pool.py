@@ -1,6 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 
 from ai_service.services.prediction.model_pool import ModelPool
 from ai_service.services.prediction.factories.model_instance import ModelInstance

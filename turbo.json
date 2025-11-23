@@ -1,6 +1,18 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "SUPABASE_DB_URL",
+    "SUPABASE_MASTER_API_KEY",
+    "SUPABASE_JWT_JWK",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY",
+    "AI_PREDICTION_SERVICE_URL",
+    "AI_PREDICTION_SERVICE_SECRET_KEY",
+    "RESEND_API_KEY",
+    "RESEND_FROM_EMAIL",
+    "ENVIRONMENT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -15,6 +27,9 @@
     },
     "check-types": {
       "dependsOn": ["^check-types"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
     },
     "dev": {
       "cache": false,

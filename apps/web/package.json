@@ -10,7 +10,8 @@
     "lint": "eslint",
     "check-types": "tsc --noEmit",
     "generate": "drizzle-kit generate --name",
-    "migrate": "drizzle-kit migrate"
+    "migrate": "drizzle-kit migrate",
+    "test": "vitest run"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

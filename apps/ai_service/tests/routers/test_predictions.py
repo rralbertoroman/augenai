@@ -1,6 +1,5 @@
 import logging
 import io
-from PIL import Image
 
 logger = logging.getLogger(__name__)
 
