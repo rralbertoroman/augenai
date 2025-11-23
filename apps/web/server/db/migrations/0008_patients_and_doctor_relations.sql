@@ -1,0 +1,2 @@
+ALTER TABLE "patients" ADD COLUMN "doctor_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "patients" ADD CONSTRAINT "patients_doctor_id_user_profiles_id_fk" FOREIGN KEY ("doctor_id") REFERENCES "public"."user_profiles"("id") ON DELETE no action ON UPDATE no action;

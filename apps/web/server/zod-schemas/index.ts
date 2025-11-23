@@ -97,3 +97,9 @@ export {
   type FeedbackItem,
   type FeedbackItemContent,
 } from "./feedback";
+
+// Prediction Workflow schemas
+export {
+  PredictionWorkflowInputSchema,
+  type PredictionWorkflowInput,
+} from "./prediction_workflow";

@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  AI_PREDICTION_SERVICE_URL,
-  AI_PREDICTION_SERVICE_SECRET_KEY,
-  ENVIRONMENT,
-} from "@/server/constants";
-import {
-  PredictionStatus,
-  type AIServicePredictionResponse,
-  type PredictionResponse,
-  type MultiplePredictionsResponse,
-} from "@/types/prediction";
-import { createPrediction } from "@/server/services/prediction";
-import { createPredictionRequest } from "@/server/services/prediction_request";
-import { getPredictionClassDiseaseByClassIdAndModelId } from "@/server/services/prediction_class_disease";
-import { supabaseAdmin } from "@/server/supabase/client";
+import { processPredictionRequest } from "@/server/services/prediction_workflow";
 import { getCurrentUser, AuthError } from "@/server/auth";
-import { selectOptimalModels } from "@/server/services/model";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,207 +20,32 @@ export async function POST(request: NextRequest) {
     const userId = currentUser.userId;
 
     const formData = await request.formData();
-    const storagePath = formData.get("storage_path") as string;
-    const bucketName = formData.get("bucket_name") as string;
-    const patientId = formData.get("patient_id") as string;
-    const task = formData.get("task") as string;
-    const imageType = formData.get("image_type") as string;
-    const diseasesStr = formData.get("diseases") as string;
 
-    if (!storagePath) {
-      return NextResponse.json(
-        { error: "Storage path is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!bucketName) {
-      return NextResponse.json(
-        { error: "Bucket name is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!patientId) {
-      return NextResponse.json(
-        { error: "Patient ID is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!task) {
-      return NextResponse.json({ error: "Task is required" }, { status: 400 });
-    }
-
-    if (!imageType) {
-      return NextResponse.json(
-        { error: "Image type is required" },
-        { status: 400 },
-      );
-    }
-
-    if (!diseasesStr) {
-      return NextResponse.json(
-        { error: "Diseases are required" },
-        { status: 400 },
-      );
-    }
-
-    let diseases: string[];
     try {
-      diseases = JSON.parse(diseasesStr);
-      if (!Array.isArray(diseases) || diseases.length === 0) {
-        throw new Error("Diseases must be a non-empty array");
-      }
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid diseases format. Must be a JSON array" },
-        { status: 400 },
-      );
-    }
-
-    // Select optimal models based on task, imageType, and diseases
-    const selectedModels = await selectOptimalModels(task, imageType, diseases);
-
-    if (selectedModels.length === 0) {
-      return NextResponse.json(
-        { error: "No suitable models found for the given criteria" },
-        { status: 404 },
-      );
-    }
-
-    // Download image from storage
-    const { data: imageBlob, error: downloadError } =
-      await supabaseAdmin.storage.from(bucketName).download(storagePath);
-
-    if (downloadError || !imageBlob) {
-      return NextResponse.json(
-        {
-          error: `Failed to download image from storage: ${downloadError?.message || "No data returned"}`,
-        },
-        { status: 400 },
-      );
-    }
-
-    const fileName = storagePath.split("/").pop();
-
-    if (!fileName) {
-      return NextResponse.json(
-        { error: "Invalid storage path: cannot extract filename" },
-        { status: 400 },
-      );
-    }
-
-    // Create prediction request first
-    const predictionRequest = await createPredictionRequest({
-      userId,
-      patientId,
-      task,
-      imageType,
-      diseases,
-      storagePath,
-      bucketName,
-      modelsUsed: selectedModels.map((m) => m.id),
-    });
-
-    // Run predictions for all selected models
-    const allPredictions: PredictionResponse[] = [];
-
-    for (const model of selectedModels) {
-      const predictionFormData = new FormData();
-      predictionFormData.append("image", imageBlob, fileName);
-      predictionFormData.append("model_id", model.name);
-      if (ENVIRONMENT === "test") {
-        predictionFormData.append("is_mocked", "true");
-      }
-
-      const predictionResponse = await fetch(
-        `${AI_PREDICTION_SERVICE_URL}/predict`,
-        {
-          method: "POST",
-          headers: {
-            "X-API-Key": AI_PREDICTION_SERVICE_SECRET_KEY,
-          },
-          body: predictionFormData,
-        },
-      );
-
-      if (!predictionResponse.ok) {
-        await predictionResponse.json().catch(() => ({}));
-        continue; // Skip this model and continue with others
-      }
-
-      const predictionResult: AIServicePredictionResponse =
-        await predictionResponse.json();
-
-      if (predictionResult.status === PredictionStatus.ERROR) {
-        continue;
-      }
-
-      if (
-        !predictionResult.result ||
-        !predictionResult.result.predictions ||
-        predictionResult.result.predictions.length === 0
-      ) {
-        continue;
-      }
-
-      const savedPrediction = await createPrediction({
-        requestId: predictionRequest.id,
-        modelId: model.id,
-        predictionResult: predictionResult.result,
+      const response = await processPredictionRequest({
+        userId,
+        formData,
       });
-
-      // Enrich predictions with disease info
-      const enrichedPredictions = [];
-
-      for (const pred of predictionResult.result.predictions) {
-        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: pred.class_id,
-          modelId: model.id,
-        });
-
-        if (!classInfo) {
-          throw new Error(
-            `Disease mapping not found for class_id ${pred.class_id} and model ${model.id}`,
-          );
-        }
-
-        enrichedPredictions.push({
-          ...pred,
-          disease_id: classInfo.diseaseId,
-          disease_name: classInfo.diseaseName,
-          stage_idx: classInfo.stageIdx,
-          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-        });
+      return NextResponse.json(response);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to process prediction";
+      // Check for specific error messages to return 400 or 404
+      if (
+        message.includes("required") ||
+        message.includes("Invalid") ||
+        message.includes("Failed to download")
+      ) {
+        return NextResponse.json({ error: message }, { status: 400 });
       }
-
-      const apiResponse: PredictionResponse = {
-        status: predictionResult.status,
-        error: predictionResult.error,
-        result: {
-          predictions: enrichedPredictions,
-          metadata: predictionResult.result.metadata,
-        },
-        db_prediction_id: savedPrediction.id,
-      };
-
-      allPredictions.push(apiResponse);
+      if (message.includes("No suitable models found")) {
+        return NextResponse.json({ error: message }, { status: 404 });
+      }
+      if (message.includes("All model predictions failed")) {
+        return NextResponse.json({ error: message }, { status: 500 });
+      }
+      throw err; // Re-throw to be caught by outer catch
     }
-
-    if (allPredictions.length === 0) {
-      return NextResponse.json(
-        { error: "All model predictions failed" },
-        { status: 500 },
-      );
-    }
-
-    const response: MultiplePredictionsResponse = {
-      predictions: allPredictions,
-      models_used: selectedModels.map((m) => m.name),
-    };
-
-    return NextResponse.json(response);
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json(
