@@ -16,9 +16,7 @@ const PredictionSharingTable = pgTable(
       .references(() => UserProfilesTable.id),
     hasFeedback: boolean("has_feedback").default(false).notNull(),
   },
-  (t) => ({
-    pk: primaryKey({ columns: [t.predictionId, t.userId] }),
-  }),
+  (t) => [primaryKey({ columns: [t.predictionId, t.userId] })],
 );
 
 export const predictionSharingRelations = relations(

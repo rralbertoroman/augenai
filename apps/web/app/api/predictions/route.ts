@@ -180,35 +180,44 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Get the top prediction (highest confidence)
-      const topPrediction = predictionResult.result.predictions.reduce(
-        (max, pred) => (pred.confidence > max.confidence ? pred : max),
-        predictionResult.result.predictions[0],
-      );
-
-      const classId = topPrediction.class_id;
-
-      const predictionClassDisease =
-        await getPredictionClassDiseaseByClassIdAndModelId({
-          classId,
-          modelId: model.id,
-        });
-
-      if (!predictionClassDisease) {
-        continue;
-      }
-
       const savedPrediction = await createPrediction({
         requestId: predictionRequest.id,
         modelId: model.id,
         predictionResult: predictionResult.result,
       });
 
+      // Enrich predictions with disease info
+      const enrichedPredictions = [];
+
+      for (const pred of predictionResult.result.predictions) {
+        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          classId: pred.class_id,
+          modelId: model.id,
+        });
+
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${pred.class_id} and model ${model.id}`,
+          );
+        }
+
+        enrichedPredictions.push({
+          ...pred,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+        });
+      }
+
       const apiResponse: PredictionResponse = {
-        ...predictionResult,
+        status: predictionResult.status,
+        error: predictionResult.error,
+        result: {
+          predictions: enrichedPredictions,
+          metadata: predictionResult.result.metadata,
+        },
         db_prediction_id: savedPrediction.id,
-        disease_id: predictionClassDisease.diseaseId,
-        stage_idx: predictionClassDisease.stageIdx,
       };
 
       allPredictions.push(apiResponse);
