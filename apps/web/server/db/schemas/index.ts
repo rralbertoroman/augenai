@@ -1,9 +1,18 @@
 export { default as DiseasesTable } from "./disease";
+export * from "./disease";
 export { default as ModelsTable } from "./model";
+export * from "./model";
 export { default as PatientsTable } from "./patient";
+export * from "./patient";
 export { default as PredictionsTable } from "./prediction";
+export * from "./prediction";
 export { default as PredictionRequestsTable } from "./prediction_request";
+export * from "./prediction_request";
 export { default as PredictionClassesTable } from "./prediction_class_disease";
+export * from "./prediction_class_disease";
 export { default as UserProfilesTable } from "./user_profile";
+export * from "./user_profile";
 export { default as FeedbackTable } from "./feedback";
+export * from "./feedback";
 export { default as PredictionSharingTable } from "./prediction_sharing";
+export * from "./prediction_sharing";

@@ -58,3 +58,13 @@ export const deletePatient = async (
   const { id } = DeletePatientSchema.parse(data);
   await db.delete(PatientsTable).where(eq(PatientsTable.id, id));
 };
+
+export const getPatientsByUserId = async (
+  userId: string,
+): Promise<PatientDTO[]> => {
+  const patients = await db
+    .select()
+    .from(PatientsTable)
+    .where(eq(PatientsTable.doctorId, userId));
+  return patients;
+};
