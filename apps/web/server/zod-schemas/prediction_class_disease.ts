@@ -15,11 +15,11 @@ export const UpdatePredictionClassDiseaseSchema = z.object({
 });
 
 export const DeletePredictionClassDiseaseSchema = z.object({
-  id: z.uuid(),
+  classId: z.number().int(),
+  modelId: z.uuid(),
 });
 
 export const PredictionClassDiseaseDTOSchema = z.object({
-  id: z.uuid(),
   classId: z.number().int(),
   modelId: z.uuid(),
   diseaseId: z.uuid(),
@@ -51,3 +51,8 @@ export type GetByClassIdAndModelIdInput = z.input<
 export type PredictionClassDiseaseDTO = z.output<
   typeof PredictionClassDiseaseDTOSchema
 >;
+
+export type PredictionClassDiseaseWithDisease = PredictionClassDiseaseDTO & {
+  diseaseName: string;
+  diseaseStages: string[];
+};
