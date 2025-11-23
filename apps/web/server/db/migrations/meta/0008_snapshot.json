@@ -1,6 +1,6 @@
 {
-  "id": "2bd32643-29c7-4289-bddf-e6f0938e7ad3",
-  "prevId": "21544c25-ef1d-4232-92c3-c2b4fb12f47d",
+  "id": "8e00a8fb-0501-4464-becc-d0db862d4278",
+  "prevId": "2bd32643-29c7-4289-bddf-e6f0938e7ad3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -256,10 +256,26 @@
           "type": "text[]",
           "primaryKey": false,
           "notNull": true
+        },
+        "doctor_id": {
+          "name": "doctor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "patients_doctor_id_user_profiles_id_fk": {
+          "name": "patients_doctor_id_user_profiles_id_fk",
+          "tableFrom": "patients",
+          "tableTo": "user_profiles",
+          "columnsFrom": ["doctor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
