@@ -3,6 +3,6 @@ export {
   getCurrentUser,
   verifyOwnership,
   getTokenFromHeaders,
-} from "./dependencies";
+} from "./services";
 export { AuthError } from "./exceptions";
 export type { AuthenticatedUser, JWTPayload } from "./schemas";

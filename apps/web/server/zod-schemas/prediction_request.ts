@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const CreatePredictionRequestSchema = z.object({
-  userId: z.uuid(),
   patientId: z.uuid(),
   task: z.string().min(1),
   imageType: z.string().min(1),

@@ -10,15 +10,21 @@ import {
 } from "../zod-schemas/prediction_request";
 import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import { getCurrentUser, verifyOwnership } from "../auth";
 
 export const createPredictionRequest = async (
+  token: string,
   data: CreatePredictionRequestInput,
 ): Promise<PredictionRequestDTO> => {
+  const user = await getCurrentUser(token);
   const payload = CreatePredictionRequestSchema.parse(data);
 
   const [predictionRequest] = await db
     .insert(PredictionRequestsTable)
-    .values(payload)
+    .values({
+      ...payload,
+      userId: user.userId,
+    })
     .returning();
 
   if (!predictionRequest) {
@@ -29,12 +35,19 @@ export const createPredictionRequest = async (
 };
 
 export const getAllPredictionRequestsWithPredictionsByUserId = async (
+  token: string,
   userId: string,
 ): Promise<EnrichedPredictionDTO[]> => {
+  const user = await getCurrentUser(token);
+  verifyOwnership(user, userId);
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
     with: {
-      predictions: true,
+      predictions: {
+        with: {
+          diagnoses: true,
+        },
+      },
       patient: true,
     },
     orderBy: (predictionRequests, { desc }) => [
@@ -46,35 +59,32 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
 
   for (const request of predictionRequests) {
     for (const prediction of request.predictions) {
-      const result = prediction.predictionResult as unknown as {
-        predictions: {
-          class_id: number;
-          class_name: string;
-          confidence: number;
-        }[];
-      };
-
-      if (!result || !result.predictions || !Array.isArray(result.predictions))
+      if (!prediction.diagnoses || !Array.isArray(prediction.diagnoses))
         continue;
 
-      for (const pred of result.predictions) {
+      for (const diagnosis of prediction.diagnoses) {
         const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: pred.class_id,
+          classId: diagnosis.classId,
           modelId: prediction.modelId,
         });
 
-        if (classInfo) {
-          enrichedPredictions.push({
-            class_id: pred.class_id,
-            class_name: pred.class_name,
-            confidence: pred.confidence,
-            disease_id: classInfo.diseaseId,
-            disease_name: classInfo.diseaseName,
-            stage_idx: classInfo.stageIdx,
-            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-            patient_id: request.patientId,
-          });
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${diagnosis.classId} and model ${prediction.modelId}`,
+          );
         }
+
+        enrichedPredictions.push({
+          id: diagnosis.id,
+          class_id: diagnosis.classId,
+          confidence: diagnosis.confidence,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          patient_id: request.patientId,
+          createdAt: diagnosis.createdAt,
+        });
       }
     }
   }

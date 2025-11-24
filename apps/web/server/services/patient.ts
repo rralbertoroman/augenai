@@ -6,50 +6,87 @@ import { PatientsTable } from "../db/schemas";
 import {
   CreatePatientSchema,
   UpdatePatientSchema,
-  DeletePatientSchema,
   type CreatePatientInput,
   type UpdatePatientInput,
-  type DeletePatientInput,
   type PatientDTO,
 } from "../zod-schemas/patient";
+import { getCurrentUser, verifyOwnership } from "../auth";
 
 export const createPatient = async (
+  token: string,
   data: CreatePatientInput,
 ): Promise<PatientDTO> => {
+  const user = await getCurrentUser(token);
   const validatedData = CreatePatientSchema.parse(data);
   const [patient] = await db
     .insert(PatientsTable)
-    .values(validatedData)
+    .values({
+      ...validatedData,
+      doctorId: user.userId,
+    })
     .returning();
   return patient;
 };
 
 export const updatePatient = async (
-  id: string,
+  token: string,
+  patientId: string,
   data: UpdatePatientInput,
 ): Promise<PatientDTO> => {
+  const user = await getCurrentUser(token);
+
+  // Verify patient exists and get its doctorId
+  const [existingPatient] = await db
+    .select()
+    .from(PatientsTable)
+    .where(eq(PatientsTable.id, patientId));
+
+  if (!existingPatient) {
+    throw new Error("Patient not found");
+  }
+
+  // Verify ownership
+  verifyOwnership(user, existingPatient.doctorId);
+
   const validatedData = UpdatePatientSchema.parse(data);
   const [patient] = await db
     .update(PatientsTable)
     .set(validatedData)
-    .where(eq(PatientsTable.id, id))
+    .where(eq(PatientsTable.id, patientId))
     .returning();
   return patient;
 };
 
 export const deletePatient = async (
-  data: DeletePatientInput,
+  token: string,
+  patientId: string,
 ): Promise<void> => {
-  const { id } = DeletePatientSchema.parse(data);
-  await db.delete(PatientsTable).where(eq(PatientsTable.id, id));
+  const user = await getCurrentUser(token);
+
+  // Verify patient exists and get its doctorId
+  const [existingPatient] = await db
+    .select()
+    .from(PatientsTable)
+    .where(eq(PatientsTable.id, patientId));
+
+  if (!existingPatient) {
+    throw new Error("Patient not found");
+  }
+
+  // Verify ownership
+  verifyOwnership(user, existingPatient.doctorId);
+
+  await db.delete(PatientsTable).where(eq(PatientsTable.id, patientId));
 };
 
 export const getPatientsByUserId = async (
-  userId: string,
+  token: string,
 ): Promise<PatientDTO[]> => {
+  const user = await getCurrentUser(token);
+
   const patients = await db
     .select()
     .from(PatientsTable)
-    .where(eq(PatientsTable.doctorId, userId));
+    .where(eq(PatientsTable.doctorId, user.userId));
   return patients;
 };
