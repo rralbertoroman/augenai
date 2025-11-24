@@ -1,71 +1,39 @@
 "use client";
 
-import { useAuth } from "@/contexts/auth-context";
-import { usePredictions } from "@/hooks/use-predictions";
-import { usePatients } from "@/hooks/use-patients";
+import { useDashboard } from "@/hooks/use-dashboard";
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import Link from "next/link";
 
 export default function HomePage() {
-  const { user } = useAuth();
-  const { predictions } = usePredictions();
-  const { patients } = usePatients();
+  const {
+    displayName,
+    isLoading,
+    totalPatients,
+    totalPredictions,
+    avgConfidence,
+    recentPredictions,
+    getOutcomeBadge,
+  } = useDashboard();
 
-  const displayName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email?.split("@")[0] ||
-    "Doctor";
-
-  // Calculate stats
-  const totalPatients = patients.length;
-  const totalPredictions = predictions.length;
-  const successfulPredictions = predictions.filter(
-    (p) => p.status === "success",
-  ).length;
-  const avgConfidence =
-    successfulPredictions > 0
-      ? (
-          (predictions
-            .filter((p) => p.status === "success")
-            .reduce((acc, p) => acc + (p.stageIdx || 0), 0) /
-            successfulPredictions) *
-          10
-        ).toFixed(1)
-      : "0.0";
-
-  // Recent predictions
-  const recentPredictions = predictions
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 4);
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
-  const getOutcomeBadge = (status: string) => {
-    if (status === "success") {
-      return (
-        <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300">
-          Progresión
-        </span>
-      );
-    }
+  if (isLoading) {
     return (
-      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
-        Estable
-      </span>
+      <main className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+        <SkeletonLoader width="100%" height={80} className="mb-6" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <SkeletonLoader width="100%" height={120} className="mb-6" />
+          <SkeletonLoader width="100%" height={120} className="mb-6" />
+          <SkeletonLoader
+            width="100%"
+            height={120}
+            className="mb-6 lg:col-span-2"
+          />
+        </div>
+        <SkeletonLoader width="100%" height={320} />
+      </main>
     );
-  };
-
+  }
   return (
-    <main className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+    <main className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8 animate-fadein">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-3">
           <p className="text-foreground dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
@@ -81,7 +49,7 @@ export default function HomePage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 animate-fadein">
           <p className="text-foreground dark:text-gray-300 text-base font-medium leading-normal">
             Total Pacientes
           </p>
@@ -89,7 +57,7 @@ export default function HomePage() {
             {totalPatients}
           </p>
         </div>
-        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900">
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 animate-fadein">
           <p className="text-foreground dark:text-gray-300 text-base font-medium leading-normal">
             Total Predicciones
           </p>
@@ -97,7 +65,7 @@ export default function HomePage() {
             {totalPredictions}
           </p>
         </div>
-        <div className="lg:col-span-2 flex flex-col gap-4 rounded-lg border border-primary/50 bg-primary/20 p-6 dark:border-primary/50 dark:bg-primary/30">
+        <div className="lg:col-span-2 flex flex-col gap-4 rounded-lg border border-primary/50 bg-primary/20 p-6 dark:border-primary/50 dark:bg-primary/30 animate-fadein">
           <p className="text-foreground dark:text-gray-200 text-base font-medium leading-normal">
             Confianza promedio de predicción
           </p>
@@ -118,7 +86,7 @@ export default function HomePage() {
       </div>
 
       <div className="mt-6">
-        <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
+        <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
           <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">
             Predicciones recientes de pacientes
           </h2>
@@ -152,38 +120,41 @@ export default function HomePage() {
                     </td>
                   </tr>
                 ) : (
-                  recentPredictions.map((prediction, idx) => (
-                    <tr
-                      key={prediction.id}
-                      className={`${
-                        idx === recentPredictions.length - 1 ? "" : "border-b"
-                      } bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800`}
-                    >
-                      <th
-                        className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
-                        scope="row"
+                  recentPredictions.map((prediction, idx) => {
+                    const badge = getOutcomeBadge(prediction.status);
+                    return (
+                      <tr
+                        key={prediction.id}
+                        className={`$${
+                          idx === recentPredictions.length - 1 ? "" : "border-b"
+                        } bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800`}
                       >
-                        {prediction.patientName}
-                      </th>
-                      <td className="px-6 py-4">
-                        {formatDate(prediction.createdAt)}
-                      </td>
-                      <td className="px-6 py-4">
-                        {getOutcomeBadge(prediction.status)}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">
-                        {(prediction.stageIdx || 0) * 10}%
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/diagnosis`}
-                          className="font-medium text-green-600 hover:underline dark:text-primary"
+                        <th
+                          className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+                          scope="row"
                         >
-                          Ver Detalles
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                          {prediction.patientName}
+                        </th>
+                        <td className="px-6 py-4">
+                          {prediction.formattedDate}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={badge.className}>{badge.text}</span>
+                        </td>
+                        <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">
+                          {(prediction.stageIdx || 0) * 10}%
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Link
+                            href={`/diagnosis`}
+                            className="font-medium text-green-600 hover:underline dark:text-primary"
+                          >
+                            Ver Detalles
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

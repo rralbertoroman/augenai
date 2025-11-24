@@ -1,6 +1,26 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadein {
+  animation: fadein 0.9s ease-in;
+}
+
+.hover\:shadow-md:hover {
+  box-shadow:
+    0 8px 24px 0 rgba(0, 0, 0, 0.08),
+    0 1.5px 4px 0 rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -33,7 +33,7 @@ export function DiagnosisContainer() {
               Eye Diagnosis Form and Latest Prediction
             </h2>
 
-            <div className="lg:col-span-3 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
+            <div className="lg:col-span-3 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
               <EyeScanUpload
                 onSubmit={handleScanSubmit}
                 isLoading={isLoading}
