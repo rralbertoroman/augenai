@@ -101,7 +101,7 @@ export function StepUpload({
       {storagePath && !isUploading && (
         <>
           {/* Image Preview */}
-          <div className="space-y-2">
+          <div className="space-y-2 animate-fadein">
             <Label className="text-sm font-medium">
               Vista previa de imagen
             </Label>
@@ -111,7 +111,7 @@ export function StepUpload({
             >
               <Image
                 src={imagePreview}
-                alt="Eye scan preview"
+                alt="Vista previa del escaneo ocular"
                 width={800}
                 height={600}
                 className="w-full h-auto max-h-96 object-contain"

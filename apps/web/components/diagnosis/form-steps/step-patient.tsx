@@ -1,6 +1,10 @@
 "use client";
 
-import { usePatients } from "@/hooks/use-patients";
+import {
+  calculateAge,
+  translateGender,
+  usePatients,
+} from "@/hooks/use-patients";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -9,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface StepPatientProps {
@@ -31,12 +37,27 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
           <SelectTrigger id="patientId" className="w-full">
             <SelectValue
               placeholder={
-                isLoading ? "Cargando pacientes..." : "Elige un paciente"
+                isLoading ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="sr-only">Cargando pacientes...</span>
+                      <SkeletonLoader width={120} height={20} />
+                    </div>
+                  </>
+                ) : (
+                  "Elige un paciente"
+                )
               }
             />
           </SelectTrigger>
           <SelectContent>
-            {patients.length === 0 ? (
+            {isLoading ? (
+              <div className="p-2">
+                <SkeletonLoader width={180} height={20} />
+                <SkeletonLoader width={140} height={20} className="mt-2" />
+                <SkeletonLoader width={160} height={20} className="mt-2" />
+              </div>
+            ) : patients.length === 0 ? (
               <div className="p-2 text-sm text-muted-foreground text-center">
                 No hay pacientes disponibles
               </div>
@@ -65,12 +86,16 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
                 <p className="font-medium">{selectedPatient.name}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">ID Paciente</p>
-                <p className="font-medium">{selectedPatient.id}</p>
+                <p className="text-xs text-muted-foreground">Edad</p>
+                <p className="font-medium">
+                  {calculateAge(selectedPatient.dateOfBirth)} años
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Género</p>
-                <p className="font-medium">{selectedPatient.gender}</p>
+                <p className="font-medium">
+                  {translateGender(selectedPatient.gender)}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Condiciones</p>

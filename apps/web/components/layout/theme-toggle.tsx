@@ -14,7 +14,7 @@ export function ThemeToggle() {
     <button
       onClick={toggleTheme}
       className="hidden p-2 text-foreground rounded-full hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 md:block"
-      aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+      aria-label={`Cambiar a modo ${resolvedTheme === "dark" ? "claro" : "oscuro"}`}
     >
       {resolvedTheme === "dark" ? (
         <Sun className="w-5 h-5" />

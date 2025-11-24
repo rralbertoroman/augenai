@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface AddPatientDialogProps {
   onAddPatient: (data: {
@@ -20,6 +21,8 @@ interface AddPatientDialogProps {
 
 export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     dateOfBirth: "",
@@ -29,40 +32,57 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const conditions = formData.clinicalConditions
-      .split(",")
-      .map((c) => c.trim())
-      .filter(Boolean);
+    setError(null);
+    setIsSubmitting(true);
 
-    const success = await onAddPatient({
-      ...formData,
-      clinicalConditions: conditions,
-    });
+    try {
+      const conditions = formData.clinicalConditions
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
 
-    if (success) {
-      setOpen(false);
-      setFormData({
-        name: "",
-        dateOfBirth: "",
-        gender: "",
-        clinicalConditions: "",
+      const success = await onAddPatient({
+        ...formData,
+        clinicalConditions: conditions,
       });
+
+      if (success) {
+        setOpen(false);
+        setFormData({
+          name: "",
+          dateOfBirth: "",
+          gender: "",
+          clinicalConditions: "",
+        });
+      } else {
+        setError("Error al crear el paciente. Por favor, intenta nuevamente.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/25 text-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground">
+        <Button variant="default" size="lg" className="max-w-[480px] w-full">
           <span className="text-lg">+</span>
           <span className="truncate">Agregar Paciente</span>
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Crear Nuevo Paciente</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-destructive/10 border border-destructive rounded text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
               Nombre del Paciente
@@ -133,19 +153,22 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
+          <div className="flex gap-3 pt-4 w-full">
+            <Button
               type="button"
+              variant="secondary"
+              className="w-1/2 px-4 py-2 rounded-lg border border-border hover:bg-secondary hover:shadow-md transition-shadow text-sm font-medium"
               onClick={() => setOpen(false)}
-              className="px-4 py-2 rounded-lg border border-border hover:bg-secondary text-sm font-medium"
+              disabled={isSubmitting}
             >
               Cancelar
-            </button>
+            </Button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-primary/25 text-foreground hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground text-sm font-medium"
+              className="w-1/2 px-4 py-2 rounded-lg bg-primary/25 text-foreground hover:bg-primary/35 hover:shadow-md dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-shadow"
+              disabled={isSubmitting}
             >
-              Guardar
+              {isSubmitting ? "Guardando..." : "Guardar"}
             </button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { createUserProfile } from "@/server/services/user_profile";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,10 @@ export function LoginForm({
 
       router.push("/");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      const userFriendlyMessage = translateErrorMessage(
+        error instanceof Error ? error.message : String(error),
+      );
+      setError(userFriendlyMessage);
     } finally {
       setIsLoading(false);
     }
