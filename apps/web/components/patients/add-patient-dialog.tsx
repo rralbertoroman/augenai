@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface AddPatientDialogProps {
   onAddPatient: (data: {
@@ -53,10 +54,10 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/25 text-foreground gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground">
+        <Button variant="default" size="lg" className="max-w-[480px] w-full">
           <span className="text-lg">+</span>
           <span className="truncate">Agregar Paciente</span>
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -134,19 +135,17 @@ export function AddPatientDialog({ onAddPatient }: AddPatientDialogProps) {
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              className="mt-2 w-full"
               onClick={() => setOpen(false)}
-              className="px-4 py-2 rounded-lg border border-border hover:bg-secondary text-sm font-medium"
             >
               Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-primary/25 text-foreground hover:bg-primary/35 dark:bg-primary/35 dark:hover:bg-primary/45 dark:text-foreground text-sm font-medium"
-            >
+            </Button>
+            <Button type="submit" variant="default" className="mt-2 w-full">
               Guardar
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

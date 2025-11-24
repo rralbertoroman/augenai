@@ -4,6 +4,7 @@ import { usePatients } from "@/hooks/use-patients";
 import { PatientList } from "@/components/patients/patient-list";
 import { PatientDetail } from "@/components/patients/patient-detail";
 import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
+import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { useState } from "react";
 
 export default function PatientsPage() {
@@ -20,8 +21,23 @@ export default function PatientsPage() {
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  if (isLoading) {
+    return (
+      <main className="flex-1 flex-col p-6">
+        <SkeletonLoader width="100%" height={60} className="mb-6" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <SkeletonLoader
+            width="100%"
+            height={320}
+            className="lg:col-span-3 mb-6"
+          />
+          <SkeletonLoader width="100%" height={320} className="lg:col-span-2" />
+        </div>
+      </main>
+    );
+  }
   return (
-    <main className="flex-1 flex-col">
+    <main className="flex-1 flex-col animate-fadein">
       <div className="border-b border-border bg-card px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -43,12 +59,8 @@ export default function PatientsPage() {
       </div>
       <div className="flex-1 p-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 lg:col-span-3">
-            {isLoading ? (
-              <p className="text-center text-muted-foreground py-8">
-                Cargando pacientes...
-              </p>
-            ) : filteredPatients.length === 0 ? (
+          <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 lg:col-span-3 animate-fadein">
+            {filteredPatients.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No se encontraron pacientes
               </p>
@@ -62,7 +74,7 @@ export default function PatientsPage() {
               </div>
             )}
           </div>
-          <div className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 lg:col-span-2">
+          <div className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 lg:col-span-2 animate-fadein">
             {selectedPatient ? (
               <PatientDetail patient={selectedPatient} />
             ) : (

@@ -25,8 +25,8 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <FixedParameters
-          diseaseId={prediction.disease_id}
-          stageIdx={prediction.stage_idx}
+          diseaseId={prediction.result.predictions[0]?.disease_id}
+          stageIdx={prediction.result.predictions[0]?.stage_idx}
           topPrediction={topPrediction}
           status={prediction.status}
           predictionId={prediction.db_prediction_id}
