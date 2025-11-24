@@ -13,21 +13,13 @@ export function PredictionList({
   selectedPrediction,
   onSelectPrediction,
 }: PredictionListProps) {
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("es-ES", {
+  const formatDate = (date: string | Date) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     });
-  };
-
-  const getOutcome = (status: string) => {
-    if (status === "success") {
-      return "Alto Riesgo de Progresión";
-    } else if (status === "pending") {
-      return "Riesgo Moderado";
-    }
-    return "Estable";
   };
 
   return (
@@ -35,16 +27,16 @@ export function PredictionList({
       <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
         <tr>
           <th className="px-6 py-3" scope="col">
-            Nombre del Paciente
+            Enfermedad Sospechada
           </th>
           <th className="px-6 py-3" scope="col">
-            Fecha de Predicción
+            Resultado
           </th>
           <th className="px-6 py-3" scope="col">
             Confianza
           </th>
           <th className="px-6 py-3" scope="col">
-            Resultado Predicho
+            Fecha
           </th>
         </tr>
       </thead>
@@ -65,7 +57,7 @@ export function PredictionList({
               className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
               scope="row"
             >
-              {prediction.patientName}
+              {prediction.disease_name}
             </th>
             <td
               className={`px-6 py-4 ${
@@ -74,25 +66,25 @@ export function PredictionList({
                   : ""
               }`}
             >
+              {prediction.stage_content}
+            </td>
+            <td
+              className={`px-6 py-4 ${
+                selectedPrediction?.id === prediction.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
+              {`${(prediction.confidence * 100).toFixed(1)}%`}
+            </td>
+            <td
+              className={`px-6 py-4 ${
+                selectedPrediction?.id === prediction.id
+                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  : ""
+              }`}
+            >
               {formatDate(prediction.createdAt)}
-            </td>
-            <td
-              className={`px-6 py-4 ${
-                selectedPrediction?.id === prediction.id
-                  ? "font-medium text-gray-800 dark:text-gray-200"
-                  : ""
-              }`}
-            >
-              {(prediction.stageIdx || 0) * 10}%
-            </td>
-            <td
-              className={`px-6 py-4 ${
-                selectedPrediction?.id === prediction.id
-                  ? "font-medium text-gray-800 dark:text-gray-200"
-                  : ""
-              }`}
-            >
-              {getOutcome(prediction.status)}
             </td>
           </tr>
         ))}

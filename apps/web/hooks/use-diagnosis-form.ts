@@ -1,5 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadEyeScan } from "@/lib/supabase/storage";
+import { translateErrorMessage } from "@/lib/error-translator";
+import { useSearchParams } from "next/navigation";
 
 interface ScanData {
   patientId: string;
@@ -14,9 +16,12 @@ interface ScanData {
 }
 
 export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
+  const searchParams = useSearchParams();
+  const patientIdFromUrl = searchParams.get("patientId");
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ScanData>({
-    patientId: "",
+    patientId: patientIdFromUrl || "",
     task: "",
     imageType: "",
     diseases: [],
@@ -111,14 +116,29 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       formData.imageType.toLowerCase() === "fundus" ? "fundus" : "oct";
 
     setIsUploading(true);
-    setUploadProgress(30);
+    setUploadProgress(10);
+
+    // Simulate gradual progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 15;
+      });
+    }, 150);
 
     const { path, error } = await uploadEyeScan(file, imageType);
 
+    clearInterval(progressInterval);
     setUploadProgress(100);
 
+    // Small delay to show 100% before hiding
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
     if (error) {
-      setErrors((prev) => ({ ...prev, file: `Error al subir: ${error}` }));
+      const userFriendlyError = translateErrorMessage(
+        `Error al subir imagen: ${error}`,
+      );
+      setErrors((prev) => ({ ...prev, file: userFriendlyError }));
       setIsUploading(false);
       setUploadProgress(0);
       URL.revokeObjectURL(previewUrl);
@@ -150,24 +170,24 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
 
     if (step === 1) {
       if (!formData.patientId.trim()) {
-        newErrors.patientId = "Patient is required";
+        newErrors.patientId = "El paciente es requerido";
       }
     } else if (step === 2) {
       if (!formData.task.trim()) {
-        newErrors.task = "Task is required";
+        newErrors.task = "La tarea es requerida";
       }
       if (!formData.imageType.trim()) {
-        newErrors.imageType = "Image type is required";
+        newErrors.imageType = "El tipo de imagen es requerido";
       }
     } else if (step === 3) {
       if (!selectedFile) {
-        newErrors.file = "Please select a file";
+        newErrors.file = "Por favor selecciona un archivo";
       }
       if (!storagePath) {
-        newErrors.file = "Waiting for upload to complete";
+        newErrors.file = "Esperando a que se complete la carga";
       }
       if (formData.diseases.length === 0) {
-        newErrors.diseases = "Select at least one disease";
+        newErrors.diseases = "Selecciona al menos una enfermedad";
       }
     }
 
