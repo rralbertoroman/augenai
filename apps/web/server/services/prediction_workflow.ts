@@ -5,12 +5,6 @@ import {
   AI_PREDICTION_SERVICE_SECRET_KEY,
   ENVIRONMENT,
 } from "../constants";
-import {
-  PredictionStatus,
-  type AIServicePredictionResponse,
-  type ClassificationObject,
-  type EnrichedClassificationObject,
-} from "@/types/prediction";
 import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
@@ -24,6 +18,9 @@ import {
   type PredictionWorkflowInput,
   type PredictionResponse,
   type MultiplePredictionsResponse,
+  type AIServicePredictionResponse,
+  type PredictionDiagnosis,
+  type EnrichedPredictionDiagnosis,
 } from "../zod-schemas/prediction_workflow";
 
 export async function processPredictionRequest(
@@ -131,7 +128,7 @@ async function processModelPrediction(
 
   if (
     !predictionResult ||
-    predictionResult.status === PredictionStatus.ERROR ||
+    predictionResult.status === "error" ||
     !predictionResult.result?.predictions?.length
   ) {
     return null;
@@ -175,10 +172,10 @@ async function processModelPrediction(
 }
 
 async function enrichPredictionData(
-  predictions: ClassificationObject[],
+  predictions: PredictionDiagnosis[],
   modelId: string,
-): Promise<EnrichedClassificationObject[]> {
-  const enrichedPredictions: EnrichedClassificationObject[] = [];
+): Promise<EnrichedPredictionDiagnosis[]> {
+  const enrichedPredictions: EnrichedPredictionDiagnosis[] = [];
 
   for (const pred of predictions) {
     const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
