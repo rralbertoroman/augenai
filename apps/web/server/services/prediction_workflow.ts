@@ -26,32 +26,43 @@ import {
 export async function processPredictionRequest(
   input: PredictionWorkflowInput,
 ): Promise<MultiplePredictionsResponse> {
+  console.log("[PREDICTION_WORKFLOW] Starting prediction request", { input });
   const validatedInput = PredictionWorkflowInputSchema.parse(input);
   const { task, imageType, diseases, storagePath, bucketName } = validatedInput;
+  console.log("[PREDICTION_WORKFLOW] Validated input", { task, imageType, diseases, storagePath, bucketName });
 
   // 1. Select optimal models
+  console.log("[PREDICTION_WORKFLOW] Selecting optimal models...");
   const selectedModels = await selectOptimalModels(task, imageType, diseases);
+  console.log("[PREDICTION_WORKFLOW] Selected models", { count: selectedModels.length, models: selectedModels.map(m => ({ id: m.id, name: m.name })) });
 
   if (selectedModels.length === 0) {
+    console.error("[PREDICTION_WORKFLOW] No suitable models found");
     throw new Error("No suitable models found for the given criteria");
   }
 
   // 2. Download image
+  console.log("[PREDICTION_WORKFLOW] Downloading image from storage...", { bucketName, storagePath });
   const { imageBlob, fileName } = await downloadImageFromStorage(
     bucketName,
     storagePath,
   );
+  console.log("[PREDICTION_WORKFLOW] Image downloaded", { fileName, size: imageBlob.size });
 
   // 3. Create prediction request record
+  console.log("[PREDICTION_WORKFLOW] Saving prediction request...");
   const predictionRequest = await savePredictionRequest(
     validatedInput,
     selectedModels,
   );
+  console.log("[PREDICTION_WORKFLOW] Prediction request saved", { requestId: predictionRequest.id });
 
   // 4. Run predictions
+  console.log("[PREDICTION_WORKFLOW] Starting predictions for all models...");
   const allPredictions: PredictionResponse[] = [];
 
   for (const model of selectedModels) {
+    console.log("[PREDICTION_WORKFLOW] Processing prediction for model", { modelId: model.id, modelName: model.name });
     const predictionResponse = await processModelPrediction(
       model,
       imageBlob,
@@ -60,14 +71,19 @@ export async function processPredictionRequest(
     );
 
     if (predictionResponse) {
+      console.log("[PREDICTION_WORKFLOW] Prediction successful for model", { modelName: model.name });
       allPredictions.push(predictionResponse);
+    } else {
+      console.warn("[PREDICTION_WORKFLOW] Prediction failed for model", { modelName: model.name });
     }
   }
 
   if (allPredictions.length === 0) {
+    console.error("[PREDICTION_WORKFLOW] All model predictions failed");
     throw new Error("All model predictions failed");
   }
 
+  console.log("[PREDICTION_WORKFLOW] Prediction workflow completed successfully", { predictionsCount: allPredictions.length });
   return {
     predictions: allPredictions,
     models_used: selectedModels.map((m) => m.name),
@@ -184,6 +200,7 @@ async function enrichPredictionData(
     });
 
     if (!classInfo) {
+      console.error("[PREDICTION_WORKFLOW] Disease mapping not found", { classId: pred.class_id, modelId });
       throw new Error(
         `Disease mapping not found for class_id ${pred.class_id} and model ${modelId}`,
       );
@@ -227,7 +244,13 @@ async function fetchPredictionFromAIService(
     );
 
     if (!predictionResponse.ok) {
-      await predictionResponse.json().catch(() => ({}));
+      const errorData = await predictionResponse.json().catch(() => ({}));
+      console.error("[PREDICTION_WORKFLOW] AI Service returned error", { 
+        status: predictionResponse.status, 
+        statusText: predictionResponse.statusText,
+        modelName,
+        errorData 
+      });
       return null;
     }
 
