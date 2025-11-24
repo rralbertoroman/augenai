@@ -21,14 +21,6 @@ export {
   type PatientDTO,
 } from "./patient";
 
-// Prediction schemas
-export {
-  CreatePredictionSchema,
-  PredictionDTOSchema,
-  type CreatePredictionInput,
-  type PredictionDTO,
-} from "./prediction";
-
 // Prediction Class Disease schemas
 export {
   PredictionClassDiseaseDTOSchema,
@@ -62,11 +54,17 @@ export {
 // Prediction Workflow schemas
 export {
   PredictionWorkflowInputSchema,
+  PredictionDiagnosisSchema,
+  EnrichedPredictionDiagnosisSchema,
   PredictionResponseSchema,
   MultiplePredictionsResponseSchema,
+  AIServicePredictionResponseSchema,
   type PredictionWorkflowInput,
+  type PredictionDiagnosis,
+  type EnrichedPredictionDiagnosis,
   type PredictionResponse,
   type MultiplePredictionsResponse,
+  type AIServicePredictionResponse,
 } from "./prediction_workflow";
 
 // Prediction Request schemas
@@ -84,3 +82,13 @@ export {
   type CreatePredictionSharingInput,
   type PredictionSharingDTO,
 } from "./prediction_sharing";
+
+// Prediction schemas
+export {
+  CreatePredictionSchema,
+  PredictionDTOSchema,
+  EnrichedPredictionDTOSchema,
+  type CreatePredictionInput,
+  type PredictionDTO,
+  type EnrichedPredictionDTO,
+} from "./prediction";
