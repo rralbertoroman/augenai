@@ -73,10 +73,6 @@ const MOCK_SAVED_PREDICTION: PredictionDTO = {
   id: "123e4567-e89b-12d3-a456-426614174004",
   requestId: MOCK_PREDICTION_REQUEST.id,
   modelId: MOCK_MODEL_ID,
-  predictionResult: {
-    classId: "class-1",
-    confidence: 0.95,
-  },
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
 };
@@ -168,7 +164,7 @@ describe("POST /api/predictions", () => {
     // 4. Setup Prediction Request Creation Mock
     vi.mocked(
       predictionRequestService.createPredictionRequest,
-    ).mockResolvedValue(MOCK_PREDICTION_REQUEST);
+    ).mockImplementation(async (_token, _data) => MOCK_PREDICTION_REQUEST);
 
     // NO MOCK for global.fetch - we want to hit the real service
 

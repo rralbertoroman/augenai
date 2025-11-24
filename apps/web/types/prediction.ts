@@ -16,7 +16,6 @@ export interface PredictionMetadata {
  */
 export interface ClassificationObject {
   class_id: number;
-  class_name: string;
   confidence: number;
 }
 

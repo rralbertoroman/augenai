@@ -16,3 +16,5 @@ export { default as FeedbackTable } from "./feedback";
 export * from "./feedback";
 export { default as PredictionSharingTable } from "./prediction_sharing";
 export * from "./prediction_sharing";
+export { default as PredictionDiagnosesTable } from "./prediction_diagnosis";
+export * from "./prediction_diagnosis";

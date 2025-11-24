@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const CreatePredictionSharingSchema = z.object({
   predictionId: z.uuid(),
-  userId: z.uuid(),
   hasFeedback: z.boolean().optional(),
 });
 
