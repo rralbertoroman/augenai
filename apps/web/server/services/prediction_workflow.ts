@@ -14,6 +14,7 @@ import {
 import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import { createPredictionDiagnoses } from "./prediction_diagnosis";
 import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
 import { type OptimalModel } from "../zod-schemas/model";
@@ -104,8 +105,7 @@ async function savePredictionRequest(
   input: PredictionWorkflowInput,
   selectedModels: OptimalModel[],
 ) {
-  return await createPredictionRequest({
-    userId: input.userId,
+  return await createPredictionRequest(input.token, {
     patientId: input.patientId,
     task: input.task,
     imageType: input.imageType,
@@ -141,8 +141,21 @@ async function processModelPrediction(
   const savedPrediction = await createPrediction({
     requestId,
     modelId: model.id,
-    predictionResult: predictionResult.result,
   });
+
+  // 2.1 Save Diagnoses
+  if (
+    predictionResult.result.predictions &&
+    predictionResult.result.predictions.length > 0
+  ) {
+    await createPredictionDiagnoses(
+      predictionResult.result.predictions.map((p) => ({
+        predictionId: savedPrediction.id,
+        classId: p.class_id,
+        confidence: p.confidence,
+      })),
+    );
+  }
 
   // 3. Enrich Data
   const enrichedPredictions = await enrichPredictionData(

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { PredictionStatus } from "@/types/prediction";
 
 export const PredictionWorkflowInputSchema = z.object({
-  userId: z.uuid(),
+  token: z.string().min(1),
   storagePath: z.string().min(1),
   bucketName: z.string().min(1),
   patientId: z.uuid(),
@@ -18,7 +18,6 @@ export const PredictionMetadataSchema = z.object({
 
 export const EnrichedClassificationObjectSchema = z.object({
   class_id: z.number(),
-  class_name: z.string(),
   confidence: z.number(),
   disease_id: z.string(),
   disease_name: z.string(),

@@ -1,9 +1,10 @@
-import { pgTable, uuid, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, uuid } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { standardSchema } from "./base_schemas";
 import ModelsTable from "./model";
 import PredictionRequestsTable from "./prediction_request";
 import PredictionSharingTable from "./prediction_sharing";
+import PredictionDiagnosesTable from "./prediction_diagnosis";
 
 const PredictionsTable = pgTable("predictions", {
   ...standardSchema,
@@ -13,7 +14,6 @@ const PredictionsTable = pgTable("predictions", {
   modelId: uuid("model_id")
     .notNull()
     .references(() => ModelsTable.id),
-  predictionResult: jsonb("prediction_result").notNull(),
 });
 
 export const predictionsRelations = relations(
@@ -28,6 +28,7 @@ export const predictionsRelations = relations(
       references: [PredictionRequestsTable.id],
     }),
     sharings: many(PredictionSharingTable),
+    diagnoses: many(PredictionDiagnosesTable),
   }),
 );
 

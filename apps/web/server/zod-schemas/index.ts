@@ -15,11 +15,9 @@ export {
 export {
   CreatePatientSchema,
   UpdatePatientSchema,
-  DeletePatientSchema,
   PatientDTOSchema,
   type CreatePatientInput,
   type UpdatePatientInput,
-  type DeletePatientInput,
   type PatientDTO,
 } from "./patient";
 
@@ -57,12 +55,8 @@ export {
 export {
   CreateFeedbackSchema,
   FeedbackDTOSchema,
-  GetFeedbackByPredictionSchema,
   type CreateFeedbackInput,
   type FeedbackDTO,
-  type GetFeedbackByPredictionInput,
-  type FeedbackItem,
-  type FeedbackItemContent,
 } from "./feedback";
 
 // Prediction Workflow schemas

@@ -64,6 +64,13 @@
       "when": 1763922144658,
       "tag": "0008_patients_and_doctor_relations",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1763954958935,
+      "tag": "0009_prediction_diagnoses",
+      "breakpoints": true
     }
   ]
 }

@@ -6,8 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get authenticated user (validates token from headers)
     const token = await getTokenFromHeaders();
-    const currentUser = await getCurrentUser(token);
-    const userId = currentUser.userId;
+    await getCurrentUser(token);
 
     const formData = await request.formData();
 
@@ -74,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Call service with clean, validated data
     try {
       const response = await processPredictionRequest({
-        userId,
+        token,
         storagePath,
         bucketName,
         patientId,
