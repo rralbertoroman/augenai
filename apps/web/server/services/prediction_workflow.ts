@@ -12,6 +12,7 @@ import { createPredictionDiagnoses } from "./prediction_diagnosis";
 import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
 import { type OptimalModel } from "../zod-schemas/model";
+import { sendPredictionToSupervisor } from "./prediction_sharing";
 
 import {
   PredictionWorkflowInputSchema,
@@ -29,12 +30,21 @@ export async function processPredictionRequest(
   console.log("[PREDICTION_WORKFLOW] Starting prediction request", { input });
   const validatedInput = PredictionWorkflowInputSchema.parse(input);
   const { task, imageType, diseases, storagePath, bucketName } = validatedInput;
-  console.log("[PREDICTION_WORKFLOW] Validated input", { task, imageType, diseases, storagePath, bucketName });
+  console.log("[PREDICTION_WORKFLOW] Validated input", {
+    task,
+    imageType,
+    diseases,
+    storagePath,
+    bucketName,
+  });
 
   // 1. Select optimal models
   console.log("[PREDICTION_WORKFLOW] Selecting optimal models...");
   const selectedModels = await selectOptimalModels(task, imageType, diseases);
-  console.log("[PREDICTION_WORKFLOW] Selected models", { count: selectedModels.length, models: selectedModels.map(m => ({ id: m.id, name: m.name })) });
+  console.log("[PREDICTION_WORKFLOW] Selected models", {
+    count: selectedModels.length,
+    models: selectedModels.map((m) => ({ id: m.id, name: m.name })),
+  });
 
   if (selectedModels.length === 0) {
     console.error("[PREDICTION_WORKFLOW] No suitable models found");
@@ -42,12 +52,18 @@ export async function processPredictionRequest(
   }
 
   // 2. Download image
-  console.log("[PREDICTION_WORKFLOW] Downloading image from storage...", { bucketName, storagePath });
+  console.log("[PREDICTION_WORKFLOW] Downloading image from storage...", {
+    bucketName,
+    storagePath,
+  });
   const { imageBlob, fileName } = await downloadImageFromStorage(
     bucketName,
     storagePath,
   );
-  console.log("[PREDICTION_WORKFLOW] Image downloaded", { fileName, size: imageBlob.size });
+  console.log("[PREDICTION_WORKFLOW] Image downloaded", {
+    fileName,
+    size: imageBlob.size,
+  });
 
   // 3. Create prediction request record
   console.log("[PREDICTION_WORKFLOW] Saving prediction request...");
@@ -55,14 +71,19 @@ export async function processPredictionRequest(
     validatedInput,
     selectedModels,
   );
-  console.log("[PREDICTION_WORKFLOW] Prediction request saved", { requestId: predictionRequest.id });
+  console.log("[PREDICTION_WORKFLOW] Prediction request saved", {
+    requestId: predictionRequest.id,
+  });
 
   // 4. Run predictions
   console.log("[PREDICTION_WORKFLOW] Starting predictions for all models...");
   const allPredictions: PredictionResponse[] = [];
 
   for (const model of selectedModels) {
-    console.log("[PREDICTION_WORKFLOW] Processing prediction for model", { modelId: model.id, modelName: model.name });
+    console.log("[PREDICTION_WORKFLOW] Processing prediction for model", {
+      modelId: model.id,
+      modelName: model.name,
+    });
     const predictionResponse = await processModelPrediction(
       model,
       imageBlob,
@@ -71,10 +92,28 @@ export async function processPredictionRequest(
     );
 
     if (predictionResponse) {
-      console.log("[PREDICTION_WORKFLOW] Prediction successful for model", { modelName: model.name });
+      console.log("[PREDICTION_WORKFLOW] Prediction successful for model", {
+        modelName: model.name,
+      });
       allPredictions.push(predictionResponse);
+
+      // Share with supervisor if applicable
+      try {
+        await sendPredictionToSupervisor(
+          input.token,
+          predictionResponse.db_prediction_id,
+        );
+      } catch (error) {
+        console.error(
+          "[PREDICTION_WORKFLOW] Failed to share prediction with supervisor",
+          error,
+        );
+        // Do not fail the workflow if sharing fails
+      }
     } else {
-      console.warn("[PREDICTION_WORKFLOW] Prediction failed for model", { modelName: model.name });
+      console.warn("[PREDICTION_WORKFLOW] Prediction failed for model", {
+        modelName: model.name,
+      });
     }
   }
 
@@ -83,7 +122,10 @@ export async function processPredictionRequest(
     throw new Error("All model predictions failed");
   }
 
-  console.log("[PREDICTION_WORKFLOW] Prediction workflow completed successfully", { predictionsCount: allPredictions.length });
+  console.log(
+    "[PREDICTION_WORKFLOW] Prediction workflow completed successfully",
+    { predictionsCount: allPredictions.length },
+  );
   return {
     predictions: allPredictions,
     models_used: selectedModels.map((m) => m.name),
@@ -200,7 +242,10 @@ async function enrichPredictionData(
     });
 
     if (!classInfo) {
-      console.error("[PREDICTION_WORKFLOW] Disease mapping not found", { classId: pred.class_id, modelId });
+      console.error("[PREDICTION_WORKFLOW] Disease mapping not found", {
+        classId: pred.class_id,
+        modelId,
+      });
       throw new Error(
         `Disease mapping not found for class_id ${pred.class_id} and model ${modelId}`,
       );
@@ -245,11 +290,11 @@ async function fetchPredictionFromAIService(
 
     if (!predictionResponse.ok) {
       const errorData = await predictionResponse.json().catch(() => ({}));
-      console.error("[PREDICTION_WORKFLOW] AI Service returned error", { 
-        status: predictionResponse.status, 
+      console.error("[PREDICTION_WORKFLOW] AI Service returned error", {
+        status: predictionResponse.status,
         statusText: predictionResponse.statusText,
         modelName,
-        errorData 
+        errorData,
       });
       return null;
     }
