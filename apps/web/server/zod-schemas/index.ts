@@ -45,23 +45,47 @@ export {
 
 // Feedback schemas
 export {
-  CreateFeedbackSchema,
-  FeedbackDTOSchema,
-  type CreateFeedbackInput,
-  type FeedbackDTO,
-} from "./feedback";
+  CreateClassificationFeedbackSchema,
+  ClassificationFeedbackDTOSchema,
+  type CreateClassificationFeedbackInput,
+  type ClassificationFeedbackDTO,
+} from "./classification_feedback";
+
+// Classification schemas
+export {
+  CreateClassificationSchema,
+  ClassificationSchema,
+  type CreateClassificationInput,
+  type ClassificationDTO,
+} from "./classification";
+
+// Detection schemas
+export {
+  CreateDetectionSchema,
+  DetectionSchema,
+  type CreateDetectionInput,
+  type DetectionDTO,
+} from "./detection";
+
+// Detection Feedback schemas
+export {
+  CreateDetectionFeedbackSchema,
+  DetectionFeedbackDTOSchema,
+  type CreateDetectionFeedbackInput,
+  type DetectionFeedbackDTO,
+} from "./detection_feedback";
 
 // Prediction Workflow schemas
 export {
   PredictionWorkflowInputSchema,
-  PredictionDiagnosisSchema,
-  EnrichedPredictionDiagnosisSchema,
+  ClassificationSchema as WorkflowClassificationSchema,
+  EnrichedClassificationSchema,
   PredictionResponseSchema,
   MultiplePredictionsResponseSchema,
   AIServicePredictionResponseSchema,
   type PredictionWorkflowInput,
-  type PredictionDiagnosis,
-  type EnrichedPredictionDiagnosis,
+  type Classification as WorkflowClassification,
+  type EnrichedClassification,
   type PredictionResponse,
   type MultiplePredictionsResponse,
   type AIServicePredictionResponse,
