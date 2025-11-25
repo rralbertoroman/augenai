@@ -71,7 +71,7 @@ export function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
-          {/* <ThemeToggle /> */}
+          <ThemeToggle />
           <UserMenu />
         </div>
       </div>

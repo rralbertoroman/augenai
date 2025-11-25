@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { uploadEyeScan } from "@/lib/supabase/storage";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { useSearchParams } from "next/navigation";
