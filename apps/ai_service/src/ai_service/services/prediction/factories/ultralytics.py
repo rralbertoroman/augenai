@@ -45,10 +45,13 @@ def ultralytics_detection_factory(model_id: str):
                 for box, conf, class_id in zip(
                     result.boxes.xywhn, result.boxes.conf, result.boxes.cls
                 ):
+                    box[::2] *= image.width
+                    box[1::2] *= image.height
                     box = box.tolist()
 
                     # Convert from center x, center y, width, height to left, top, width, height
                     x_center, y_center, width, height = box
+
                     left = x_center - (width / 2)
                     top = y_center - (height / 2)
                     box = [left, top, width, height]
@@ -64,8 +67,7 @@ def ultralytics_detection_factory(model_id: str):
             return DetectionResult(
                 predictions=detection_objects,
                 metadata=PredictionMetadata(
-                    inference_time_ms=results[0].speed.get("inference", 0)
-                    * 1000,  # Convert to ms
+                    inference_time_ms=results[0].speed.get("inference", 0),
                     model_version=getattr(self.model, "__version__", "unknown"),
                 ),
             )
