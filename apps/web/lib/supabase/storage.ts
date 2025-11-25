@@ -31,7 +31,7 @@ export async function uploadEyeScan(
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         const timestamp = Date.now();
-        const filePath = `${imageType}/${timestamp}-${file.name}`;
+        const filePath = `inputs/${imageType}/${timestamp}-${file.name}`;
 
         // Upload using Supabase client - basic format
         const { data, error } = await supabase.storage

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { translateErrorMessage } from "@/lib/error-translator";
 
 interface ScanData {
@@ -14,9 +15,9 @@ interface ScanData {
 }
 
 export function useDiagnosisPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showResultsModal, setShowResultsModal] = useState(false);
 
   const handleScanSubmit = async (data: ScanData) => {
     setIsLoading(true);
@@ -64,8 +65,13 @@ export function useDiagnosisPage() {
         throw new Error(errorMessage);
       }
 
-      // Prediction submitted successfully, show modal
-      setShowResultsModal(true);
+      const result = await response.json();
+      const requestId = result.request_id || result.requestId;
+
+      // Redirigir a la página de detalle de la request
+      if (requestId) {
+        router.push(`/diagnosis/${requestId}`);
+      }
     } catch (error) {
       const userFriendlyError = translateErrorMessage(
         error instanceof Error ? error.message : "Error desconocido",
@@ -79,8 +85,6 @@ export function useDiagnosisPage() {
   return {
     isLoading,
     error,
-    showResultsModal,
-    setShowResultsModal,
     handleScanSubmit,
   };
 }
