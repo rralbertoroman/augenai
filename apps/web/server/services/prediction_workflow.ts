@@ -8,7 +8,8 @@ import {
 import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
-import { createPredictionDiagnoses } from "./prediction_diagnosis";
+import { createClassifications } from "./classification";
+import { createDetections } from "./detection";
 import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
 import { type OptimalModel } from "../zod-schemas/model";
@@ -20,8 +21,10 @@ import {
   type PredictionResponse,
   type MultiplePredictionsResponse,
   type AIServicePredictionResponse,
-  type PredictionDiagnosis,
-  type EnrichedPredictionDiagnosis,
+  type Classification,
+  type EnrichedClassification,
+  type Detection,
+  type EnrichedDetection,
 } from "../zod-schemas/prediction_workflow";
 
 export async function processPredictionRequest(
@@ -187,7 +190,8 @@ async function processModelPrediction(
   if (
     !predictionResult ||
     predictionResult.status === "error" ||
-    !predictionResult.result?.predictions?.length
+    (!predictionResult.result?.predictions?.length &&
+      !predictionResult.result?.detections?.length)
   ) {
     return null;
   }
@@ -198,12 +202,12 @@ async function processModelPrediction(
     modelId: model.id,
   });
 
-  // 2.1 Save Diagnoses
+  // 2.1 Save Classifications
   if (
     predictionResult.result.predictions &&
     predictionResult.result.predictions.length > 0
   ) {
-    await createPredictionDiagnoses(
+    await createClassifications(
       predictionResult.result.predictions.map((p) => ({
         predictionId: savedPrediction.id,
         classId: p.class_id,
@@ -212,17 +216,49 @@ async function processModelPrediction(
     );
   }
 
+  // 2.2 Save Detections
+  if (
+    predictionResult.result.detections &&
+    predictionResult.result.detections.length > 0
+  ) {
+    await createDetections(
+      predictionResult.result.detections.map((d) => ({
+        predictionId: savedPrediction.id,
+        classId: d.class_id,
+        confidence: d.confidence,
+        xLeft: d.x_left,
+        yTop: d.y_top,
+        width: d.width,
+        height: d.height,
+      })),
+    );
+  }
+
   // 3. Enrich Data
-  const enrichedPredictions = await enrichPredictionData(
-    predictionResult.result.predictions,
-    model.id,
-  );
+  let enrichedPredictions: EnrichedClassification[] = [];
+  if (predictionResult.result.predictions) {
+    enrichedPredictions = await enrichPredictionData(
+      predictionResult.result.predictions,
+      model.id,
+    );
+  }
+
+  let enrichedDetections: EnrichedDetection[] = [];
+  if (predictionResult.result.detections) {
+    enrichedDetections = await enrichDetectionData(
+      predictionResult.result.detections,
+      model.id,
+    );
+  }
 
   return {
     status: predictionResult.status,
     error: predictionResult.error,
     result: {
-      predictions: enrichedPredictions,
+      predictions:
+        enrichedPredictions.length > 0 ? enrichedPredictions : undefined,
+      detections:
+        enrichedDetections.length > 0 ? enrichedDetections : undefined,
       metadata: predictionResult.result.metadata,
     },
     db_prediction_id: savedPrediction.id,
@@ -230,10 +266,10 @@ async function processModelPrediction(
 }
 
 async function enrichPredictionData(
-  predictions: PredictionDiagnosis[],
+  predictions: Classification[],
   modelId: string,
-): Promise<EnrichedPredictionDiagnosis[]> {
-  const enrichedPredictions: EnrichedPredictionDiagnosis[] = [];
+): Promise<EnrichedClassification[]> {
+  const enrichedPredictions: EnrichedClassification[] = [];
 
   for (const pred of predictions) {
     const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
@@ -261,6 +297,40 @@ async function enrichPredictionData(
   }
 
   return enrichedPredictions;
+}
+
+async function enrichDetectionData(
+  detections: Detection[],
+  modelId: string,
+): Promise<EnrichedDetection[]> {
+  const enrichedDetections: EnrichedDetection[] = [];
+
+  for (const det of detections) {
+    const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+      classId: det.class_id,
+      modelId: modelId,
+    });
+
+    if (!classInfo) {
+      console.error("[PREDICTION_WORKFLOW] Disease mapping not found", {
+        classId: det.class_id,
+        modelId,
+      });
+      throw new Error(
+        `Disease mapping not found for class_id ${det.class_id} and model ${modelId}`,
+      );
+    }
+
+    enrichedDetections.push({
+      ...det,
+      disease_id: classInfo.diseaseId,
+      disease_name: classInfo.diseaseName,
+      stage_idx: classInfo.stageIdx,
+      stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+    });
+  }
+
+  return enrichedDetections;
 }
 
 async function fetchPredictionFromAIService(

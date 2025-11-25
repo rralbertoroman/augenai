@@ -22,7 +22,17 @@ export const EnrichedPredictionDTOSchema = z.object({
   stage_idx: z.number(),
   stage_content: z.string(),
   patient_id: z.string(),
+  request_id: z.string(),
   createdAt: z.date(),
+  type: z.enum(["classification", "detection"]).optional(),
+  bbox: z
+    .object({
+      x_left: z.number(),
+      y_top: z.number(),
+      width: z.number(),
+      height: z.number(),
+    })
+    .optional(),
 });
 
 // INPUT TYPES

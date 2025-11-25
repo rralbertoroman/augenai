@@ -45,7 +45,8 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
     with: {
       predictions: {
         with: {
-          diagnoses: true,
+          classifications: true,
+          detections: true,
         },
       },
       patient: true,
@@ -59,32 +60,73 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
 
   for (const request of predictionRequests) {
     for (const prediction of request.predictions) {
-      if (!prediction.diagnoses || !Array.isArray(prediction.diagnoses))
-        continue;
+      // Process Classifications
+      if (
+        prediction.classifications &&
+        Array.isArray(prediction.classifications)
+      ) {
+        for (const classification of prediction.classifications) {
+          const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+            classId: classification.classId,
+            modelId: prediction.modelId,
+          });
 
-      for (const diagnosis of prediction.diagnoses) {
-        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: diagnosis.classId,
-          modelId: prediction.modelId,
-        });
+          if (!classInfo) {
+            throw new Error(
+              `Disease mapping not found for class_id ${classification.classId} and model ${prediction.modelId}`,
+            );
+          }
 
-        if (!classInfo) {
-          throw new Error(
-            `Disease mapping not found for class_id ${diagnosis.classId} and model ${prediction.modelId}`,
-          );
+          enrichedPredictions.push({
+            id: classification.id,
+            class_id: classification.classId,
+            confidence: classification.confidence,
+            disease_id: classInfo.diseaseId,
+            disease_name: classInfo.diseaseName,
+            stage_idx: classInfo.stageIdx,
+            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+            patient_id: request.patientId,
+            request_id: request.id,
+            createdAt: classification.createdAt,
+            type: "classification",
+          });
         }
+      }
 
-        enrichedPredictions.push({
-          id: diagnosis.id,
-          class_id: diagnosis.classId,
-          confidence: diagnosis.confidence,
-          disease_id: classInfo.diseaseId,
-          disease_name: classInfo.diseaseName,
-          stage_idx: classInfo.stageIdx,
-          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-          patient_id: request.patientId,
-          createdAt: diagnosis.createdAt,
-        });
+      // Process Detections
+      if (prediction.detections && Array.isArray(prediction.detections)) {
+        for (const detection of prediction.detections) {
+          const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+            classId: detection.classId,
+            modelId: prediction.modelId,
+          });
+
+          if (!classInfo) {
+            throw new Error(
+              `Disease mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
+            );
+          }
+
+          enrichedPredictions.push({
+            id: detection.id,
+            class_id: detection.classId,
+            confidence: detection.confidence,
+            disease_id: classInfo.diseaseId,
+            disease_name: classInfo.diseaseName,
+            stage_idx: classInfo.stageIdx,
+            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+            patient_id: request.patientId,
+            request_id: request.id,
+            createdAt: detection.createdAt,
+            type: "detection",
+            bbox: {
+              x_left: detection.xLeft,
+              y_top: detection.yTop,
+              width: detection.width,
+              height: detection.height,
+            },
+          });
+        }
       }
     }
   }
