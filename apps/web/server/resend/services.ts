@@ -12,19 +12,17 @@ if (!RESEND_FROM_EMAIL) {
 }
 
 export async function sendPredictionSharedEmail(
-  token: string,
-  sharedToUserProfileId: string,
+  sharedByUserId: string,
+  sharedToUserId: string,
   predictionUrl: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const currentUser = await getCurrentUser(token);
-
-    const sharedToProfile = await getUserProfileById(sharedToUserProfileId);
+    const sharedToProfile = await getUserProfileById(sharedToUserId);
     if (!sharedToProfile) {
       return { success: false, error: "User profile not found" };
     }
 
-    const sharedByProfile = await getUserProfileById(currentUser.userId);
+    const sharedByProfile = await getUserProfileById(sharedByUserId);
     if (!sharedByProfile) {
       return { success: false, error: "Shared by user profile not found" };
     }

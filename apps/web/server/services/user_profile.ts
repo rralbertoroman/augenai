@@ -129,3 +129,38 @@ export const deleteUserProfile = async (
 
   return deleted.length > 0;
 };
+
+export const addSupervisor = async (
+  token: string,
+  supervisorId: string,
+): Promise<UserProfileDTO> => {
+  const currentUser = await getCurrentUser(token);
+
+  // Prevent user from setting themselves as supervisor
+  if (currentUser.userId === supervisorId) {
+    throw new Error("Cannot set yourself as your own supervisor");
+  }
+
+  // Verify supervisor exists and has the correct role
+  const supervisor = await getUserProfileById(supervisorId);
+  if (!supervisor) {
+    throw new Error("Supervisor not found");
+  }
+
+  if (supervisor.role !== "supervisor") {
+    throw new Error("User is not a supervisor");
+  }
+
+  // Update current user's profile
+  const [updatedProfile] = await db
+    .update(UserProfilesTable)
+    .set({ supervisorId })
+    .where(eq(UserProfilesTable.id, currentUser.userId))
+    .returning();
+
+  if (!updatedProfile) {
+    throw new Error("Error adding supervisor");
+  }
+
+  return updatedProfile;
+};
