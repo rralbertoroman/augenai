@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "../db/client";
 import { PredictionSharingTable } from "../db/schemas";
 import {
@@ -13,6 +13,8 @@ import {
   type PredictionSharingDTO,
 } from "../zod-schemas/prediction_sharing";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import { sendPredictionSharedEmail } from "../resend/services";
+import { getUserProfileById } from "./user_profile";
 
 export const createPredictionSharing = async (
   token: string,
@@ -60,4 +62,75 @@ export const getPredictionSharingsByUser = async (
     .from(PredictionSharingTable)
     .where(eq(PredictionSharingTable.userId, userId));
   return sharings;
+};
+
+export const getPredictionSharingByUserAndPrediction = async (
+  userId: string,
+  predictionId: string,
+): Promise<PredictionSharingDTO | null> => {
+  const [sharing] = await db
+    .select()
+    .from(PredictionSharingTable)
+    .where(
+      and(
+        eq(PredictionSharingTable.userId, userId),
+        eq(PredictionSharingTable.predictionId, predictionId),
+      ),
+    );
+
+  return sharing || null;
+};
+
+export const sharePrediction = async (
+  token: string,
+  predictionId: string,
+  recipientId: string,
+): Promise<{ success: boolean; error?: string }> => {
+  // Get current user
+  const currentUser = await getCurrentUser(token);
+
+  // Check if already shared
+  const existingSharing = await getPredictionSharingByUserAndPrediction(
+    recipientId,
+    predictionId,
+  );
+
+  if (existingSharing) {
+    return {
+      success: false,
+      error: "Prediction already shared with this user",
+    };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const predictionUrl = `${appUrl}/predictions/${predictionId}`;
+
+  const result = await sendPredictionSharedEmail(
+    currentUser.userId,
+    recipientId,
+    predictionUrl,
+  );
+
+  if (result.success) {
+    // Create sharing record
+    await db.insert(PredictionSharingTable).values({
+      predictionId,
+      userId: recipientId,
+      hasFeedback: false,
+    });
+  }
+
+  return result;
+};
+
+export const sendPredictionToSupervisor = async (
+  token: string,
+  predictionId: string,
+): Promise<void> => {
+  const user = await getCurrentUser(token);
+  const profile = await getUserProfileById(user.userId);
+
+  if (profile?.supervisorId) {
+    await sharePrediction(token, predictionId, profile.supervisorId);
+  }
 };
