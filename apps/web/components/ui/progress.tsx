@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 interface ProgressProps {
   value: number;
@@ -6,9 +6,9 @@ interface ProgressProps {
 }
 
 export function Progress({ value, className = "" }: ProgressProps) {
-  const [displayValue, setDisplayValue] = React.useState(0);
+  const [displayValue, setDisplayValue] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Animate from current value to new value
     const startValue = displayValue;
     const endValue = Math.min(100, Math.max(0, value));
