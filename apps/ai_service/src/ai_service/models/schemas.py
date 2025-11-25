@@ -42,11 +42,29 @@ class ClassificationResult(PredictionResult):
     )
 
 
+class DetectionObject(BaseModel):
+    class_id: int = Field(..., description="Predicted class ID")
+    class_name: str = Field(..., description="Human-readable class name")
+    confidence: float = Field(
+        ..., ge=0, le=1, description="Confidence score between 0 and 1"
+    )
+    box: List[float] = Field(..., description="Bounding box coordinates")
+
+
+class DetectionResult(PredictionResult):
+    """Schema for prediction result"""
+
+    predictions: List[DetectionObject] = Field(
+        ...,
+        description="List of predicted (class_id, class_name, confidence) tuples",
+    )
+
+
 class PredictionResponse(BaseModel):
     """Schema for prediction API response"""
 
     status: PredictionStatus
     error: Optional[str] = None
-    result: PredictionResult | ClassificationResult = Field(
+    result: PredictionResult | ClassificationResult | DetectionResult = Field(
         ..., description="Prediction result"
     )
