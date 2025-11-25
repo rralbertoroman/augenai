@@ -7,3 +7,6 @@
 [submodule "apps/ai_service/weights/Diabetic_RetinoPathy_detection"]
 	path = apps/ai_service/weights/Diabetic_RetinoPathy_detection
 	url = https://huggingface.co/AsmaaElnagger/Diabetic_RetinoPathy_detection
+[submodule "apps/ai_service/weights/yolo11m_dr_lesion"]
+	path = apps/ai_service/weights/yolo11m_dr_lesion
+	url = https://huggingface.co/rr-albertoroman/yolo11m_dr_lesion
