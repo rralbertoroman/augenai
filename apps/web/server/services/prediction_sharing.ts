@@ -5,10 +5,10 @@ import { db } from "../db/client";
 import { PredictionSharingTable } from "../db/schemas";
 import {
   CreatePredictionSharingSchema,
-  GetPredictionSharingsByPredictionSchema,
+  GetPredictionSharingsByPredictionRequestSchema,
   GetPredictionSharingsByUserSchema,
   type CreatePredictionSharingInput,
-  type GetPredictionSharingsByPredictionInput,
+  type GetPredictionSharingsByPredictionRequestInput,
   type GetPredictionSharingsByUserInput,
   type PredictionSharingDTO,
 } from "../zod-schemas/prediction_sharing";
@@ -37,16 +37,17 @@ export const createPredictionSharing = async (
   return sharing;
 };
 
-export const getPredictionSharingsByPrediction = async (
+export const getPredictionSharingsByPredictionRequest = async (
   token: string,
-  data: GetPredictionSharingsByPredictionInput,
+  data: GetPredictionSharingsByPredictionRequestInput,
 ): Promise<PredictionSharingDTO[]> => {
   await getCurrentUser(token);
-  const { predictionId } = GetPredictionSharingsByPredictionSchema.parse(data);
+  const { predictionRequestId } =
+    GetPredictionSharingsByPredictionRequestSchema.parse(data);
   const sharings = await db
     .select()
     .from(PredictionSharingTable)
-    .where(eq(PredictionSharingTable.predictionId, predictionId));
+    .where(eq(PredictionSharingTable.predictionRequestId, predictionRequestId));
   return sharings;
 };
 
@@ -64,9 +65,9 @@ export const getPredictionSharingsByUser = async (
   return sharings;
 };
 
-export const getPredictionSharingByUserAndPrediction = async (
+export const getPredictionSharingByUserAndPredictionRequest = async (
   userId: string,
-  predictionId: string,
+  predictionRequestId: string,
 ): Promise<PredictionSharingDTO | null> => {
   const [sharing] = await db
     .select()
@@ -74,7 +75,7 @@ export const getPredictionSharingByUserAndPrediction = async (
     .where(
       and(
         eq(PredictionSharingTable.userId, userId),
-        eq(PredictionSharingTable.predictionId, predictionId),
+        eq(PredictionSharingTable.predictionRequestId, predictionRequestId),
       ),
     );
 
@@ -83,16 +84,16 @@ export const getPredictionSharingByUserAndPrediction = async (
 
 export const sharePrediction = async (
   token: string,
-  predictionId: string,
+  predictionRequestId: string,
   recipientId: string,
 ): Promise<{ success: boolean; error?: string }> => {
   // Get current user
   const currentUser = await getCurrentUser(token);
 
   // Check if already shared
-  const existingSharing = await getPredictionSharingByUserAndPrediction(
+  const existingSharing = await getPredictionSharingByUserAndPredictionRequest(
     recipientId,
-    predictionId,
+    predictionRequestId,
   );
 
   if (existingSharing) {
@@ -103,7 +104,7 @@ export const sharePrediction = async (
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const predictionUrl = `${appUrl}/predictions/${predictionId}`;
+  const predictionUrl = `${appUrl}/predictions/${predictionRequestId}`;
 
   const result = await sendPredictionSharedEmail(
     currentUser.userId,
@@ -114,7 +115,7 @@ export const sharePrediction = async (
   if (result.success) {
     // Create sharing record
     await db.insert(PredictionSharingTable).values({
-      predictionId,
+      predictionRequestId,
       userId: recipientId,
       hasFeedback: false,
     });
@@ -125,12 +126,12 @@ export const sharePrediction = async (
 
 export const sendPredictionToSupervisor = async (
   token: string,
-  predictionId: string,
+  predictionRequestId: string,
 ): Promise<void> => {
   const user = await getCurrentUser(token);
   const profile = await getUserProfileById(user.userId);
 
   if (profile?.supervisorId) {
-    await sharePrediction(token, predictionId, profile.supervisorId);
+    await sharePrediction(token, predictionRequestId, profile.supervisorId);
   }
 };

@@ -12,8 +12,6 @@ export default function HomePage() {
     totalPatients,
     totalPredictions,
     avgConfidence,
-    recentPredictions,
-    formatDate,
   } = useDashboard();
 
   if (isLoading) {
@@ -83,76 +81,6 @@ export default function HomePage() {
                 vs últimos 30 días
               </p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
-          <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">
-            Predicciones recientes
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-              <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                <tr>
-                  <th className="px-6 py-3" scope="col">
-                    Fecha
-                  </th>
-                  <th className="px-6 py-3" scope="col">
-                    Enfermedad
-                  </th>
-                  <th className="px-6 py-3" scope="col">
-                    Resultado
-                  </th>
-                  <th className="px-6 py-3" scope="col">
-                    Confianza
-                  </th>
-                  <th className="px-6 py-3" scope="col"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentPredictions.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-8 text-center text-muted-foreground"
-                    >
-                      No hay predicciones recientes
-                    </td>
-                  </tr>
-                ) : (
-                  recentPredictions.map((prediction, idx) => (
-                    <tr
-                      key={prediction.id}
-                      className={`${
-                        idx === recentPredictions.length - 1 ? "" : "border-b"
-                      } bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800`}
-                    >
-                      <th
-                        className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
-                        scope="row"
-                      >
-                        {formatDate(prediction.createdAt)}
-                      </th>
-                      <td className="px-6 py-4">{prediction.disease_name}</td>
-                      <td className="px-6 py-4">{prediction.stage_content}</td>
-                      <td className="px-6 py-4 font-medium text-gray-800 dark:text-gray-200">
-                        {`${(prediction.confidence * 100).toFixed(1)}%`}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/diagnosis`}
-                          className="font-medium text-green-600 hover:underline dark:text-primary"
-                        >
-                          Ver Detalles
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>

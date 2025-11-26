@@ -2,26 +2,30 @@ import { pgTable, uuid, integer, real } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { standardSchema } from "./base_schemas";
 import PredictionsTable from "./prediction";
-import FeedbackTable from "./feedback";
+import DetectionFeedbackTable from "./detection_feedback";
 
-const PredictionDiagnosesTable = pgTable("prediction_diagnoses", {
+const DetectionsTable = pgTable("detections", {
   ...standardSchema,
   predictionId: uuid("prediction_id")
     .notNull()
     .references(() => PredictionsTable.id),
   classId: integer("class_id").notNull(),
   confidence: real("confidence").notNull(),
+  xLeft: real("x_left").notNull(),
+  yTop: real("y_top").notNull(),
+  width: real("width").notNull(),
+  height: real("height").notNull(),
 });
 
-export const predictionDiagnosesRelations = relations(
-  PredictionDiagnosesTable,
+export const detectionsRelations = relations(
+  DetectionsTable,
   ({ one, many }) => ({
     prediction: one(PredictionsTable, {
-      fields: [PredictionDiagnosesTable.predictionId],
+      fields: [DetectionsTable.predictionId],
       references: [PredictionsTable.id],
     }),
-    feedbacks: many(FeedbackTable),
+    feedbacks: many(DetectionFeedbackTable),
   }),
 );
 
-export default PredictionDiagnosesTable;
+export default DetectionsTable;
