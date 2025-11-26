@@ -56,6 +56,11 @@ export const createUserProfile = async (
   return userProfile;
 };
 
+export const getAllUserProfiles = async (): Promise<UserProfileDTO[]> => {
+  const users = await db.select().from(UserProfilesTable);
+  return users;
+};
+
 export const getUserProfileById = async (
   id: string,
 ): Promise<UserProfileDTO | null> => {
