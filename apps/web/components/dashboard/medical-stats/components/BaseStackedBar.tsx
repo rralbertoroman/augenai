@@ -29,21 +29,23 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     // Get the data point being hovered
     const dataPoint = payload[0]?.payload;
-    
+
     // Filter out entries with zero values and sort them for consistent display
-    const validEntries = payload.filter(entry => {
-      const value = Number(entry.value) || 0;
-      return value > 0;
-    }).reverse();
-    
+    const validEntries = payload
+      .filter((entry) => {
+        const value = Number(entry.value) || 0;
+        return value > 0;
+      })
+      .reverse();
+
     return (
       <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg text-sm">
         <p className="font-semibold mb-2">{label}</p>
         <div className="space-y-1">
           {validEntries.map((entry, index) => (
             <div key={`tooltip-${index}`} className="flex items-center">
-              <div 
-                className="w-3 h-3 rounded-full mr-2" 
+              <div
+                className="w-3 h-3 rounded-full mr-2"
                 style={{ backgroundColor: entry.color }}
               />
               <span className="font-medium">{entry.name}:</span>
