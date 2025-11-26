@@ -14,9 +14,19 @@ export const GetByClassIdAndModelIdSchema = z.object({
   modelId: z.uuid(),
 });
 
+export const GetByStageDiseaseAndModelSchema = z.object({
+  stageIdx: z.number().int(),
+  diseaseId: z.uuid(),
+  modelId: z.uuid(),
+});
+
 // INPUT TYPES
 export type GetByClassIdAndModelIdInput = z.input<
   typeof GetByClassIdAndModelIdSchema
+>;
+
+export type GetByStageDiseaseAndModelInput = z.input<
+  typeof GetByStageDiseaseAndModelSchema
 >;
 
 // OUTPUT TYPES
