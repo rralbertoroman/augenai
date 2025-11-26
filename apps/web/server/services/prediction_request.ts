@@ -5,7 +5,9 @@ import { db } from "../db/client";
 import { PredictionRequestsTable } from "../db/schemas";
 import {
   CreatePredictionRequestSchema,
+  GetPredictionRequestByIdSchema,
   type CreatePredictionRequestInput,
+  type GetPredictionRequestByIdInput,
   type PredictionRequestDTO,
 } from "../zod-schemas/prediction_request";
 import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
@@ -132,4 +134,115 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
   }
 
   return enrichedPredictions;
+};
+
+export const getPredictionRequestById = async (
+  token: string,
+  data: GetPredictionRequestByIdInput,
+): Promise<{
+  request: PredictionRequestDTO;
+  patient: any;
+  enrichedPredictions: EnrichedPredictionDTO[];
+} | null> => {
+  const user = await getCurrentUser(token);
+  const { id } = GetPredictionRequestByIdSchema.parse(data);
+
+  const request = await db.query.PredictionRequestsTable.findFirst({
+    where: eq(PredictionRequestsTable.id, id),
+    with: {
+      predictions: {
+        with: {
+          classifications: true,
+          detections: true,
+        },
+      },
+      patient: true,
+    },
+  });
+
+  if (!request) {
+    return null;
+  }
+
+  // Verify ownership
+  verifyOwnership(user, request.userId);
+
+  const enrichedPredictions: EnrichedPredictionDTO[] = [];
+
+  for (const prediction of request.predictions) {
+    // Process Classifications
+    if (
+      prediction.classifications &&
+      Array.isArray(prediction.classifications)
+    ) {
+      for (const classification of prediction.classifications) {
+        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          classId: classification.classId,
+          modelId: prediction.modelId,
+        });
+
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${classification.classId} and model ${prediction.modelId}`,
+          );
+        }
+
+        enrichedPredictions.push({
+          id: classification.id,
+          class_id: classification.classId,
+          confidence: classification.confidence,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          patient_id: request.patientId,
+          request_id: request.id,
+          createdAt: classification.createdAt,
+          type: "classification",
+        });
+      }
+    }
+
+    // Process Detections
+    if (prediction.detections && Array.isArray(prediction.detections)) {
+      for (const detection of prediction.detections) {
+        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          classId: detection.classId,
+          modelId: prediction.modelId,
+        });
+
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
+          );
+        }
+
+        enrichedPredictions.push({
+          id: detection.id,
+          class_id: detection.classId,
+          confidence: detection.confidence,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          patient_id: request.patientId,
+          request_id: request.id,
+          createdAt: detection.createdAt,
+          type: "detection",
+          bbox: {
+            x_left: detection.xLeft,
+            y_top: detection.yTop,
+            width: detection.width,
+            height: detection.height,
+          },
+        });
+      }
+    }
+  }
+
+  return {
+    request,
+    patient: request.patient,
+    enrichedPredictions,
+  };
 };
