@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { getConfidenceBadge } from "@/hooks/use-predictions";
 import Link from "next/link";
 import { use } from "react";
+import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
+import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 
 export default function PredictionDetailPage({
   params,
@@ -21,6 +23,9 @@ export default function PredictionDetailPage({
     usePredictionRequests();
   const diagnosesForRequest = getDiagnosesForRequest(requestId);
   const requestInfo = getRequestInfo(requestId);
+
+  // Feedback hook
+  const feedback = useClassificationFeedback();
 
   if (isLoading) {
     return (
@@ -53,7 +58,7 @@ export default function PredictionDetailPage({
               </Button>
             </Link>
             <h1 className="text-foreground dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">
-              Detalles de Predicción
+              Detalles de Solicitud
             </h1>
           </div>
         </div>
@@ -118,14 +123,26 @@ export default function PredictionDetailPage({
 
         {/* Diagnósticos */}
         <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
-          <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-6 pb-3 pt-5">
-            Resultados de Diagnóstico
-          </h2>
+          <div className="flex items-center justify-between px-6 pb-3 pt-5">
+            <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+              Resultados de Diagnóstico
+            </h2>
+            {diagnosesForRequest.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => feedback.handleOpenFeedback(diagnosesForRequest)}
+                className="text-md"
+              >
+                Brindar retroalimentación
+              </Button>
+            )}
+          </div>
           <div className="p-6 space-y-6">
             {diagnosesForRequest.length > 0 ? (
               <div className="space-y-4">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Diagnósticos ({diagnosesForRequest.length})
+                  Predicciones ({diagnosesForRequest.length})
                 </p>
                 {diagnosesForRequest.map((diagnosis) => {
                   const badge = getConfidenceBadge(diagnosis.confidence);
@@ -134,7 +151,7 @@ export default function PredictionDetailPage({
                       key={diagnosis.id}
                       className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
                     >
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div>
                           <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                             Enfermedad
@@ -174,6 +191,18 @@ export default function PredictionDetailPage({
             )}
           </div>
         </div>
+
+        <BatchFeedbackModal
+          open={feedback.openFeedbackModal}
+          onOpenChange={feedback.setOpenFeedbackModal}
+          predictions={feedback.predictions}
+          feedbackForms={feedback.feedbackForms}
+          diseases={feedback.diseases}
+          onUpdateForm={feedback.updateFeedbackForm}
+          loading={feedback.loading}
+          error={feedback.error}
+          onSubmit={feedback.handleSubmitFeedback}
+        />
       </div>
     </main>
   );
