@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartColumnStacked, ClipboardPlus, Sparkles } from "lucide-react";
-import { MedicalStats } from "./medical-stats";
+import { MedicalStats } from "@/components/dashboard/medical-stats/MedicalStats";
 
 enum TabsValue {
   START = "start",
