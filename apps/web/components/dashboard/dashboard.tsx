@@ -3,6 +3,7 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartColumnStacked, ClipboardPlus, Sparkles } from "lucide-react";
 import { MedicalStats } from "@/components/dashboard/medical-stats/MedicalStats";
+import Start from "./start";
 
 enum TabsValue {
   START = "start",
@@ -28,9 +29,7 @@ const Dashboard: React.FC = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value={TabsValue.START} className="p-4 border rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">
-            See the latest patients
-          </h2>
+          <Start />
         </TabsContent>
         <TabsContent
           value={TabsValue.MEDICAL_STATS}
