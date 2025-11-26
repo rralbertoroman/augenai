@@ -26,6 +26,16 @@ export const GetPredictionSharingByIdsSchema = z.object({
   userId: z.uuid(),
 });
 
+export const UpdateHasFeedbackSchema = z.object({
+  predictionRequestId: z.uuid(),
+  userId: z.uuid(),
+  hasFeedback: z.boolean(),
+});
+
+export const GetSharedPredictionRequestsByUserSchema = z.object({
+  userId: z.uuid(),
+});
+
 // INPUT TYPES
 export type CreatePredictionSharingInput = z.input<
   typeof CreatePredictionSharingSchema
@@ -38,6 +48,12 @@ export type GetPredictionSharingsByUserInput = z.input<
 >;
 export type GetPredictionSharingByIdsInput = z.input<
   typeof GetPredictionSharingByIdsSchema
+>;
+export type UpdateHasFeedbackInput = z.input<
+  typeof UpdateHasFeedbackSchema
+>;
+export type GetSharedPredictionRequestsByUserInput = z.input<
+  typeof GetSharedPredictionRequestsByUserSchema
 >;
 
 // OUTPUT TYPES
