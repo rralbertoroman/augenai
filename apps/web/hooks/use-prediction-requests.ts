@@ -78,6 +78,7 @@ export function usePredictionRequests() {
         request.diagnoses.push({
           id: enrichedDiagnosis.id,
           classId: enrichedDiagnosis.class_id,
+          model_id: enrichedDiagnosis.model_id,
           confidence: enrichedDiagnosis.confidence,
           disease_id: enrichedDiagnosis.disease_id,
           disease_name: enrichedDiagnosis.disease_name,

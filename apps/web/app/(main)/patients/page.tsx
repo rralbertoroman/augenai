@@ -85,7 +85,7 @@ export default function PatientsPage() {
             )}
           </div>
           <div
-            className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 animate-fadein self-start w-fit"
+            className="relative rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 animate-fadein self-start w-fit max-w-[480px]"
             style={{ alignSelf: "flex-start" }}
           >
             {selectedPatient ? (
