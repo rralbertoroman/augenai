@@ -15,6 +15,8 @@ export function Progress({ value, className = "" }: ProgressProps) {
     const duration = 300; // ms
     const startTime = Date.now();
 
+    let animationFrameId: number;
+
     const animate = () => {
       const currentTime = Date.now();
       const elapsed = currentTime - startTime;
@@ -27,11 +29,17 @@ export function Progress({ value, className = "" }: ProgressProps) {
       setDisplayValue(currentValue);
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
       }
     };
 
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [value, displayValue]);
 
   return (
