@@ -40,8 +40,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
   token: string,
   userId: string,
 ): Promise<EnrichedPredictionDTO[]> => {
-  const user = await getCurrentUser(token);
-  verifyOwnership(user, userId);
+  await getCurrentUser(token); // Verify authentication only
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
     with: {
@@ -92,6 +91,8 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
             request_id: request.id,
             createdAt: classification.createdAt,
             type: "classification",
+            bucket_name: request.bucketName,
+            storage_path: request.storagePath,
           });
         }
       }
@@ -129,6 +130,8 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
               width: detection.width,
               height: detection.height,
             },
+            bucket_name: request.bucketName,
+            storage_path: request.storagePath,
           });
         }
       }
@@ -146,7 +149,7 @@ export const getPredictionRequestById = async (
   patient: any;
   enrichedPredictions: EnrichedPredictionDTO[];
 } | null> => {
-  const user = await getCurrentUser(token);
+  await getCurrentUser(token); // Verify authentication only
   const { id } = GetPredictionRequestByIdSchema.parse(data);
 
   const request = await db.query.PredictionRequestsTable.findFirst({
@@ -166,8 +169,6 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-  // Verify ownership
-  verifyOwnership(user, request.userId);
 
   const enrichedPredictions: EnrichedPredictionDTO[] = [];
 
@@ -202,6 +203,8 @@ export const getPredictionRequestById = async (
           request_id: request.id,
           createdAt: classification.createdAt,
           type: "classification",
+          bucket_name: request.bucketName,
+          storage_path: request.storagePath,
         });
       }
     }
@@ -239,6 +242,8 @@ export const getPredictionRequestById = async (
             width: detection.width,
             height: detection.height,
           },
+          bucket_name: request.bucketName,
+          storage_path: request.storagePath,
         });
       }
     }
