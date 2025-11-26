@@ -20,6 +20,8 @@ class Settings(BaseSettings):
 
     # Model
     confidence_threshold: float = 0.70
+    ultralytics_imgsz: int = 640
+    iou_threshold: float = 0.70
 
     class Config:
         env_file = ".env"

@@ -4,7 +4,8 @@ import { standardSchema } from "./base_schemas";
 import ModelsTable from "./model";
 import PredictionRequestsTable from "./prediction_request";
 import PredictionSharingTable from "./prediction_sharing";
-import PredictionDiagnosesTable from "./prediction_diagnosis";
+import ClassificationsTable from "./classification";
+import DetectionsTable from "./detection";
 
 const PredictionsTable = pgTable("predictions", {
   ...standardSchema,
@@ -28,7 +29,8 @@ export const predictionsRelations = relations(
       references: [PredictionRequestsTable.id],
     }),
     sharings: many(PredictionSharingTable),
-    diagnoses: many(PredictionDiagnosesTable),
+    classifications: many(ClassificationsTable),
+    detections: many(DetectionsTable),
   }),
 );
 

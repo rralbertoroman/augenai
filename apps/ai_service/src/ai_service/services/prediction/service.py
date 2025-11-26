@@ -25,7 +25,7 @@ def get_mocked_classification() -> ClassificationResult:
         ),
         predictions=[
             ClassificationObject(
-                class_id=2,
+                class_id=0,
                 class_name="Normal",
                 confidence=1.0,
             )
