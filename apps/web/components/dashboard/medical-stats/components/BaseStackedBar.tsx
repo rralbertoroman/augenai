@@ -115,11 +115,6 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
             content={<CustomTooltip />}
             cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
           />
-          <Legend
-            layout="horizontal"
-            verticalAlign="top"
-            wrapperStyle={{ paddingBottom: "10px" }}
-          />
           {keys.map((key, index) => (
             <Bar
               key={key}
