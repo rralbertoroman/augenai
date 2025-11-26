@@ -1,41 +1,43 @@
-import React from 'react';
-import { BarChart3, AlertTriangle } from 'lucide-react';
-import { BaseStackedBar } from './BaseStackedBar';
-import { useChartDataLogic } from '../utils';
-import { CohortDataConfigItem } from '../types';
+import React from "react";
+import { BarChart3, AlertTriangle } from "lucide-react";
+import { BaseStackedBar } from "./BaseStackedBar";
+import { useChartDataLogic } from "../utils";
+import { CohortDataConfigItem } from "../types";
 
 interface DiseaseCohortChartProps {
   diseaseData: CohortDataConfigItem;
 }
 
-export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({ diseaseData }) => {
+export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
+  diseaseData,
+}) => {
   const { stageKeys, stageColors, colors } = useChartDataLogic(diseaseData);
-  
+
   // Get stage names from the first cohort
   const firstCohort = diseaseData.cohortData[0];
   const stageNames = Object.keys(firstCohort).filter(
-    key => !['cohortName', 'total'].includes(key)
+    (key) => !["cohortName", "total"].includes(key),
   );
 
   // Calculate total patients requiring treatment
   const totalRequiringTreatment = diseaseData.cohortData.reduce(
     (sum, cohort) => {
       const treatmentCount = stageNames.reduce(
-        (cohortSum, stage, index) => 
-          diseaseData.requiresTreatment?.[index] 
-            ? cohortSum + (Number(cohort[stage]) || 0) 
+        (cohortSum, stage, index) =>
+          diseaseData.requiresTreatment?.[index]
+            ? cohortSum + (Number(cohort[stage]) || 0)
             : cohortSum,
-        0
+        0,
       );
       return sum + treatmentCount;
     },
-    0
+    0,
   );
 
   // Calculate total patients in all cohorts
   const totalPatients = diseaseData.cohortData.reduce(
     (sum, cohort) => sum + (cohort.total || 0),
-    0
+    0,
   );
 
   return (
@@ -54,7 +56,7 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({ diseaseD
           )}
         </div>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
         <BaseStackedBar
           data={diseaseData.cohortData}

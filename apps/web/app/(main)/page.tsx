@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import Dashboard from "@/components/dashboard/dashboard";
 
 export default function HomePage() {
-  const {
-    displayName,
-    isLoading,
-  } = useDashboard();
+  const { displayName, isLoading } = useDashboard();
 
   if (isLoading) {
     return (

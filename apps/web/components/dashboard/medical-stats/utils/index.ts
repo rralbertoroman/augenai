@@ -1,19 +1,19 @@
-import { StageTotalConfig, CohortDataConfig } from '../types';
-import { COLOR_PALETTE } from '../constants';
-import { useMemo } from 'react';
+import { StageTotalConfig, CohortDataConfig } from "../types";
+import { COLOR_PALETTE } from "../constants";
+import { useMemo } from "react";
 
 // Helper function to process stage-based data
 export const processStageData = (datasets: StageTotalConfig[]) => {
   const stageKeys = new Set<string>();
   const stageMap = new Map<string, { isTx: boolean; isLast: boolean }>();
 
-  datasets.forEach(dataset => {
-    dataset.stages?.forEach(stage => {
+  datasets.forEach((dataset) => {
+    dataset.stages?.forEach((stage) => {
       if (stage.name) {
         stageKeys.add(stage.name);
         stageMap.set(stage.name, {
           isTx: stage.requiresTreatment,
-          isLast: stage.name === dataset.lastStage
+          isLast: stage.name === dataset.lastStage,
         });
       }
     });
@@ -27,19 +27,19 @@ export const processCohortData = (datasets: CohortDataConfig[]) => {
   const stageKeys = new Set<string>();
   const stageMap = new Map<string, { isTx: boolean; isLast: boolean }>();
 
-  datasets.forEach(dataset => {
+  datasets.forEach((dataset) => {
     const firstCohort = dataset.cohortData?.[0];
     if (!firstCohort) return { stageKeys: [], stageMap };
-    
+
     const stageNames = Object.keys(firstCohort).filter(
-      key => !['cohortName', 'total'].includes(key)
+      (key) => !["cohortName", "total"].includes(key),
     );
-    
+
     stageNames.forEach((stageName, index) => {
       stageKeys.add(stageName);
       stageMap.set(stageName, {
         isTx: dataset.requiresTreatment?.[index] || false,
-        isLast: stageName === dataset.lastStage
+        isLast: stageName === dataset.lastStage,
       });
     });
   });
@@ -50,24 +50,27 @@ export const processCohortData = (datasets: CohortDataConfig[]) => {
 // Hook for theme colors
 export const useThemeColors = () => {
   // This would be replaced with actual theme detection logic
-  const isDarkMode = typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-color-scheme: dark)').matches
-    : false;
-    
+  const isDarkMode =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false;
+
   return isDarkMode ? COLOR_PALETTE.dark : COLOR_PALETTE.light;
 };
 
 // Shared logic hook for calculating keys and colors
-export const useChartDataLogic = <T extends { lastStage: string; stages?: unknown[]; cohortData?: unknown }>(
-  dataConfig: T | T[]
+export const useChartDataLogic = <
+  T extends { lastStage: string; stages?: unknown[]; cohortData?: unknown },
+>(
+  dataConfig: T | T[],
 ) => {
   const colors = useThemeColors();
   const datasets = useMemo(
-    () => Array.isArray(dataConfig) ? dataConfig : [dataConfig],
-    [dataConfig]
+    () => (Array.isArray(dataConfig) ? dataConfig : [dataConfig]),
+    [dataConfig],
   );
-  
-  const isCohortData = 'cohortData' in datasets[0];
+
+  const isCohortData = "cohortData" in datasets[0];
 
   const { stageKeys, stageMap } = useMemo(() => {
     if (isCohortData) {
@@ -84,11 +87,16 @@ export const useChartDataLogic = <T extends { lastStage: string; stages?: unknow
   const getColorForStage = (stageName: string, index: number) => {
     const stageInfo = stageMap.get(stageName);
     if (!stageInfo) return colors.intermediateOranges[0];
-    
+
     if (stageInfo.isLast) return colors.lastStage;
-    if (stageName.toLowerCase().includes('healthy')) return colors.healthy;
-    if (stageInfo.isTx) return colors.intermediateRed[Math.min(index, colors.intermediateRed.length - 1)];
-    return colors.intermediateOranges[index % colors.intermediateOranges.length];
+    if (stageName.toLowerCase().includes("healthy")) return colors.healthy;
+    if (stageInfo.isTx)
+      return colors.intermediateRed[
+        Math.min(index, colors.intermediateRed.length - 1)
+      ];
+    return colors.intermediateOranges[
+      index % colors.intermediateOranges.length
+    ];
   };
 
   const stageColors = stageKeys.map((key, i) => getColorForStage(key, i));
@@ -98,6 +106,6 @@ export const useChartDataLogic = <T extends { lastStage: string; stages?: unknow
     stageColors,
     colors,
     isCohortData,
-    datasets
+    datasets,
   };
 };
