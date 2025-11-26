@@ -34,6 +34,8 @@ export const EnrichedPredictionDTOSchema = z.object({
       height: z.number(),
     })
     .optional(),
+  bucket_name: z.string(),
+  storage_path: z.string(),
 });
 
 // INPUT TYPES
