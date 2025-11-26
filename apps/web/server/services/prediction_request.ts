@@ -82,6 +82,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
           enrichedPredictions.push({
             id: classification.id,
             class_id: classification.classId,
+            model_id: prediction.modelId,
             confidence: classification.confidence,
             disease_id: classInfo.diseaseId,
             disease_name: classInfo.diseaseName,
@@ -112,6 +113,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
           enrichedPredictions.push({
             id: detection.id,
             class_id: detection.classId,
+            model_id: prediction.modelId,
             confidence: detection.confidence,
             disease_id: classInfo.diseaseId,
             disease_name: classInfo.diseaseName,
@@ -190,6 +192,7 @@ export const getPredictionRequestById = async (
         enrichedPredictions.push({
           id: classification.id,
           class_id: classification.classId,
+          model_id: prediction.modelId,
           confidence: classification.confidence,
           disease_id: classInfo.diseaseId,
           disease_name: classInfo.diseaseName,
@@ -220,6 +223,7 @@ export const getPredictionRequestById = async (
         enrichedPredictions.push({
           id: detection.id,
           class_id: detection.classId,
+          model_id: prediction.modelId,
           confidence: detection.confidence,
           disease_id: classInfo.diseaseId,
           disease_name: classInfo.diseaseName,

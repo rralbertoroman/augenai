@@ -16,6 +16,7 @@ export const PredictionDTOSchema = z.object({
 export const EnrichedPredictionDTOSchema = z.object({
   id: z.string(),
   class_id: z.number(),
+  model_id: z.string(),
   confidence: z.number(),
   disease_id: z.string(),
   disease_name: z.string(),
