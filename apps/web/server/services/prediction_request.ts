@@ -13,6 +13,7 @@ import {
 import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import { PatientDTO } from "../zod-schemas";
 
 export const createPredictionRequest = async (
   token: string,
@@ -143,7 +144,7 @@ export const getPredictionRequestById = async (
   data: GetPredictionRequestByIdInput,
 ): Promise<{
   request: PredictionRequestDTO;
-  patient: any;
+  patient: PatientDTO;
   enrichedPredictions: EnrichedPredictionDTO[];
 } | null> => {
   const user = await getCurrentUser(token);

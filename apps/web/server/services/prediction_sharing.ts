@@ -104,7 +104,7 @@ export const sharePrediction = async (
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const predictionUrl = `${appUrl}/predictions/${predictionRequestId}`;
+  const predictionUrl = `${appUrl}/diagnosis/${predictionRequestId}`;
 
   const result = await sendPredictionSharedEmail(
     currentUser.userId,

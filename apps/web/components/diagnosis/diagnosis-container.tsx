@@ -4,11 +4,7 @@ import { EyeScanUpload } from "./eye-scan-upload";
 import { useDiagnosisPage } from "@/hooks/use-diagnosis-page";
 
 export function DiagnosisContainer() {
-  const {
-    isLoading: isSubmitting,
-    error: submitError,
-    handleScanSubmit,
-  } = useDiagnosisPage();
+  const { isLoading: isSubmitting, handleScanSubmit } = useDiagnosisPage();
 
   return (
     <>

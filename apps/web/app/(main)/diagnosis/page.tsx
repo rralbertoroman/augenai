@@ -4,12 +4,17 @@ import { usePredictionRequests } from "@/hooks/use-prediction-requests";
 import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { useState } from "react";
+import { SharePredictionModal } from "@/components/predictions/share-prediction-modal";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function DiagnosisPage() {
   const { requests, isLoading, error } = usePredictionRequests();
   const [searchQuery, setSearchQuery] = useState("");
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
+    null,
+  );
 
   const filteredRequests = requests.filter(
     (request) =>
@@ -20,6 +25,16 @@ export default function DiagnosisPage() {
         diseaseName.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
   );
+
+  const handleOpenShareModal = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setShareModalOpen(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setShareModalOpen(false);
+    setSelectedRequestId(null);
+  };
 
   if (isLoading) {
     return (
@@ -76,12 +91,18 @@ export default function DiagnosisPage() {
             <div className="overflow-x-auto">
               <PredictionRequestList
                 requests={filteredRequests}
-                onShare={(id) => console.log("Compartir:", id)}
+                onShare={handleOpenShareModal}
               />
             </div>
           )}
         </div>
       </div>
+      <SharePredictionModal
+        key={shareModalOpen ? "open" : "closed"}
+        open={shareModalOpen}
+        onClose={handleCloseShareModal}
+        predictionId={selectedRequestId || ""}
+      />
     </main>
   );
 }

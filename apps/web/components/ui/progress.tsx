@@ -32,7 +32,7 @@ export function Progress({ value, className = "" }: ProgressProps) {
     };
 
     requestAnimationFrame(animate);
-  }, [value]);
+  }, [value, displayValue]);
 
   return (
     <div
