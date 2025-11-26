@@ -1,20 +1,20 @@
 import { z } from "zod";
 
 export const CreatePredictionSharingSchema = z.object({
-  predictionId: z.uuid(),
+  predictionRequestId: z.uuid(),
   hasFeedback: z.boolean().optional(),
 });
 
 export const PredictionSharingDTOSchema = z.object({
-  predictionId: z.uuid(),
+  predictionRequestId: z.uuid(),
   userId: z.uuid(),
   hasFeedback: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-export const GetPredictionSharingsByPredictionSchema = z.object({
-  predictionId: z.uuid(),
+export const GetPredictionSharingsByPredictionRequestSchema = z.object({
+  predictionRequestId: z.uuid(),
 });
 
 export const GetPredictionSharingsByUserSchema = z.object({
@@ -22,7 +22,7 @@ export const GetPredictionSharingsByUserSchema = z.object({
 });
 
 export const GetPredictionSharingByIdsSchema = z.object({
-  predictionId: z.uuid(),
+  predictionRequestId: z.uuid(),
   userId: z.uuid(),
 });
 
@@ -30,8 +30,8 @@ export const GetPredictionSharingByIdsSchema = z.object({
 export type CreatePredictionSharingInput = z.input<
   typeof CreatePredictionSharingSchema
 >;
-export type GetPredictionSharingsByPredictionInput = z.input<
-  typeof GetPredictionSharingsByPredictionSchema
+export type GetPredictionSharingsByPredictionRequestInput = z.input<
+  typeof GetPredictionSharingsByPredictionRequestSchema
 >;
 export type GetPredictionSharingsByUserInput = z.input<
   typeof GetPredictionSharingsByUserSchema

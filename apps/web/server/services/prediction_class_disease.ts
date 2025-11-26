@@ -44,7 +44,8 @@ export const getPredictionClassDiseaseByClassIdAndModelId = async (
 export const getClassIdByStageDiseaseAndModel = async (
   data: GetByStageDiseaseAndModelInput,
 ): Promise<number | null> => {
-  const { stageIdx, diseaseId, modelId } = GetByStageDiseaseAndModelSchema.parse(data);
+  const { stageIdx, diseaseId, modelId } =
+    GetByStageDiseaseAndModelSchema.parse(data);
 
   const [result] = await db
     .select({
