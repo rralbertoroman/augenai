@@ -1,30 +1,30 @@
 import { pgTable, uuid, boolean, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { manyToManyNoIDSchema } from "./base_schemas";
-import PredictionsTable from "./prediction";
+import PredictionRequestsTable from "./prediction_request";
 import UserProfilesTable from "./user_profile";
 
 const PredictionSharingTable = pgTable(
   "prediction_sharings",
   {
     ...manyToManyNoIDSchema,
-    predictionId: uuid("prediction_id")
+    predictionRequestId: uuid("prediction_request_id")
       .notNull()
-      .references(() => PredictionsTable.id),
+      .references(() => PredictionRequestsTable.id),
     userId: uuid("user_id")
       .notNull()
       .references(() => UserProfilesTable.id),
     hasFeedback: boolean("has_feedback").default(false).notNull(),
   },
-  (t) => [primaryKey({ columns: [t.predictionId, t.userId] })],
+  (t) => [primaryKey({ columns: [t.predictionRequestId, t.userId] })],
 );
 
 export const predictionSharingRelations = relations(
   PredictionSharingTable,
   ({ one }) => ({
-    prediction: one(PredictionsTable, {
-      fields: [PredictionSharingTable.predictionId],
-      references: [PredictionsTable.id],
+    predictionRequest: one(PredictionRequestsTable, {
+      fields: [PredictionSharingTable.predictionRequestId],
+      references: [PredictionRequestsTable.id],
     }),
     user: one(UserProfilesTable, {
       fields: [PredictionSharingTable.userId],
