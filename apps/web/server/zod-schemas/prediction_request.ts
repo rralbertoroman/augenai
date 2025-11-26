@@ -10,6 +10,10 @@ export const CreatePredictionRequestSchema = z.object({
   modelsUsed: z.array(z.uuid()).min(1),
 });
 
+export const GetPredictionRequestByIdSchema = z.object({
+  id: z.uuid(),
+});
+
 export const PredictionRequestDTOSchema = z.object({
   id: z.uuid(),
   userId: z.uuid(),
@@ -27,6 +31,9 @@ export const PredictionRequestDTOSchema = z.object({
 // INPUT TYPES
 export type CreatePredictionRequestInput = z.input<
   typeof CreatePredictionRequestSchema
+>;
+export type GetPredictionRequestByIdInput = z.input<
+  typeof GetPredictionRequestByIdSchema
 >;
 
 // OUTPUT TYPES
