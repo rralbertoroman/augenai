@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -8,8 +8,8 @@ import {
   Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { BaseStackedBarProps } from '../types';
+} from "recharts";
+import { BaseStackedBarProps } from "../types";
 
 interface TooltipPayload {
   name: string;
@@ -45,30 +45,29 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
   data,
   keys,
   colors,
-  xKey = 'name',
-  stackId = 'stack',
+  xKey = "name",
+  stackId = "stack",
 }) => {
   // Debug logs
-  console.group('BaseStackedBar Debug');
-  console.log('Data:', JSON.parse(JSON.stringify(data)));
-  console.log('Keys:', keys);
-  console.log('Colors:', colors);
-  console.log('xKey:', xKey);
-  
+  console.group("BaseStackedBar Debug");
+  console.log("Data:", JSON.parse(JSON.stringify(data)));
+  console.log("Keys:", keys);
+  console.log("Colors:", colors);
+  console.log("xKey:", xKey);
+
   // Calculate max value for Y-axis with a minimum of 1 to prevent errors
   const maxValue = Math.max(
     1, // Minimum value to ensure the chart renders
-    ...data.map(item => 
+    ...data.map((item) =>
       keys.reduce((sum, key) => {
         const value = Number(item[key]) || 0;
         return sum + value;
-      }, 0)
-    )
+      }, 0),
+    ),
   );
-  
-  console.log('Max Value:', maxValue);
-  console.groupEnd();
 
+  console.log("Max Value:", maxValue);
+  console.groupEnd();
 
   return (
     <div className="w-full h-[400px]">
@@ -85,25 +84,23 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
           barCategoryGap="20%"
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey={xKey}
-            tick={{ fontSize: 12 }}
-            tickLine={false}
-          />
-          <YAxis 
+          <XAxis dataKey={xKey} tick={{ fontSize: 12 }} tickLine={false} />
+          <YAxis
             domain={[0, maxValue]}
-            tickFormatter={(value) => Math.round(value) === value ? String(value) : ''}
+            tickFormatter={(value) =>
+              Math.round(value) === value ? String(value) : ""
+            }
             tick={{ fontSize: 12 }}
             tickLine={false}
           />
-          <RechartsTooltip 
+          <RechartsTooltip
             content={<CustomTooltip />}
-            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+            cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
           />
-          <Legend 
+          <Legend
             layout="horizontal"
             verticalAlign="top"
-            wrapperStyle={{ paddingBottom: '10px' }}
+            wrapperStyle={{ paddingBottom: "10px" }}
           />
           {keys.map((key, index) => (
             <Bar

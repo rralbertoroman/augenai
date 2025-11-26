@@ -1,4 +1,4 @@
-import { TooltipProps } from 'recharts';
+import { TooltipProps } from "recharts";
 
 export interface Stage {
   name: string;

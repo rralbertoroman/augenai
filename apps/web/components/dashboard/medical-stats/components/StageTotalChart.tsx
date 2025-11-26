@@ -1,8 +1,8 @@
-import React from 'react';
-import { Users } from 'lucide-react';
-import { BaseStackedBar } from './BaseStackedBar';
-import { useChartDataLogic } from '../utils';
-import { StageTotalConfig } from '../types';
+import React from "react";
+import { Users } from "lucide-react";
+import { BaseStackedBar } from "./BaseStackedBar";
+import { useChartDataLogic } from "../utils";
+import { StageTotalConfig } from "../types";
 
 interface StageTotalChartProps {
   dataConfig: StageTotalConfig | StageTotalConfig[];
@@ -13,34 +13,35 @@ interface StageTotalChartProps {
 export const StageTotalChart: React.FC<StageTotalChartProps> = ({
   dataConfig,
   xKey = "name",
-  title = "Disease Stages Overview"
+  title = "Disease Stages Overview",
 }) => {
   const { stageKeys, stageColors } = useChartDataLogic(dataConfig);
   const isMultiple = Array.isArray(dataConfig);
-  
+
   // Debug logs
-  console.log('Stage Keys:', stageKeys);
-  console.log('Stage Colors:', stageColors);
-  
+  console.log("Stage Keys:", stageKeys);
+  console.log("Stage Colors:", stageColors);
+
   // Calculate total patients and those requiring treatment
   const { totalPatients, totalRequiringTreatment } = React.useMemo(() => {
     return (Array.isArray(dataConfig) ? dataConfig : [dataConfig]).reduce(
       (acc, dataset) => {
         const datasetTotal = dataset.stages.reduce(
           (sum, stage) => sum + stage.count,
-          0
+          0,
         );
-        
+
         const datasetRequiringTreatment = dataset.stages
-          .filter(stage => stage.requiresTreatment)
+          .filter((stage) => stage.requiresTreatment)
           .reduce((sum, stage) => sum + stage.count, 0);
-          
+
         return {
           totalPatients: acc.totalPatients + datasetTotal,
-          totalRequiringTreatment: acc.totalRequiringTreatment + datasetRequiringTreatment
+          totalRequiringTreatment:
+            acc.totalRequiringTreatment + datasetRequiringTreatment,
         };
       },
-      { totalPatients: 0, totalRequiringTreatment: 0 }
+      { totalPatients: 0, totalRequiringTreatment: 0 },
     );
   }, [dataConfig]);
 
@@ -49,36 +50,40 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
     if (isMultiple) {
       // For multiple datasets, we need to create an array of objects where each object
       // represents a disease and contains stage counts
-      return (dataConfig as StageTotalConfig[]).map(dataset => {
-        const data: Record<string, string | number> = { name: dataset.displayName };
-        
+      return (dataConfig as StageTotalConfig[]).map((dataset) => {
+        const data: Record<string, string | number> = {
+          name: dataset.displayName,
+        };
+
         // Initialize all stage counts to 0
-        stageKeys.forEach(key => {
+        stageKeys.forEach((key) => {
           data[key] = 0;
         });
-        
+
         // Set the actual counts for each stage
-        dataset.stages.forEach(stage => {
+        dataset.stages.forEach((stage) => {
           data[stage.name] = stage.count;
         });
-        
+
         return data;
       });
     } else {
       // For single dataset, create a single object with stage counts
       const dataset = dataConfig as StageTotalConfig;
-      const data: Record<string, string | number> = { name: dataset.displayName };
-      
+      const data: Record<string, string | number> = {
+        name: dataset.displayName,
+      };
+
       // Initialize all stage counts to 0
-      stageKeys.forEach(key => {
+      stageKeys.forEach((key) => {
         data[key] = 0;
       });
-      
+
       // Set the actual counts for each stage
-      dataset.stages.forEach(stage => {
+      dataset.stages.forEach((stage) => {
         data[stage.name] = stage.count;
       });
-      
+
       return [data];
     }
   }, [dataConfig, isMultiple, stageKeys]);
@@ -99,7 +104,7 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
           )}
         </div>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
         <BaseStackedBar
           data={chartData}
