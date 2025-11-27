@@ -210,8 +210,9 @@ async function processModelPrediction(
 
   if (task === "classification") {
     // Process Classifications
-    const classifications = predictionResult.result.predictions as Classification[];
-    
+    const classifications = predictionResult.result
+      .predictions as Classification[];
+
     // Save to DB
     await createClassifications(
       classifications.map((p) => ({
@@ -231,7 +232,7 @@ async function processModelPrediction(
     // Need to cast carefully or validate
     const detectionsRaw = predictionResult.result.predictions as Detection[];
     // Map raw box to expected format for DB and Enrichment
-    const detections = detectionsRaw.map(d => ({
+    const detections = detectionsRaw.map((d) => ({
       class_id: d.class_id,
       confidence: d.confidence,
       x_left: d.box[0],
@@ -252,10 +253,7 @@ async function processModelPrediction(
         height: d.height,
       })),
     );
-    enrichedDetections = await enrichDetectionData(
-      detections,
-      model.id,
-    );
+    enrichedDetections = await enrichDetectionData(detections, model.id);
   }
 
   return {
@@ -263,7 +261,9 @@ async function processModelPrediction(
     error: predictionResult.error,
     result: {
       classifications:
-        enrichedClassifications.length > 0 ? enrichedClassifications : undefined,
+        enrichedClassifications.length > 0
+          ? enrichedClassifications
+          : undefined,
       detections:
         enrichedDetections.length > 0 ? enrichedDetections : undefined,
       metadata: predictionResult.result.metadata,

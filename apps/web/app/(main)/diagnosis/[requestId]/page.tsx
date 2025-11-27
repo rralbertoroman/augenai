@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  usePredictionRequests,
-  formatDate,
-} from "@/hooks/use-prediction-requests";
+import { usePredictionRequestDetail } from "@/hooks/use-prediction-request-detail";
+import { formatDate } from "@/hooks/use-prediction-requests";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +17,7 @@ export default function PredictionDetailPage({
   params: Promise<{ requestId: string }>;
 }) {
   const { requestId } = use(params);
-  const { isLoading, error, getDiagnosesForRequest, getRequestInfo } =
-    usePredictionRequests();
-  const diagnosesForRequest = getDiagnosesForRequest(requestId);
-  const requestInfo = getRequestInfo(requestId);
+  const { request, isLoading, error } = usePredictionRequestDetail(requestId);
 
   // Feedback hook
   const feedback = useClassificationFeedback();
@@ -77,7 +72,7 @@ export default function PredictionDetailPage({
                 Fecha
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {requestInfo ? formatDate(requestInfo.createdAt) : ""}
+                {request ? formatDate(request.createdAt) : ""}
               </p>
             </div>
             <div>
@@ -85,7 +80,7 @@ export default function PredictionDetailPage({
                 Paciente
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {requestInfo?.patient?.name || "N/A"}
+                {request?.patient?.name || "N/A"}
               </p>
             </div>
             <div>
@@ -93,7 +88,7 @@ export default function PredictionDetailPage({
                 Tipo de Tarea
               </p>
               <p className="mt-1">
-                <Badge variant="outline">{requestInfo?.task}</Badge>
+                <Badge variant="outline">{request?.task}</Badge>
               </p>
             </div>
             <div>
@@ -101,7 +96,7 @@ export default function PredictionDetailPage({
                 Tipo de Imagen
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white">
-                {requestInfo?.imageType}
+                {request?.imageType}
               </p>
             </div>
             <div className="sm:col-span-2">
@@ -109,7 +104,7 @@ export default function PredictionDetailPage({
                 Enfermedades Sospechadas
               </p>
               <div className="flex flex-wrap gap-2">
-                {requestInfo?.diseaseNames?.map(
+                {request?.diseaseNames?.map(
                   (diseaseName: string, i: number) => (
                     <Badge key={i} variant="secondary">
                       {diseaseName}
@@ -127,11 +122,11 @@ export default function PredictionDetailPage({
             <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
               Resultados de Diagnóstico
             </h2>
-            {diagnosesForRequest.length > 0 && (
+            {request?.predictions && request.predictions.length > 0 && (
               <Button
                 type="button"
                 size="sm"
-                onClick={() => feedback.handleOpenFeedback(diagnosesForRequest)}
+                onClick={() => feedback.handleOpenFeedback(request.predictions)}
                 className="text-md"
               >
                 Brindar retroalimentación
@@ -139,12 +134,12 @@ export default function PredictionDetailPage({
             )}
           </div>
           <div className="p-6 space-y-6">
-            {diagnosesForRequest.length > 0 ? (
+            {request?.predictions && request.predictions.length > 0 ? (
               <div className="space-y-4">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Predicciones ({diagnosesForRequest.length})
+                  Predicciones ({request.predictions.length})
                 </p>
-                {diagnosesForRequest.map((diagnosis) => {
+                {request.predictions.map((diagnosis) => {
                   const badge = getConfidenceBadge(diagnosis.confidence);
                   return (
                     <div
