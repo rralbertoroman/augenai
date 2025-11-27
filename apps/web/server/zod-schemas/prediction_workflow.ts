@@ -31,7 +31,9 @@ export const BBoxSchema = z.object({
 });
 
 // Intermediate detection structure after processing AI service response
-export const ProcessedDetectionSchema = ClassificationSchema.extend(BBoxSchema.shape);
+export const ProcessedDetectionSchema = ClassificationSchema.extend(
+  BBoxSchema.shape,
+);
 
 // Enriched classification with DB info
 export const EnrichedClassificationSchema = ClassificationSchema.extend({
@@ -78,7 +80,9 @@ export const AIServicePredictionResponseSchema = z.object({
   status: z.enum(["success", "error"]),
   error: z.string().optional(),
   result: z.object({
-    predictions: z.array(z.union([ClassificationSchema, DetectionSchema])).optional(),
+    predictions: z
+      .array(z.union([ClassificationSchema, DetectionSchema]))
+      .optional(),
     metadata: z.object({
       inference_time_ms: z.number(),
       model_version: z.string(),

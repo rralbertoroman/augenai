@@ -147,7 +147,8 @@ export const updateHasFeedback = async (
   data: UpdateHasFeedbackInput,
 ): Promise<PredictionSharingDTO> => {
   const user = await getCurrentUser(token);
-  const { predictionRequestId, userId, hasFeedback } = UpdateHasFeedbackSchema.parse(data);
+  const { predictionRequestId, userId, hasFeedback } =
+    UpdateHasFeedbackSchema.parse(data);
 
   // Verify ownership - only the user who received the sharing can update it
   verifyOwnership(user, userId);
@@ -164,7 +165,9 @@ export const updateHasFeedback = async (
     .returning();
 
   if (!updatedSharing) {
-    throw new Error("Prediction sharing not found or you don't have permission to update it");
+    throw new Error(
+      "Prediction sharing not found or you don't have permission to update it",
+    );
   }
 
   return updatedSharing;
@@ -176,7 +179,7 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
 ): Promise<EnrichedPredictionDTO[]> => {
   const user = await getCurrentUser(token);
   const { userId } = GetSharedPredictionRequestsByUserSchema.parse(data);
-  
+
   // Verify ownership - only the user can see their shared predictions
   verifyOwnership(user, userId);
 
@@ -188,7 +191,9 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
     .from(PredictionSharingTable)
     .where(eq(PredictionSharingTable.userId, userId));
 
-  const sharedRequestIds = sharedSharings.map(sharing => sharing.predictionRequestId);
+  const sharedRequestIds = sharedSharings.map(
+    (sharing) => sharing.predictionRequestId,
+  );
 
   if (sharedRequestIds.length === 0) {
     return [];

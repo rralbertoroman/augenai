@@ -170,7 +170,6 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-
   const enrichedPredictions: EnrichedPredictionDTO[] = [];
 
   for (const prediction of request.predictions) {
