@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartColumnStacked, ClipboardPlus, Sparkles } from "lucide-react";
 import { MedicalStats } from "@/components/dashboard/medical-stats/MedicalStats";
 import Start from "./start";
+import ModelStats from "./model_stats";
 
 enum TabsValue {
   START = "start",
@@ -44,8 +45,7 @@ const Dashboard: React.FC = () => {
           value={TabsValue.MODEL_STATS}
           className="p-4 border rounded-lg"
         >
-          <h2 className="text-xl font-semibold mb-4">Settings</h2>
-          <p>Configure your settings here.</p>
+          <ModelStats />
         </TabsContent>
       </Tabs>
     </div>
