@@ -4,7 +4,6 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import logging
 
 from .logging_config import setup_logging, get_logger
 from .routers import api, health
@@ -32,11 +31,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Add request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
-    
+
     # Log request
     logger.info(
         "Request started",
@@ -47,7 +47,7 @@ async def log_requests(request: Request, call_next):
             "query_params": dict(request.query_params),
         },
     )
-    
+
     try:
         response = await call_next(request)
     except Exception as e:
@@ -63,11 +63,11 @@ async def log_requests(request: Request, call_next):
             status_code=500,
             content={"detail": "Internal server error"},
         )
-    
+
     # Calculate process time
     process_time = (time.time() - start_time) * 1000
     process_time = round(process_time, 2)
-    
+
     # Log response
     logger.info(
         "Request completed",
@@ -76,10 +76,11 @@ async def log_requests(request: Request, call_next):
             "process_time_ms": process_time,
         },
     )
-    
+
     # Add process time to response headers
     response.headers["X-Process-Time"] = str(process_time)
     return response
+
 
 # Include routers
 app.include_router(health.router, tags=["health"])
@@ -88,10 +89,12 @@ app.include_router(api.router, prefix="/api/v1", tags=["api"])
 # Log application startup
 event_logger = get_logger("ai_service.events")
 
+
 @app.on_event("startup")
 async def startup_event():
     """Log application startup"""
     event_logger.info("Application startup")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
