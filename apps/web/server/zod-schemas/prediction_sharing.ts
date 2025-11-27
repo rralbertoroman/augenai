@@ -49,9 +49,7 @@ export type GetPredictionSharingsByUserInput = z.input<
 export type GetPredictionSharingByIdsInput = z.input<
   typeof GetPredictionSharingByIdsSchema
 >;
-export type UpdateHasFeedbackInput = z.input<
-  typeof UpdateHasFeedbackSchema
->;
+export type UpdateHasFeedbackInput = z.input<typeof UpdateHasFeedbackSchema>;
 export type GetSharedPredictionRequestsByUserInput = z.input<
   typeof GetSharedPredictionRequestsByUserSchema
 >;

@@ -1,4 +1,4 @@
-import { Patient, calculateAge } from "@/hooks/use-patients";
+import { Patient } from "@/hooks/use-patients";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
