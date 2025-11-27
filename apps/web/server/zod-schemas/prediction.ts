@@ -36,6 +36,24 @@ export const EnrichedPredictionDTOSchema = z.object({
     .optional(),
   bucket_name: z.string(),
   storage_path: z.string(),
+  feedbacks: z
+    .array(
+      z.object({
+        id: z.string(),
+        userProfileId: z.string(),
+        isMainUser: z.boolean(),
+        isMainData: z.boolean(),
+        classId: z.number(),
+        confidence: z.number(),
+        createdAt: z.date(),
+        // Optional bbox for detection feedback
+        xLeft: z.number().optional(),
+        yTop: z.number().optional(),
+        width: z.number().optional(),
+        height: z.number().optional(),
+      }),
+    )
+    .optional(),
 });
 
 // INPUT TYPES

@@ -9,11 +9,145 @@ import {
   type CreatePredictionRequestInput,
   type GetPredictionRequestByIdInput,
   type PredictionRequestDTO,
+  type PredictionWithTasks,
 } from "../zod-schemas/prediction_request";
 import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getCurrentUser, verifyOwnership } from "../auth";
 import { PatientDTO } from "../zod-schemas";
+
+// Helper function to process predictions in parallel
+const processPredictionsInParallel = async (
+  predictions: PredictionWithTasks[],
+  requestContext: {
+    patientId: string;
+    requestId: string;
+    bucketName: string;
+    storagePath: string;
+  },
+  includeFeedbacks: boolean = false,
+): Promise<EnrichedPredictionDTO[]> => {
+  const tasks: Promise<EnrichedPredictionDTO>[] = [];
+
+  for (const prediction of predictions) {
+    const { modelId } = prediction;
+
+    // Process Classifications
+    if (
+      prediction.classifications &&
+      Array.isArray(prediction.classifications)
+    ) {
+      for (const classification of prediction.classifications) {
+        tasks.push(
+          (async () => {
+            const classInfo =
+              await getPredictionClassDiseaseByClassIdAndModelId({
+                classId: classification.classId,
+                modelId,
+              });
+
+            if (!classInfo) {
+              throw new Error(
+                `Disease mapping not found for class_id ${classification.classId} and model ${modelId}`,
+              );
+            }
+
+            return {
+              id: classification.id,
+              class_id: classification.classId,
+              model_id: modelId,
+              confidence: classification.confidence,
+              disease_id: classInfo.diseaseId,
+              disease_name: classInfo.diseaseName,
+              stage_idx: classInfo.stageIdx,
+              stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+              patient_id: requestContext.patientId,
+              request_id: requestContext.requestId,
+              createdAt: classification.createdAt,
+              type: "classification",
+              bucket_name: requestContext.bucketName,
+              storage_path: requestContext.storagePath,
+              feedbacks:
+                includeFeedbacks && classification.feedbacks
+                  ? classification.feedbacks.map((f) => ({
+                      id: f.id,
+                      userProfileId: f.userProfileId,
+                      isMainUser: f.isMainUser,
+                      isMainData: f.isMainData,
+                      classId: f.classId,
+                      confidence: f.confidence,
+                      createdAt: f.createdAt,
+                    }))
+                  : undefined,
+            } as EnrichedPredictionDTO;
+          })(),
+        );
+      }
+    }
+
+    // Process Detections
+    if (prediction.detections && Array.isArray(prediction.detections)) {
+      for (const detection of prediction.detections) {
+        tasks.push(
+          (async () => {
+            const classInfo =
+              await getPredictionClassDiseaseByClassIdAndModelId({
+                classId: detection.classId,
+                modelId,
+              });
+
+            if (!classInfo) {
+              throw new Error(
+                `Disease mapping not found for class_id ${detection.classId} and model ${modelId}`,
+              );
+            }
+
+            return {
+              id: detection.id,
+              class_id: detection.classId,
+              model_id: modelId,
+              confidence: detection.confidence,
+              disease_id: classInfo.diseaseId,
+              disease_name: classInfo.diseaseName,
+              stage_idx: classInfo.stageIdx,
+              stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+              patient_id: requestContext.patientId,
+              request_id: requestContext.requestId,
+              createdAt: detection.createdAt,
+              type: "detection",
+              bbox: {
+                x_left: detection.xLeft,
+                y_top: detection.yTop,
+                width: detection.width,
+                height: detection.height,
+              },
+              bucket_name: requestContext.bucketName,
+              storage_path: requestContext.storagePath,
+              feedbacks:
+                includeFeedbacks && detection.feedbacks
+                  ? detection.feedbacks.map((f) => ({
+                      id: f.id,
+                      userProfileId: f.userProfileId,
+                      isMainUser: f.isMainUser,
+                      isMainData: f.isMainData,
+                      classId: f.classId,
+                      confidence: f.confidence,
+                      createdAt: f.createdAt,
+                      xLeft: f.xLeft,
+                      yTop: f.yTop,
+                      width: f.width,
+                      height: f.height,
+                    }))
+                  : undefined,
+            } as EnrichedPredictionDTO;
+          })(),
+        );
+      }
+    }
+  }
+
+  return Promise.all(tasks);
+};
 
 export const createPredictionRequest = async (
   token: string,
@@ -41,7 +175,9 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
   token: string,
   userId: string,
 ): Promise<EnrichedPredictionDTO[]> => {
-  await getCurrentUser(token); // Verify authentication only
+  const user = await getCurrentUser(token);
+  verifyOwnership(user, userId);
+
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
     with: {
@@ -58,88 +194,71 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
     ],
   });
 
-  const enrichedPredictions: EnrichedPredictionDTO[] = [];
+  const results = await Promise.all(
+    predictionRequests.map((request) =>
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+        },
+        false,
+      ),
+    ),
+  );
 
-  for (const request of predictionRequests) {
-    for (const prediction of request.predictions) {
-      // Process Classifications
-      if (
-        prediction.classifications &&
-        Array.isArray(prediction.classifications)
-      ) {
-        for (const classification of prediction.classifications) {
-          const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-            classId: classification.classId,
-            modelId: prediction.modelId,
-          });
+  return results.flat();
+};
 
-          if (!classInfo) {
-            throw new Error(
-              `Disease mapping not found for class_id ${classification.classId} and model ${prediction.modelId}`,
-            );
-          }
+export const getAllPredictionRequestsWithFeedbacksByUserId = async (
+  token: string,
+  userId: string,
+): Promise<EnrichedPredictionDTO[]> => {
+  const user = await getCurrentUser(token);
+  verifyOwnership(user, userId);
 
-          enrichedPredictions.push({
-            id: classification.id,
-            class_id: classification.classId,
-            model_id: prediction.modelId,
-            confidence: classification.confidence,
-            disease_id: classInfo.diseaseId,
-            disease_name: classInfo.diseaseName,
-            stage_idx: classInfo.stageIdx,
-            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-            patient_id: request.patientId,
-            request_id: request.id,
-            createdAt: classification.createdAt,
-            type: "classification",
-            bucket_name: request.bucketName,
-            storage_path: request.storagePath,
-          });
-        }
-      }
-
-      // Process Detections
-      if (prediction.detections && Array.isArray(prediction.detections)) {
-        for (const detection of prediction.detections) {
-          const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-            classId: detection.classId,
-            modelId: prediction.modelId,
-          });
-
-          if (!classInfo) {
-            throw new Error(
-              `Disease mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
-            );
-          }
-
-          enrichedPredictions.push({
-            id: detection.id,
-            class_id: detection.classId,
-            model_id: prediction.modelId,
-            confidence: detection.confidence,
-            disease_id: classInfo.diseaseId,
-            disease_name: classInfo.diseaseName,
-            stage_idx: classInfo.stageIdx,
-            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-            patient_id: request.patientId,
-            request_id: request.id,
-            createdAt: detection.createdAt,
-            type: "detection",
-            bbox: {
-              x_left: detection.xLeft,
-              y_top: detection.yTop,
-              width: detection.width,
-              height: detection.height,
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    where: eq(PredictionRequestsTable.userId, userId),
+    with: {
+      predictions: {
+        with: {
+          classifications: {
+            with: {
+              feedbacks: true,
             },
-            bucket_name: request.bucketName,
-            storage_path: request.storagePath,
-          });
-        }
-      }
-    }
-  }
+          },
+          detections: {
+            with: {
+              feedbacks: true,
+            },
+          },
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
 
-  return enrichedPredictions;
+  const results = await Promise.all(
+    predictionRequests.map((request) =>
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+        },
+        true,
+      ),
+    ),
+  );
+
+  return results.flat();
 };
 
 export const getPredictionRequestById = async (
@@ -170,84 +289,16 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-  const enrichedPredictions: EnrichedPredictionDTO[] = [];
-
-  for (const prediction of request.predictions) {
-    // Process Classifications
-    if (
-      prediction.classifications &&
-      Array.isArray(prediction.classifications)
-    ) {
-      for (const classification of prediction.classifications) {
-        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: classification.classId,
-          modelId: prediction.modelId,
-        });
-
-        if (!classInfo) {
-          throw new Error(
-            `Disease mapping not found for class_id ${classification.classId} and model ${prediction.modelId}`,
-          );
-        }
-
-        enrichedPredictions.push({
-          id: classification.id,
-          class_id: classification.classId,
-          model_id: prediction.modelId,
-          confidence: classification.confidence,
-          disease_id: classInfo.diseaseId,
-          disease_name: classInfo.diseaseName,
-          stage_idx: classInfo.stageIdx,
-          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-          patient_id: request.patientId,
-          request_id: request.id,
-          createdAt: classification.createdAt,
-          type: "classification",
-          bucket_name: request.bucketName,
-          storage_path: request.storagePath,
-        });
-      }
-    }
-
-    // Process Detections
-    if (prediction.detections && Array.isArray(prediction.detections)) {
-      for (const detection of prediction.detections) {
-        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: detection.classId,
-          modelId: prediction.modelId,
-        });
-
-        if (!classInfo) {
-          throw new Error(
-            `Disease mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
-          );
-        }
-
-        enrichedPredictions.push({
-          id: detection.id,
-          class_id: detection.classId,
-          model_id: prediction.modelId,
-          confidence: detection.confidence,
-          disease_id: classInfo.diseaseId,
-          disease_name: classInfo.diseaseName,
-          stage_idx: classInfo.stageIdx,
-          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-          patient_id: request.patientId,
-          request_id: request.id,
-          createdAt: detection.createdAt,
-          type: "detection",
-          bbox: {
-            x_left: detection.xLeft,
-            y_top: detection.yTop,
-            width: detection.width,
-            height: detection.height,
-          },
-          bucket_name: request.bucketName,
-          storage_path: request.storagePath,
-        });
-      }
-    }
-  }
+  const enrichedPredictions = await processPredictionsInParallel(
+    request.predictions,
+    {
+      patientId: request.patientId,
+      requestId: request.id,
+      bucketName: request.bucketName,
+      storagePath: request.storagePath,
+    },
+    false,
+  );
 
   return {
     request,
