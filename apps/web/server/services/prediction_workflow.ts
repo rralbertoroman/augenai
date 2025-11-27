@@ -23,8 +23,9 @@ import {
   type AIServicePredictionResponse,
   type Classification,
   type EnrichedClassification,
-  type Detection,
   type EnrichedDetection,
+  type Detection,
+  type ProcessedDetection,
 } from "../zod-schemas/prediction_workflow";
 
 export async function processPredictionRequest(
@@ -92,6 +93,7 @@ export async function processPredictionRequest(
       imageBlob,
       fileName,
       predictionRequest.id,
+      task,
     );
 
     if (predictionResponse) {
@@ -179,6 +181,7 @@ async function processModelPrediction(
   imageBlob: Blob,
   fileName: string,
   requestId: string,
+  task: string,
 ): Promise<PredictionResponse | null> {
   // 1. Fetch from AI Service
   const predictionResult = await fetchPredictionFromAIService(
@@ -190,8 +193,7 @@ async function processModelPrediction(
   if (
     !predictionResult ||
     predictionResult.status === "error" ||
-    (!predictionResult.result?.predictions?.length &&
-      !predictionResult.result?.detections?.length)
+    !predictionResult.result?.predictions?.length
   ) {
     return null;
   }
@@ -202,27 +204,45 @@ async function processModelPrediction(
     modelId: model.id,
   });
 
-  // 2.1 Save Classifications
-  if (
-    predictionResult.result.predictions &&
-    predictionResult.result.predictions.length > 0
-  ) {
+  // 2.1 Process Results based on Task
+  let enrichedClassifications: EnrichedClassification[] = [];
+  let enrichedDetections: EnrichedDetection[] = [];
+
+  if (task === "classification") {
+    // Process Classifications
+    const classifications = predictionResult.result.predictions as Classification[];
+    
+    // Save to DB
     await createClassifications(
-      predictionResult.result.predictions.map((p) => ({
+      classifications.map((p) => ({
         predictionId: savedPrediction.id,
         classId: p.class_id,
         confidence: p.confidence,
       })),
     );
-  }
 
-  // 2.2 Save Detections
-  if (
-    predictionResult.result.detections &&
-    predictionResult.result.detections.length > 0
-  ) {
+    // Enrich
+    enrichedClassifications = await enrichClassificationData(
+      classifications,
+      model.id,
+    );
+  } else if (task === "detection") {
+    // Process Detections
+    // Need to cast carefully or validate
+    const detectionsRaw = predictionResult.result.predictions as Detection[];
+    // Map raw box to expected format for DB and Enrichment
+    const detections = detectionsRaw.map(d => ({
+      class_id: d.class_id,
+      confidence: d.confidence,
+      x_left: d.box[0],
+      y_top: d.box[1],
+      width: d.box[2],
+      height: d.box[3],
+    }));
+
+    // Save to DB
     await createDetections(
-      predictionResult.result.detections.map((d) => ({
+      detections.map((d) => ({
         predictionId: savedPrediction.id,
         classId: d.class_id,
         confidence: d.confidence,
@@ -232,21 +252,8 @@ async function processModelPrediction(
         height: d.height,
       })),
     );
-  }
-
-  // 3. Enrich Data
-  let enrichedPredictions: EnrichedClassification[] = [];
-  if (predictionResult.result.predictions) {
-    enrichedPredictions = await enrichPredictionData(
-      predictionResult.result.predictions,
-      model.id,
-    );
-  }
-
-  let enrichedDetections: EnrichedDetection[] = [];
-  if (predictionResult.result.detections) {
     enrichedDetections = await enrichDetectionData(
-      predictionResult.result.detections,
+      detections,
       model.id,
     );
   }
@@ -255,8 +262,8 @@ async function processModelPrediction(
     status: predictionResult.status,
     error: predictionResult.error,
     result: {
-      predictions:
-        enrichedPredictions.length > 0 ? enrichedPredictions : undefined,
+      classifications:
+        enrichedClassifications.length > 0 ? enrichedClassifications : undefined,
       detections:
         enrichedDetections.length > 0 ? enrichedDetections : undefined,
       metadata: predictionResult.result.metadata,
@@ -265,11 +272,11 @@ async function processModelPrediction(
   };
 }
 
-async function enrichPredictionData(
+async function enrichClassificationData(
   predictions: Classification[],
   modelId: string,
 ): Promise<EnrichedClassification[]> {
-  const enrichedPredictions: EnrichedClassification[] = [];
+  const enrichedClassifications: EnrichedClassification[] = [];
 
   for (const pred of predictions) {
     const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
@@ -287,7 +294,7 @@ async function enrichPredictionData(
       );
     }
 
-    enrichedPredictions.push({
+    enrichedClassifications.push({
       ...pred,
       disease_id: classInfo.diseaseId,
       disease_name: classInfo.diseaseName,
@@ -296,11 +303,11 @@ async function enrichPredictionData(
     });
   }
 
-  return enrichedPredictions;
+  return enrichedClassifications;
 }
 
 async function enrichDetectionData(
-  detections: Detection[],
+  detections: ProcessedDetection[],
   modelId: string,
 ): Promise<EnrichedDetection[]> {
   const enrichedDetections: EnrichedDetection[] = [];
@@ -322,7 +329,14 @@ async function enrichDetectionData(
     }
 
     enrichedDetections.push({
-      ...det,
+      class_id: det.class_id,
+      confidence: det.confidence,
+      bbox: {
+        x_left: det.x_left,
+        y_top: det.y_top,
+        width: det.width,
+        height: det.height,
+      },
       disease_id: classInfo.diseaseId,
       disease_name: classInfo.diseaseName,
       stage_idx: classInfo.stageIdx,
