@@ -19,10 +19,8 @@ interface StepTaskProps {
 export function StepTask({
   imageType,
   task,
-  includeDetection,
   errors,
   onSelectChange,
-  onCheckboxChange,
 }: StepTaskProps) {
   return (
     <div className="space-y-4 w-full">
@@ -71,24 +69,6 @@ export function StepTask({
           </p>
         )}
       </div>
-
-      {task && task !== "detection" && (
-        <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
-          <input
-            type="checkbox"
-            id="includeDetection"
-            checked={includeDetection}
-            onChange={(e) => onCheckboxChange(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <Label
-            htmlFor="includeDetection"
-            className="text-sm font-medium cursor-pointer"
-          >
-            También realizar detección
-          </Label>
-        </div>
-      )}
     </div>
   );
 }
