@@ -1,9 +1,9 @@
 from pathlib import Path
 from .adapter_registry import ADAPTER_REGISTRY
 from ai_service.config import settings
-import logging
+from ai_service.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ModelService:

@@ -1,6 +1,5 @@
-import logging
-
 from PIL.Image import Image
+from ai_service.logging_config import get_logger
 
 from ai_service.models.schemas import (
     ClassificationObject,
@@ -13,7 +12,7 @@ from ai_service.services.prediction.factories.model_instance import ModelInstanc
 from .factories import hf
 from .model_pool import ModelPool
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def get_mocked_classification() -> ClassificationResult:
