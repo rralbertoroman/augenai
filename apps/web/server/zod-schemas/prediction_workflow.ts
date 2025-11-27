@@ -20,11 +20,18 @@ export const ClassificationSchema = z.object({
 export const DetectionSchema = z.object({
   class_id: z.number(),
   confidence: z.number(),
+  box: z.array(z.number()).length(4),
+});
+
+export const BBoxSchema = z.object({
   x_left: z.number(),
   y_top: z.number(),
   width: z.number(),
   height: z.number(),
 });
+
+// Intermediate detection structure after processing AI service response
+export const ProcessedDetectionSchema = ClassificationSchema.extend(BBoxSchema.shape);
 
 // Enriched classification with DB info
 export const EnrichedClassificationSchema = ClassificationSchema.extend({
@@ -35,19 +42,22 @@ export const EnrichedClassificationSchema = ClassificationSchema.extend({
 });
 
 // Enriched detection with DB info
-export const EnrichedDetectionSchema = DetectionSchema.extend({
+export const EnrichedDetectionSchema = z.object({
+  class_id: z.number(),
+  confidence: z.number(),
+  bbox: BBoxSchema,
   disease_id: z.string(),
   disease_name: z.string(),
   stage_idx: z.number(),
   stage_content: z.string(),
 });
 
-// Individual prediction response - simplified with inlined metadata
+// Individual prediction response
 export const PredictionResponseSchema = z.object({
   status: z.enum(["success", "error"]),
   error: z.string().optional(),
   result: z.object({
-    predictions: z.array(EnrichedClassificationSchema).optional(),
+    classifications: z.array(EnrichedClassificationSchema).optional(),
     detections: z.array(EnrichedDetectionSchema).optional(),
     metadata: z.object({
       inference_time_ms: z.number(),
@@ -57,19 +67,18 @@ export const PredictionResponseSchema = z.object({
   db_prediction_id: z.uuid(),
 });
 
-// Multiple predictions response - simplified nested structure
+// Multiple predictions response
 export const MultiplePredictionsResponseSchema = z.object({
   predictions: z.array(PredictionResponseSchema),
   models_used: z.array(z.string()),
 });
 
-// Raw AI service response - simplified with complete nested structure
+// Raw AI service response
 export const AIServicePredictionResponseSchema = z.object({
   status: z.enum(["success", "error"]),
   error: z.string().optional(),
   result: z.object({
-    predictions: z.array(ClassificationSchema).optional(),
-    detections: z.array(DetectionSchema).optional(),
+    predictions: z.array(z.union([ClassificationSchema, DetectionSchema])).optional(),
     metadata: z.object({
       inference_time_ms: z.number(),
       model_version: z.string(),
@@ -96,3 +105,4 @@ export type MultiplePredictionsResponse = z.output<
 export type AIServicePredictionResponse = z.output<
   typeof AIServicePredictionResponseSchema
 >;
+export type ProcessedDetection = z.output<typeof ProcessedDetectionSchema>;
