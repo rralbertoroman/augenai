@@ -1,11 +1,11 @@
 from pathlib import Path
-from logging import getLogger
 
 import torch
 from ultralytics import YOLO
 from PIL.Image import Image
 
 from ai_service.config import settings
+from ai_service.logging_config import get_logger
 from ai_service.models.schemas import (
     DetectionObject,
     DetectionResult,
@@ -13,13 +13,13 @@ from ai_service.models.schemas import (
 )
 from .model_instance import ModelInstance
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def ultralytics_detection_factory(model_id: str):
     """Create a YOLO model for object detection"""
 
-    class YOLO_Detection(ModelInstance):
+    class YoloDetection(ModelInstance):
         def __init__(self, model_id: str, timeout: int = 60):
             super().__init__(model_id=model_id, timeout=timeout)
 
@@ -72,4 +72,4 @@ def ultralytics_detection_factory(model_id: str):
                 ),
             )
 
-    return YOLO_Detection(model_id)
+    return YoloDetection(model_id)
