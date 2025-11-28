@@ -92,6 +92,13 @@
       "when": 1764171128471,
       "tag": "0012_sharing request relation",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1764304858268,
+      "tag": "0013_lesion table",
+      "breakpoints": true
     }
   ]
 }
