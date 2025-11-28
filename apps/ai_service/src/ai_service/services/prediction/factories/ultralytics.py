@@ -28,6 +28,7 @@ def ultralytics_detection_factory(model_id: str):
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
+            logger.info(f"Classes ===>>> {self.model.names}")
 
         def run(self, image: Image):
             imgsz = settings.ultralytics_imgsz
@@ -39,8 +40,24 @@ def ultralytics_detection_factory(model_id: str):
                 image, device=self.device, imgsz=imgsz, conf=conf, iou=iou
             )
 
+            # logger.info(f"{results}")
+            logger.info(f"Prediction detected {len(results)} objects on the image")
+
+            if not results:
+                logger.warning(
+                    "No objects were detected", extra={"iou": iou, "conf": conf}
+                )
+                return DetectionResult(
+                    predictions=[],
+                    metadata=PredictionMetadata(
+                        inference_time_ms=1,
+                        model_version=getattr(self.model, "__version__", "unknown"),
+                    ),
+                )
+
             # Convert results to DetectionResult format
             detection_objects = []
+
             for result in results:
                 for box, conf, class_id in zip(
                     result.boxes.xywhn, result.boxes.conf, result.boxes.cls
@@ -49,6 +66,8 @@ def ultralytics_detection_factory(model_id: str):
                     box[1::2] *= image.height
                     box = box.tolist()
 
+                    # logger.info("Transformed dimensions to pixel")
+
                     # Convert from center x, center y, width, height to left, top, width, height
                     x_center, y_center, width, height = box
 
@@ -56,9 +75,13 @@ def ultralytics_detection_factory(model_id: str):
                     top = y_center - (height / 2)
                     box = [left, top, width, height]
 
+                    # logger.info("Transformed dimensions to (left,top,width,height)")
+
+                    class_id = int(class_id.item())
+                    class_name = self.model.names[class_id]
                     detection = DetectionObject(
-                        class_id=int(class_id.item()),
-                        class_name=self.model.names[int(class_id.item())],
+                        class_id=class_id,
+                        class_name=class_name,
                         confidence=conf.item(),
                         box=box,  # Already converted to list [left, top, width, height]
                     )
