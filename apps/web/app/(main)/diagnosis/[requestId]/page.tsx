@@ -5,7 +5,7 @@ import { formatDate } from "@/hooks/use-prediction-requests";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getConfidenceBadge } from "@/hooks/use-predictions";
+import { PredictionCard } from "@/components/predictions/prediction-card";
 import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
@@ -139,45 +139,9 @@ export default function PredictionDetailPage({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Predicciones ({request.predictions.length})
                 </p>
-                {request.predictions.map((diagnosis) => {
-                  const badge = getConfidenceBadge(diagnosis.confidence);
-                  return (
-                    <div
-                      key={diagnosis.id}
-                      className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
-                    >
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            Enfermedad
-                          </p>
-                          <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-                            {diagnosis.disease_name}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                            Clasificación
-                          </p>
-                          <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                            {diagnosis.stage_content}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                            Confianza
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={badge.variant}>{badge.label}</Badge>
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {(diagnosis.confidence * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {request.predictions.map((diagnosis) => (
+                  <PredictionCard key={diagnosis.id} diagnosis={diagnosis} />
+                ))}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">

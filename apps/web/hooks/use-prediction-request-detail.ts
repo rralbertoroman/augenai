@@ -52,10 +52,12 @@ export function usePredictionRequestDetail(requestId: string) {
         diseasesData.map((disease) => [disease.id, disease.name]),
       );
 
-      const diseaseIds = result.enrichedPredictions.map((p) => p.disease_id);
+      const diseaseIds = result.enrichedPredictions
+        .map((p) => p.disease_id ?? "")
+        .filter(Boolean);
       const diseaseNames = diseaseIds
-        .map((diseaseId: string) => diseaseMap.get(diseaseId) || diseaseId)
-        .filter(Boolean) as string[];
+        .map((diseaseId) => diseaseMap.get(diseaseId) || diseaseId)
+        .filter(Boolean);
 
       setRequest({
         id: result.request.id,
