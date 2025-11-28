@@ -10,6 +10,7 @@ from ai_service.models.schemas import (
 from ai_service.services.prediction.factories.model_instance import ModelInstance
 
 from .factories import hf
+from .factories import ultralytics_detection_factory
 from .model_pool import ModelPool
 
 logger = get_logger(__name__)
@@ -37,6 +38,7 @@ class PredictionService:
         factories = {
             "diabetic-retinopathy-224-procnorm-vit": hf.vit_clsf_model_factory,
             "swinv2_tiny_for_glaucoma_classification": hf.swinv2_clsf_model_factory,
+            "yolo11m_dr_lesion": ultralytics_detection_factory,
         }
         self._model_pool = ModelPool(factories)
         logger.info("Prediction service initialized")
@@ -46,6 +48,7 @@ class PredictionService:
             return get_mocked_classification()
 
         model: ModelInstance = self._model_pool.get_model(model_id)
+
         logger.info(f"Model with id '{model_id}' is ready for prediction")
 
         result = model.run(image)
