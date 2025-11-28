@@ -5,6 +5,7 @@ import { ChartColumnStacked, ClipboardPlus, Sparkles } from "lucide-react";
 import { MedicalStats } from "@/components/dashboard/medical-stats/MedicalStats";
 import Start from "./start";
 import ModelStats from "./model_stats";
+import { DashboardProvider } from "@/contexts/dashboard-context";
 
 enum TabsValue {
   START = "start",
@@ -12,7 +13,7 @@ enum TabsValue {
   MODEL_STATS = "model_stats",
 }
 
-const Dashboard: React.FC = () => {
+const DashboardContent: React.FC = () => {
   return (
     <div className="w-full p-4">
       <Tabs defaultValue="start" className="w-full">
@@ -49,6 +50,14 @@ const Dashboard: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+const Dashboard: React.FC = () => {
+  return (
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
   );
 };
 
