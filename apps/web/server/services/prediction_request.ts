@@ -13,6 +13,7 @@ import {
 } from "../zod-schemas/prediction_request";
 import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { getCurrentUser, verifyOwnership } from "../auth";
 import { PatientDTO } from "../zod-schemas";
 
@@ -90,15 +91,15 @@ const processPredictionsInParallel = async (
       for (const detection of prediction.detections) {
         tasks.push(
           (async () => {
-            const classInfo =
-              await getPredictionClassDiseaseByClassIdAndModelId({
+            const lesionInfo =
+              await getPredictionClassLesionByClassIdAndModelId({
                 classId: detection.classId,
                 modelId,
               });
 
-            if (!classInfo) {
+            if (!lesionInfo) {
               throw new Error(
-                `Disease mapping not found for class_id ${detection.classId} and model ${modelId}`,
+                `Lesion mapping not found for class_id ${detection.classId} and model ${modelId}`,
               );
             }
 
@@ -107,10 +108,7 @@ const processPredictionsInParallel = async (
               class_id: detection.classId,
               model_id: modelId,
               confidence: detection.confidence,
-              disease_id: classInfo.diseaseId,
-              disease_name: classInfo.diseaseName,
-              stage_idx: classInfo.stageIdx,
-              stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+              lesion_name: lesionInfo.lesionName,
               patient_id: requestContext.patientId,
               request_id: requestContext.requestId,
               createdAt: detection.createdAt,
