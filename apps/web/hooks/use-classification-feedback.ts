@@ -40,7 +40,16 @@ export function useClassificationFeedback() {
   }, [accessToken]);
 
   const handleOpenFeedback = (allPredictions: EnrichedPredictionDTO[]) => {
-    setPredictions(allPredictions);
+    setPredictions(
+      allPredictions.map((pred) => ({
+        id: pred.id,
+        disease_id: pred.disease_id ?? "",
+        disease_name: pred.disease_name ?? "",
+        confidence: pred.confidence,
+        stage_idx: pred.stage_idx,
+        model_id: pred.model_id,
+      })),
+    );
     const initialForms: Record<string, FeedbackFormData> = {};
     allPredictions.forEach((pred) => {
       initialForms[pred.id] = {
