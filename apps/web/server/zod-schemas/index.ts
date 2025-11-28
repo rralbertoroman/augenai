@@ -29,6 +29,17 @@ export {
   type GetByClassIdAndModelIdInput,
 } from "./prediction_class_disease";
 
+// Prediction Class Lesion schemas
+export {
+  PredictionClassLesionDTOSchema,
+  GetByClassIdAndModelIdSchema as GetByClassIdAndModelIdLesionSchema,
+  GetByLesionAndModelSchema,
+  type PredictionClassLesionDTO,
+  type GetByClassIdAndModelIdInput as GetByClassIdAndModelIdLesionInput,
+  type GetByLesionAndModelInput,
+  type PredictionClassLesionWithLesion,
+} from "./prediction_class_lesion";
+
 // User Profile schemas
 export {
   CreateUserProfileSchema,
