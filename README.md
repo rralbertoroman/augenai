@@ -137,11 +137,8 @@ pnpm migrate
 Start the entire stack with Docker Compose:
 
 ```bash
-# Development
-pnpm docker:dev
-
-# Production
-pnpm docker:prod
+pnpm docker:build
+pnpm docker:run
 ```
 
 ## 📁 Project Structure

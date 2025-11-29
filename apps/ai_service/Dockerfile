@@ -1,12 +1,13 @@
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 # Install system dependencies
+# Combined update, install, and cleanup to reduce layer size
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust
+# Install Rust (needed for some python dependencies)
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
@@ -14,11 +15,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_HTTP_TIMEOUT=600 \
-    UV_CONCURRENT_DOWNLOADS=2 \
-    UV_RETRY_TOTAL=5 \
     UV_LINK_MODE=copy
 
-# Set working directory
 WORKDIR /app
 
 # Copy project files
@@ -30,7 +28,7 @@ RUN uv sync --all-extras --no-install-project
 # Copy source code
 COPY ./src ./src
 
-# Now install the project in editable mode
+# Install the project in editable mode
 RUN uv pip install -e .
 
 # Expose port

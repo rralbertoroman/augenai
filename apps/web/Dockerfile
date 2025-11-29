@@ -1,8 +1,8 @@
 # Use the official Node.js image for development
 FROM node:20-alpine
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Enable corepack for pnpm management
+RUN corepack enable
 
 # Set the working directory inside the container
 WORKDIR /app
