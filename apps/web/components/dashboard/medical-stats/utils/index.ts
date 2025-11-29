@@ -70,9 +70,12 @@ export const useChartDataLogic = <
     [dataConfig],
   );
 
-  const isCohortData = "cohortData" in datasets[0];
+  const isEmpty = !datasets.length;
+  const isCohortData = !isEmpty && "cohortData" in datasets[0];
 
   const { stageKeys, stageMap } = useMemo(() => {
+    if (isEmpty) return { stageKeys: [], stageMap: new Map() };
+
     if (isCohortData) {
       // We need to ensure the data matches CohortDataConfig shape
       const cohortData = datasets as unknown as CohortDataConfig[];
@@ -106,6 +109,7 @@ export const useChartDataLogic = <
     stageColors,
     colors,
     isCohortData,
-    datasets,
+    datasets: isEmpty ? [] : datasets,
+    isEmpty,
   };
 };
