@@ -183,7 +183,10 @@ export default function Start() {
           disease_name: pred.disease_name,
           stage_content: pred.stage_content,
           confidence: pred.confidence,
-          createdAt: typeof pred.createdAt === "string" ? new Date(pred.createdAt) : pred.createdAt,
+          createdAt:
+            typeof pred.createdAt === "string"
+              ? new Date(pred.createdAt)
+              : pred.createdAt,
           storage_path: pred.storage_path,
           image_url: pred.image_url,
           patient_age: pred.patient_age,
@@ -192,7 +195,7 @@ export default function Start() {
           class_id: pred.class_id,
           model_id: pred.model_id,
           // Handle isMainData safely
-          isMainData: 'isMainData' in pred ? Boolean(pred.isMainData) : false,
+          isMainData: "isMainData" in pred ? Boolean(pred.isMainData) : false,
         };
         return processedPred;
       });

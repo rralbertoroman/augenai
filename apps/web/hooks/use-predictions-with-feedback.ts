@@ -33,6 +33,9 @@ export function usePredictionsWithFeedback(): UsePredictionsWithFeedbackReturn {
         class_id: mainFeedback.classId,
         // Update confidence from feedback
         confidence: mainFeedback.confidence,
+        // Store original values
+        predicted_class_id: prediction.class_id,
+        original_confidence: prediction.confidence,
         // Mark as reviewed if there's a main feedback
         isReviewed: true,
       };

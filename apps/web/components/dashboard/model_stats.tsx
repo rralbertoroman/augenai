@@ -14,88 +14,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Types
-type DiseaseType = "DR" | "AMD" | "Glaucoma" | "RVO" | "Uveitis";
-
-interface F1ScoreData {
-  confidence: number;
-  f1Score: number;
-}
-
-interface ConfusionMatrixData {
-  disease: string;
-  stages: string[];
-  matrix: number[][];
-}
-
-// Mock data - Replace with actual data from your API
-const f1ScoreData: F1ScoreData[] = Array.from({ length: 20 }, (_, i) => ({
-  confidence: (i + 1) * 0.05, // 0.05 to 1.0
-  f1Score: Math.min(1, 0.7 + Math.random() * 0.3) * (0.5 + (i + 1) * 0.025),
-}));
-
-const confusionMatrixData: ConfusionMatrixData[] = [
-  {
-    disease: "Diabetic Retinopathy (DR)",
-    stages: [
-      "Normal R0",
-      "Mild R1",
-      "Moderate R2",
-      "Severe R3",
-      "Proliferative R4",
-    ],
-    matrix: [
-      [85, 5, 3, 2, 5],
-      [4, 82, 6, 3, 5],
-      [3, 5, 80, 7, 5],
-      [2, 3, 6, 84, 5],
-      [1, 2, 4, 3, 90],
-    ],
-  },
-  {
-    disease: "Age-related Macular Degeneration (AMD)",
-    stages: ["None", "Early", "Intermediate", "Advanced"],
-    matrix: [
-      [90, 5, 3, 2],
-      [4, 85, 7, 4],
-      [3, 6, 82, 9],
-      [1, 2, 5, 92],
-    ],
-  },
-  {
-    disease: "Glaucoma",
-    stages: ["None", "Early", "Moderate", "Severe"],
-    matrix: [
-      [88, 6, 3, 3],
-      [5, 84, 7, 4],
-      [3, 5, 86, 6],
-      [2, 3, 4, 91],
-    ],
-  },
-  {
-    disease: "Retinal Vein Occlusion (RVO)",
-    stages: ["None", "Branch RVO", "Central RVO", "Hemispheric RVO"],
-    matrix: [
-      [92, 4, 2, 2],
-      [3, 89, 5, 3],
-      [2, 4, 88, 6],
-      [1, 2, 3, 94],
-    ],
-  },
-  {
-    disease: "Uveitis",
-    stages: ["None", "Anterior", "Intermediate", "Posterior", "Panuveitis"],
-    matrix: [
-      [90, 4, 3, 2, 1],
-      [3, 86, 5, 4, 2],
-      [2, 5, 87, 4, 2],
-      [1, 3, 4, 89, 3],
-      [1, 2, 3, 5, 89],
-    ],
-  },
-];
+import {
+  useModelStats,
+  type F1ScoreData,
+  type ConfusionMatrixData,
+} from "@/hooks/use-model-stats";
+import { Loader2 } from "lucide-react";
 
 // Calculate AUC (Area Under Curve)
 const calculateAUC = (data: F1ScoreData[]): number => {
@@ -108,57 +32,58 @@ const calculateAUC = (data: F1ScoreData[]): number => {
   return auc;
 };
 
-const auc = calculateAUC(f1ScoreData);
-
 // Chart components
-const F1ScoreChart = () => (
-  <Card className="w-full">
-    <CardHeader>
-      <CardTitle>F1-Score vs Confidence</CardTitle>
-    </CardHeader>
-    <CardContent className="h-80">
-      <div className="text-sm text-muted-foreground mb-2">
-        AUC: {auc.toFixed(3)}
-      </div>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={f1ScoreData}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="confidence"
-            label={{
-              value: "Confidence Threshold",
-              position: "insideBottom",
-              offset: -5,
-            }}
-          />
-          <YAxis
-            label={{
-              value: "F1-Score",
-              angle: -90,
-              position: "insideLeft",
-            }}
-            domain={[0, 1]}
-          />
-          <Tooltip
-            formatter={(value: number) => [value.toFixed(3), "F1-Score"]}
-            labelFormatter={(label) => `Confidence: ${label}`}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="f1Score"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
-            name="F1-Score"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </CardContent>
-  </Card>
-);
+const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
+  const auc = calculateAUC(data);
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>F1-Score vs Confidence</CardTitle>
+      </CardHeader>
+      <CardContent className="h-80">
+        <div className="text-sm text-muted-foreground mb-2">
+          AUC: {auc.toFixed(3)}
+        </div>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="confidence"
+              label={{
+                value: "Confidence Threshold",
+                position: "insideBottom",
+                offset: -5,
+              }}
+            />
+            <YAxis
+              label={{
+                value: "F1-Score",
+                angle: -90,
+                position: "insideLeft",
+              }}
+              domain={[0, 1]}
+            />
+            <Tooltip
+              formatter={(value: number) => [value.toFixed(3), "F1-Score"]}
+              labelFormatter={(label) => `Confidence: ${label}`}
+            />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="f1Score"
+              stroke="#8884d8"
+              activeDot={{ r: 8 }}
+              name="F1-Score"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
   const currentData = data;
@@ -166,7 +91,7 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
   // Calculate total for each row to show percentages
   const getCellColor = (value: number, rowIndex: number, colIndex: number) => {
     const rowSum = currentData.matrix[rowIndex].reduce((a, b) => a + b, 0);
-    const percentage = (value / rowSum) * 100;
+    const percentage = rowSum > 0 ? (value / rowSum) * 100 : 0;
 
     // Diagonal elements (correct classifications)
     if (rowIndex === colIndex) {
@@ -314,7 +239,7 @@ const DiseaseF1ScoreChart = ({
 }: {
   diseaseData: ConfusionMatrixData;
 }) => {
-  // Calculate F1 score for each stage (simplified example)
+  // Calculate F1 score for each stage
   const f1Scores = diseaseData.matrix.map((row, i) => {
     const truePositives = row[i];
     const falsePositives = row.reduce(
@@ -381,8 +306,29 @@ const DiseaseF1ScoreChart = ({
 
 // Main component
 const ModelStats = () => {
+  const { f1ScoreData, confusionMatrixData, isLoading } = useModelStats();
   const [selectedDisease, setSelectedDisease] = React.useState<number>(0);
-  const currentDisease = confusionMatrixData[selectedDisease];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!confusionMatrixData.length) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">
+          No data available for model statistics.
+        </p>
+      </div>
+    );
+  }
+
+  const currentDisease =
+    confusionMatrixData[selectedDisease] || confusionMatrixData[0];
 
   return (
     <div className="space-y-6">
@@ -413,7 +359,7 @@ const ModelStats = () => {
         </div>
 
         <div>
-          <F1ScoreChart />
+          <F1ScoreChart data={f1ScoreData} />
         </div>
       </div>
     </div>
