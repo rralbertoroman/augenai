@@ -11,6 +11,7 @@ import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import Image from "next/image";
+import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 
 export default function PredictionDetailPage({
   params,
@@ -119,67 +120,69 @@ export default function PredictionDetailPage({
           </div>
         </div>
 
-        {/* Diagnósticos */}
-        <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
-          <div className="flex items-center justify-between px-6 pb-3 pt-5">
-            <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
-              Resultados de Diagnóstico
-            </h2>
-            {request?.predictions && request.predictions.length > 0 && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => feedback.handleOpenFeedback(request.predictions)}
-                className="text-md"
-              >
-                Brindar retroalimentación
-              </Button>
-            )}
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="flex flex-row gap-4 w-full">
-              {/* Display the eye scan image if available */}
-              {image_url && (
-                <div className="w-1/4">
-                  <div className="relative aspect-square w-full max-w-xs mx-auto overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                    <Image
-                      src={image_url}
-                      alt="Imagen del escaneo ocular para esta predicción"
-                      fill
-                      className="object-cover"
-                      unoptimized // Since the image comes from Supabase
-                    />
-                  </div>
-                </div>
-              )}
-              {request?.predictions && request.predictions.length > 0 ? (
-                <div className="w-3/4 space-y-4">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Predicciones ({request.predictions.length})
-                  </p>
-                  {request.predictions.map((diagnosis) => (
-                    <PredictionCard key={diagnosis.id} diagnosis={diagnosis} />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No hay diagnósticos disponibles para esta solicitud
-                </p>
+        <div className="flex flex-row w-full space-x-3">
+          {/* Display the eye scan image if available */}
+          {image_url && (
+            <div className="w-1/2">
+              <div className="w-full max-w-full mx-auto">
+                <ImageBoundingBoxes imageUrl={image_url} />
+              </div>
+            </div>
+          )}
+
+          {/* Diagnósticos */}
+          <div className="w-1/2 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
+            <div className="flex items-center justify-between px-6 pb-3 pt-5">
+              <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                Resultados de Diagnóstico
+              </h2>
+              {request?.predictions && request.predictions.length > 0 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    feedback.handleOpenFeedback(request.predictions)
+                  }
+                  className="text-md"
+                >
+                  Brindar retroalimentación
+                </Button>
               )}
             </div>
-          </div>
+            <div className="p-6 space-y-6">
+              <div className="flex flex-row gap-4 w-full">
+                {request?.predictions && request.predictions.length > 0 ? (
+                  <div className="w-full space-y-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Predicciones ({request.predictions.length})
+                    </p>
+                    {request.predictions.map((diagnosis) => (
+                      <PredictionCard
+                        key={diagnosis.id}
+                        diagnosis={diagnosis}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No hay diagnósticos disponibles para esta solicitud
+                  </p>
+                )}
+              </div>
+            </div>
 
-          <BatchFeedbackModal
-            open={feedback.openFeedbackModal}
-            onOpenChange={feedback.setOpenFeedbackModal}
-            predictions={feedback.predictions}
-            feedbackForms={feedback.feedbackForms}
-            diseases={feedback.diseases}
-            onUpdateForm={feedback.updateFeedbackForm}
-            loading={feedback.loading}
-            error={feedback.error}
-            onSubmit={feedback.handleSubmitFeedback}
-          />
+            <BatchFeedbackModal
+              open={feedback.openFeedbackModal}
+              onOpenChange={feedback.setOpenFeedbackModal}
+              predictions={feedback.predictions}
+              feedbackForms={feedback.feedbackForms}
+              diseases={feedback.diseases}
+              onUpdateForm={feedback.updateFeedbackForm}
+              loading={feedback.loading}
+              error={feedback.error}
+              onSubmit={feedback.handleSubmitFeedback}
+            />
+          </div>
         </div>
       </div>
     </main>
