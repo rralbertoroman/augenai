@@ -135,7 +135,7 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <Users className="w-4 h-4 mr-1" />
-                <span>{totalPatients} Pacientes Totales</span>
+                <span>{totalPatients} Total de Pacientes</span>
               </div>
               {totalRequiringTreatment > 0 && (
                 <div className="text-amber-600 dark:text-amber-400 text-sm">

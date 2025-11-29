@@ -289,14 +289,14 @@ const DiseaseF1ScoreChart = ({
                 {
                   f1Score: "F1-Score",
                   precision: "Precisión",
-                  recall: "Exhaustividad",
+                  recall: "Recall",
                 }[name] || name,
               ]}
             />
             <Legend />
             <Bar dataKey="f1Score" name="F1-Score" fill="#8884d8" />
             <Bar dataKey="precision" name="Precisión" fill="#82ca9d" />
-            <Bar dataKey="recall" name="Exhaustividad" fill="#ffc658" />
+            <Bar dataKey="recall" name="Recall" fill="#ffc658" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
