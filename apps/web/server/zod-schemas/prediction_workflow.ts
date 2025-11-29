@@ -48,10 +48,7 @@ export const EnrichedDetectionSchema = z.object({
   class_id: z.number(),
   confidence: z.number(),
   bbox: BBoxSchema,
-  disease_id: z.string(),
-  disease_name: z.string(),
-  stage_idx: z.number(),
-  stage_content: z.string(),
+  lesion_name: z.string(),
 });
 
 // Individual prediction response
