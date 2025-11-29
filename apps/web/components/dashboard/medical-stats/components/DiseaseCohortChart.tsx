@@ -68,7 +68,7 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{totalPatients}</span> Pacientes Totales
+            <span className="font-medium">{totalPatients}</span> Total de Pacientes
           </div>
           {totalRequiringTreatment > 0 && (
             <div className="flex items-center text-amber-600 dark:text-amber-400 text-sm">
