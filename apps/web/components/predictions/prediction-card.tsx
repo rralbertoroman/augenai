@@ -8,7 +8,6 @@ export interface PredictionCardProps {
     disease_name?: string;
     stage_content?: string;
     confidence: number;
-    image_url?: string; // URL of the eye scan image from Supabase
   };
 }
 
@@ -45,24 +44,6 @@ export function PredictionCard({ diagnosis }: PredictionCardProps) {
           </div>
         </div>
       </div>
-
-      {/* Display the eye scan image if available */}
-      {diagnosis.image_url && (
-        <div className="mt-4">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-            Imagen del escaneo
-          </p>
-          <div className="relative aspect-square w-full max-w-xs mx-auto overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <Image
-              src={diagnosis.image_url}
-              alt="Imagen del escaneo ocular para esta predicción"
-              fill
-              className="object-cover"
-              unoptimized // Since the image comes from Supabase
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

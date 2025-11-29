@@ -10,6 +10,7 @@ import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
+import Image from "next/image";
 
 export default function PredictionDetailPage({
   params,
@@ -18,6 +19,7 @@ export default function PredictionDetailPage({
 }) {
   const { requestId } = use(params);
   const { request, isLoading, error } = usePredictionRequestDetail(requestId);
+  const image_url = 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Feyeswidebay.com.au%2Fwp-content%2Fuploads%2F2017%2F01%2Fdiabetic-retinopathy-3-720x480.jpg&f=1&nofb=1&ipt=4c1c919150823fc6b081f544d8d17a4a39cca9df9e956feaae7beda5203e56c2';
 
   // Feedback hook
   const feedback = useClassificationFeedback();
@@ -134,34 +136,50 @@ export default function PredictionDetailPage({
             )}
           </div>
           <div className="p-6 space-y-6">
-            {request?.predictions && request.predictions.length > 0 ? (
-              <div className="space-y-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Predicciones ({request.predictions.length})
+            <div className="flex flex-row gap-4 w-full">
+              {/* Display the eye scan image if available */}
+              {image_url && (
+                <div className="w-1/4">
+                  <div className="relative aspect-square w-full max-w-xs mx-auto overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                    <Image
+                      src={image_url}
+                      alt="Imagen del escaneo ocular para esta predicción"
+                      fill
+                      className="object-cover"
+                      unoptimized // Since the image comes from Supabase
+                    />
+                  </div>
+                </div>
+              )}
+              {request?.predictions && request.predictions.length > 0 ? (
+                <div className="w-3/4 space-y-4">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Predicciones ({request.predictions.length})
+                  </p>
+                  {request.predictions.map((diagnosis) => (
+                    <PredictionCard key={diagnosis.id} diagnosis={diagnosis} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No hay diagnósticos disponibles para esta solicitud
                 </p>
-                {request.predictions.map((diagnosis) => (
-                  <PredictionCard key={diagnosis.id} diagnosis={diagnosis} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No hay diagnósticos disponibles para esta solicitud
-              </p>
-            )}
+              )}
+            </div>
           </div>
-        </div>
 
-        <BatchFeedbackModal
-          open={feedback.openFeedbackModal}
-          onOpenChange={feedback.setOpenFeedbackModal}
-          predictions={feedback.predictions}
-          feedbackForms={feedback.feedbackForms}
-          diseases={feedback.diseases}
-          onUpdateForm={feedback.updateFeedbackForm}
-          loading={feedback.loading}
-          error={feedback.error}
-          onSubmit={feedback.handleSubmitFeedback}
-        />
+          <BatchFeedbackModal
+            open={feedback.openFeedbackModal}
+            onOpenChange={feedback.setOpenFeedbackModal}
+            predictions={feedback.predictions}
+            feedbackForms={feedback.feedbackForms}
+            diseases={feedback.diseases}
+            onUpdateForm={feedback.updateFeedbackForm}
+            loading={feedback.loading}
+            error={feedback.error}
+            onSubmit={feedback.handleSubmitFeedback}
+          />
+        </div>
       </div>
     </main>
   );
