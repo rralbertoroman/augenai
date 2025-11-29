@@ -8,6 +8,7 @@ import {
 import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { createClassifications } from "./classification";
 import { createDetections } from "./detection";
 import { supabaseAdmin } from "../supabase/client";
@@ -313,18 +314,18 @@ async function enrichDetectionData(
   const enrichedDetections: EnrichedDetection[] = [];
 
   for (const det of detections) {
-    const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+    const lesionInfo = await getPredictionClassLesionByClassIdAndModelId({
       classId: det.class_id,
       modelId: modelId,
     });
 
-    if (!classInfo) {
-      console.error("[PREDICTION_WORKFLOW] Disease mapping not found", {
+    if (!lesionInfo) {
+      console.error("[PREDICTION_WORKFLOW] Lesion mapping not found", {
         classId: det.class_id,
         modelId,
       });
       throw new Error(
-        `Disease mapping not found for class_id ${det.class_id} and model ${modelId}`,
+        `Lesion mapping not found for class_id ${det.class_id} and model ${modelId}`,
       );
     }
 
@@ -337,10 +338,7 @@ async function enrichDetectionData(
         width: det.width,
         height: det.height,
       },
-      disease_id: classInfo.diseaseId,
-      disease_name: classInfo.diseaseName,
-      stage_idx: classInfo.stageIdx,
-      stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+      lesion_name: lesionInfo.lesionName,
     });
   }
 
