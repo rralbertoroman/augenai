@@ -9,8 +9,9 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "prepare": "husky",
-    "docker:dev": "docker compose up --build",
-    "docker:prod": "docker compose -f docker-compose.prod.yml up --build"
+    "docker:build": "docker compose up --build",
+    "docker:run": "docker compose up"
+
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
