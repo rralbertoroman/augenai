@@ -66,3 +66,21 @@ export const getClassIdByStageDiseaseAndModel = async (
 
   return result.classId;
 };
+
+export const getAllPredictionClasses = async (): Promise<
+  PredictionClassDiseaseWithDisease[]
+> => {
+  const results = await db
+    .select({
+      ...getTableColumns(PredictionClassesTable),
+      diseaseName: DiseasesTable.name,
+      diseaseStages: DiseasesTable.stages,
+    })
+    .from(PredictionClassesTable)
+    .innerJoin(
+      DiseasesTable,
+      eq(PredictionClassesTable.diseaseId, DiseasesTable.id),
+    );
+
+  return results;
+};
