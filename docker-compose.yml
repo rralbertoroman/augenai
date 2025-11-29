@@ -2,25 +2,23 @@ services:
   ai-service:
     build:
       context: ./apps/ai_service
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
       - ./apps/ai_service:/app
-      - ai-service-data:/app/.venv  # Persist virtual environment
+      - ai-service-data:/app/.venv # Persist virtual environment
     environment:
       - PYTHONPATH=/app/src
       - UV_PROJECT_ENVIRONMENT=/app/.venv
       - UV_HTTP_TIMEOUT=600
     restart: unless-stopped
-    stdin_open: true
-    tty: true
     command: uv run fastapi dev src/ai_service/main.py --host 0.0.0.0 --port 8000 --reload
 
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile.dev
+      dockerfile: apps/web/Dockerfile
     ports:
       - "3000:3000"
     volumes:
@@ -31,11 +29,8 @@ services:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://ai-service:8000
     restart: unless-stopped
-    stdin_open: true
-    tty: true
     depends_on:
       - ai-service
-
 
 volumes:
   ai-service-data:

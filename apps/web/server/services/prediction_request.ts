@@ -326,8 +326,16 @@ export const getAllSystemPredictionRequests = async (
     with: {
       predictions: {
         with: {
-          classifications: true,
-          detections: true,
+          classifications: {
+            with: {
+              feedbacks: true,
+            },
+          },
+          detections: {
+            with: {
+              feedbacks: true,
+            },
+          },
         },
       },
       patient: true,
@@ -349,7 +357,7 @@ export const getAllSystemPredictionRequests = async (
           storagePath: request.storagePath,
           userId: request.userId,
         },
-        false,
+        true,
       ),
     ),
   );

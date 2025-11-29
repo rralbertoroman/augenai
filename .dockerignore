@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Node - Recursive
+**/node_modules
+**/npm-debug.log
+**/yarn-error.log
+**/pnpm-debug.log
+**/.pnpm-store
+
+# Next.js - Recursive
+**/.next
+**/out
+**/build
+**/dist
+
+# Python - Recursive
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/.venv
+**/venv
+**/env
+**/.env
+**/.env.local
+
+# Project specific
+**/weights
+**/tests
+**/.ruff_cache
+**/.pytest_cache
+**/.coverage
+**/htmlcov
+**/*.egg-info
+
+# IDE
+.vscode
+.idea
