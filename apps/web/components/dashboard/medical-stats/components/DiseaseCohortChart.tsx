@@ -23,10 +23,10 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
           <div className="w-full h-[400px] flex items-center justify-center">
             <div className="text-center text-gray-500 dark:text-gray-400">
-              <p className="text-lg font-medium">No cohort data available</p>
+              <p className="text-lg font-medium">No hay datos de cohortes disponibles</p>
               <p className="text-sm mt-2">
-                Data for {diseaseData.displayName} will appear here once
-                available
+                Los datos para {diseaseData.displayName} aparecerán aquí cuando
+                estén disponibles
               </p>
             </div>
           </div>
@@ -68,12 +68,12 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{totalPatients}</span> Total Patients
+            <span className="font-medium">{totalPatients}</span> Pacientes Totales
           </div>
           {totalRequiringTreatment > 0 && (
             <div className="flex items-center text-amber-600 dark:text-amber-400 text-sm">
               <AlertTriangle className="w-4 h-4 mr-1" />
-              <span>{totalRequiringTreatment} require treatment</span>
+              <span>{totalRequiringTreatment} requieren tratamiento</span>
             </div>
           )}
         </div>

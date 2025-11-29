@@ -22,7 +22,7 @@ export function UserMenu() {
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split("@")[0] ||
-    "User";
+    "Usuario";
 
   return (
     <div className="flex items-center gap-2">

@@ -80,8 +80,8 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
     return (
       <div className="w-full h-[400px] flex items-center justify-center">
         <div className="text-center text-gray-500 dark:text-gray-400">
-          <p className="text-lg font-medium">No data available</p>
-          <p className="text-sm mt-2">Data will appear here once available</p>
+          <p className="text-lg font-medium">No hay datos disponibles</p>
+          <p className="text-sm mt-2">Los datos aparecerán aquí cuando estén disponibles</p>
         </div>
       </div>
     );
