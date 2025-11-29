@@ -19,7 +19,8 @@ export default function PredictionDetailPage({
 }) {
   const { requestId } = use(params);
   const { request, isLoading, error } = usePredictionRequestDetail(requestId);
-  const image_url = 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Feyeswidebay.com.au%2Fwp-content%2Fuploads%2F2017%2F01%2Fdiabetic-retinopathy-3-720x480.jpg&f=1&nofb=1&ipt=4c1c919150823fc6b081f544d8d17a4a39cca9df9e956feaae7beda5203e56c2';
+  const image_url =
+    "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Feyeswidebay.com.au%2Fwp-content%2Fuploads%2F2017%2F01%2Fdiabetic-retinopathy-3-720x480.jpg&f=1&nofb=1&ipt=4c1c919150823fc6b081f544d8d17a4a39cca9df9e956feaae7beda5203e56c2";
 
   // Feedback hook
   const feedback = useClassificationFeedback();
