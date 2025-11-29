@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/contexts/auth-context";
-import { getAllPredictionRequestsWithFeedbacksByUserId } from "@/server/services/prediction_request";
+import { useMemo } from "react";
+import { useDashboard } from "@/contexts/dashboard-context";
 import {
   StageTotalConfig,
   CohortDataConfigItem,
@@ -59,207 +58,124 @@ const getCohort = (age: number): string | null => {
 };
 
 export function useMedicalStats() {
-  const { user, accessToken } = useAuth();
-  const [stageTotalData, setStageTotalData] = useState<StageTotalConfig[]>([]);
-  const [cohortData, setCohortData] = useState<
-    Omit<CohortDataConfigItem, "stageNames">[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { predictions, isLoading, error, refreshData } = useDashboard();
 
-  const fetchData = useCallback(async () => {
-    if (!user?.id || !accessToken) return;
+  const { stageTotalData, cohortData } = useMemo(() => {
+    if (isLoading || !predictions) {
+      return { stageTotalData: [], cohortData: [] };
+    }
 
-    setIsLoading(true);
-    setError(null);
+    // Initialize data structures
+    const stageTotals: Record<string, Record<string, number>> = {
+      "Retinopatía Diabética": {},
+      Glaucoma: {},
+      "Age-related Macular Degeneration": {},
+    };
 
-    try {
-      const predictions = await getAllPredictionRequestsWithFeedbacksByUserId(
-        accessToken,
-        user.id,
-      );
+    const cohortCounts: Record<
+      string,
+      Record<string, Record<string, number>>
+    > = {
+      "Retinopatía Diabética": {},
+      Glaucoma: {},
+      "Age-related Macular Degeneration": {},
+    };
 
-      console.log("Predictions:", predictions);
-
-      // Initialize data structures
-      const stageTotals: Record<string, Record<string, number>> = {
-        "Retinopatía Diabética": {},
-        Glaucoma: {},
-        "Age-related Macular Degeneration": {},
-      };
-
-      const cohortCounts: Record<
-        string,
-        Record<string, Record<string, number>>
-      > = {
-        "Retinopatía Diabética": {},
-        Glaucoma: {},
-        "Age-related Macular Degeneration": {},
-      };
-
-      // Initialize counts to 0
-      Object.entries(DISEASE_CONFIG).forEach(([key, config]) => {
+    // Initialize counts to 0
+    Object.entries(DISEASE_CONFIG).forEach(([key, config]) => {
+      config.stages.forEach((stage) => {
+        stageTotals[key][stage.name] = 0;
+      });
+      COHORTS.forEach((cohort) => {
+        cohortCounts[key] = cohortCounts[key] || {};
+        cohortCounts[key][cohort] = {};
         config.stages.forEach((stage) => {
-          stageTotals[key][stage.name] = 0;
-        });
-        COHORTS.forEach((cohort) => {
-          cohortCounts[key] = cohortCounts[key] || {};
-          cohortCounts[key][cohort] = {};
-          config.stages.forEach((stage) => {
-            cohortCounts[key][cohort][stage.name] = 0;
-          });
+          cohortCounts[key][cohort][stage.name] = 0;
         });
       });
+    });
 
-      // Process predictions
-      predictions.forEach((p) => {
-        // Use feedback if available (already handled by service logic? No, service returns enriched DTOs with feedback array)
-        // The hook use-predictions-with-feedback.ts had logic to override with feedback.
-        // We should replicate that logic or assume the service returns what we need.
-        // The service returns `feedbacks` array. We should check if there is a main feedback.
+    // Process predictions
+    predictions.forEach((p) => {
+      const diseaseKey = p.disease_name || "";
+      if (!diseaseKey) return;
 
-        let diseaseKey = "";
-        let stageName = "";
+      const stageName = p.stage_content || "";
 
-        // Determine disease key and stage name
-        // This mapping depends on how disease_name and stage_content are returned
-        // Assuming p.disease_name matches "Diabetic Retinopathy", etc.
-        // And p.stage_content matches "Healthy R0", etc.
+      if (
+        stageTotals[diseaseKey] &&
+        stageTotals[diseaseKey][stageName] !== undefined
+      ) {
+        stageTotals[diseaseKey][stageName]++;
+      }
 
-        // Use disease name directly as key
-        diseaseKey = p.disease_name || "";
-
-        if (!diseaseKey) return; // Unknown disease
-
-        // Check for feedback override
-        const mainFeedback = p.feedbacks?.find((fb) => fb.isMainData);
-        // If feedback exists, we might need to map classId back to stage name.
-        // This is complex without the mapping available here.
-        // For now, let's use the prediction's stage_content unless we want to fetch mappings.
-        // The service `getAllPredictionRequestsWithFeedbacksByUserId` returns enriched DTOs.
-        // If we want to support feedback overrides properly, we'd need the class-to-stage mapping.
-        // However, the prompt says "Reuse server functions... Call those functions from hooks".
-        // Let's stick to the data provided in the DTO for now, assuming `stage_content` is what we want,
-        // or if feedback overrides it, we might need to fetch that.
-        // BUT, `use-predictions-with-feedback.ts` does client-side override.
-        // Let's assume for this task we use the prediction data directly or if simple, apply feedback.
-        // Given we don't have class-to-stage map easily here, let's use `p.stage_content`.
-
-        stageName = p.stage_content || "";
-
+      const age = calculateAge(p.patient_birth_date);
+      if (age !== null) {
+        const cohort = getCohort(age);
         if (
-          stageTotals[diseaseKey] &&
-          stageTotals[diseaseKey][stageName] !== undefined
+          cohort &&
+          cohortCounts[diseaseKey] &&
+          cohortCounts[diseaseKey][cohort] &&
+          cohortCounts[diseaseKey][cohort][stageName] !== undefined
         ) {
-          stageTotals[diseaseKey][stageName]++;
+          cohortCounts[diseaseKey][cohort][stageName]++;
         }
+      }
+    });
 
-        // Cohort processing
-        const age = calculateAge(p.patient_birth_date);
-        if (age !== null) {
-          const cohort = getCohort(age);
-          if (
-            cohort &&
-            cohortCounts[diseaseKey] &&
-            cohortCounts[diseaseKey][cohort]
-          ) {
-            if (cohortCounts[diseaseKey][cohort][stageName] !== undefined) {
-              cohortCounts[diseaseKey][cohort][stageName]++;
-            }
-          }
-        }
-      });
+    // Transform to final config structures
+    const finalStageTotalConfig: StageTotalConfig[] = Object.entries(
+      DISEASE_CONFIG,
+    ).map(([key, config]) => ({
+      name: config.name,
+      displayName: config.displayName,
+      lastStage: config.lastStage,
+      stages: config.stages.map((stage) => ({
+        name: stage.name,
+        count: stageTotals[key][stage.name],
+        requiresTreatment: stage.requiresTreatment,
+      })),
+    }));
 
-      // Transform to final config structures
-      const finalStageTotalConfig: StageTotalConfig[] = Object.entries(
-        DISEASE_CONFIG,
-      ).map(([key, config]) => ({
-        name: config.name,
-        displayName: config.displayName,
-        lastStage: config.lastStage,
-        stages: config.stages.map((stage) => ({
-          name: stage.name,
-          count: stageTotals[key][stage.name],
-          requiresTreatment: stage.requiresTreatment,
-        })),
-      }));
+    const finalCohortDataConfig: Omit<CohortDataConfigItem, "stageNames">[] =
+      Object.entries(DISEASE_CONFIG).map(([key, config]) => {
+        const cohortDataItems: CohortData[] = COHORTS.map((cohortName) => {
+          const counts = cohortCounts[key][cohortName];
+          const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
-      const finalCohortDataConfig: Omit<CohortDataConfigItem, "stageNames">[] =
-        Object.entries(DISEASE_CONFIG).map(([key, config]) => {
-          const cohortDataItems: CohortData[] = COHORTS.map((cohortName) => {
-            const counts = cohortCounts[key][cohortName];
-            const total = Object.values(counts).reduce((a, b) => a + b, 0);
-
-            // Map full stage names to short names if needed, or just use full names as keys
-            // The chart component likely expects keys matching the stage names
-            // Let's look at COHORT_DATA_CONFIG in constants.ts
-            // It uses keys like "Healthy", "Mild", "Moderate" which are substrings of "Healthy R0" etc.
-            // We need to match the keys expected by the chart.
-            // DiseaseCohortChart uses `Object.keys(data).filter(key => key !== "cohortName" && key !== "total")`
-            // So we can use the full stage names as keys.
-
-            // However, the example data in constants.ts uses "Healthy", "Mild" etc.
-            // Let's try to map them to simpler keys if possible, or just use the full name.
-            // Using full name is safer to ensure uniqueness and matching.
-
-            // Wait, looking at constants.ts again:
-            // DR: Healthy, Mild, Moderate, Severe, Proliferative
-            // Glaucoma: Healthy, Early, Moderate, Advanced
-            // AMD: Healthy, Early, Intermediate, Late
-
-            // These seem to be prefixes of the full stage names (e.g. "Healthy R0").
-            // I should probably simplify the keys for the cohort data to match the visual expectation if the chart relies on specific colors mapped to these keys.
-            // The chart likely uses the keys to look up colors.
-            // Let's check `DiseaseCohortChart.tsx` if possible, but I can't see it right now.
-            // Assuming the keys in `COHORT_DATA_CONFIG` are what's used.
-
-            // Let's map full names to the keys used in constants.ts
-            const simplifiedCounts: Record<string, number> = {};
-            Object.entries(counts).forEach(([stageName, count]) => {
-              const simpleName = stageName.split(" ")[0]; // "Healthy R0" -> "Healthy"
-              // Handle special cases if any
-              simplifiedCounts[simpleName] =
-                (simplifiedCounts[simpleName] || 0) + count;
-            });
-
-            return {
-              cohortName,
-              ...simplifiedCounts,
-              total,
-            };
+          const simplifiedCounts: Record<string, number> = {};
+          Object.entries(counts).forEach(([stageName, count]) => {
+            const simpleName = stageName.split(" ")[0];
+            simplifiedCounts[simpleName] =
+              (simplifiedCounts[simpleName] || 0) + count;
           });
 
           return {
-            displayName: config.displayName,
-            requiresTreatment: config.stages.map((s) => s.requiresTreatment), // This might need to match the simplified keys order?
-            // Actually `requiresTreatment` in `CohortDataConfigItem` is a boolean array.
-            // It likely corresponds to the bars in order.
-            // If we change keys, we must ensure order.
-            // The order in `DISEASE_CONFIG` is correct.
-            lastStage: config.lastStage.split(" ")[0], // "Proliferative R4" -> "Proliferative"
-            cohortData: cohortDataItems,
+            cohortName,
+            ...simplifiedCounts,
+            total,
           };
         });
 
-      setStageTotalData(finalStageTotalConfig);
-      setCohortData(finalCohortDataConfig);
-    } catch (err) {
-      console.error("Failed to fetch medical stats:", err);
-      setError("Failed to load medical statistics.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, accessToken]);
+        return {
+          displayName: config.displayName,
+          requiresTreatment: config.stages.map((s) => s.requiresTreatment),
+          lastStage: config.lastStage.split(" ")[0],
+          cohortData: cohortDataItems,
+        };
+      });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    return {
+      stageTotalData: finalStageTotalConfig,
+      cohortData: finalCohortDataConfig,
+    };
+  }, [predictions, isLoading]);
 
   return {
     stageTotalData,
     cohortData,
     isLoading,
     error,
-    refreshStats: fetchData,
+    refreshStats: refreshData,
   };
 }

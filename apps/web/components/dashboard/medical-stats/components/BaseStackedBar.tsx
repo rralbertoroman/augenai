@@ -73,6 +73,20 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
   console.log("Colors:", colors);
   console.log("xKey:", xKey);
 
+  // Handle empty state
+  if (!data || data.length === 0 || !keys || keys.length === 0) {
+    console.log("Empty state detected");
+    console.groupEnd();
+    return (
+      <div className="w-full h-[400px] flex items-center justify-center">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <p className="text-lg font-medium">No data available</p>
+          <p className="text-sm mt-2">Data will appear here once available</p>
+        </div>
+      </div>
+    );
+  }
+
   // Calculate max value for Y-axis with a minimum of 1 to prevent errors
   const maxValue = Math.max(
     1, // Minimum value to ensure the chart renders

@@ -137,9 +137,7 @@ export default function Start() {
     .map((prediction) => {
       const patient = patients[prediction.patient_id || ""];
       console.log(patients, patient);
-      const patientName =
-        patient?.name ||
-        `Paciente ${prediction.patient_id?.substring(0, 6) || "N/A"}`;
+      const patientName = patient?.name || `Paciente`;
       const patientAge = patient?.age || 0;
 
       return {
@@ -275,12 +273,6 @@ export default function Start() {
         <div className="p-4 flex flex-col grow">
           <div className="grow">
             <div className="flex justify-between items-start gap-2">
-              <div className="min-w-0">
-                <h3 className="font-medium truncate">{group.patientName}</h3>
-                <p className="text-xs text-muted-foreground truncate">
-                  ID: {group.requestId.split("-")[0]}
-                </p>
-              </div>
               <Badge variant={feedbackVariant.variant} className="shrink-0">
                 {feedbackVariant.text}
               </Badge>
@@ -288,13 +280,8 @@ export default function Start() {
 
             <div className="mt-3">
               <h4 className="text-sm font-medium text-foreground/90 truncate">
-                {mainPrediction.disease_name}
+                {mainPrediction.disease_name} - {mainPrediction.stage_content}
               </h4>
-              <div className="mt-1">
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
-                  {mainPrediction.stage_content}
-                </span>
-              </div>
             </div>
           </div>
           <div className="mt-3 pt-2 border-t flex justify-between items-center text-xs">

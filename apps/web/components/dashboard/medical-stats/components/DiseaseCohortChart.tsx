@@ -13,6 +13,28 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
 }) => {
   const { stageKeys, stageColors, colors } = useChartDataLogic(diseaseData);
 
+  // Handle empty cohort data
+  if (!diseaseData.cohortData || diseaseData.cohortData.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+          <div className="w-full h-[400px] flex items-center justify-center">
+            <div className="text-center text-gray-500 dark:text-gray-400">
+              <p className="text-lg font-medium">No cohort data available</p>
+              <p className="text-sm mt-2">
+                Data for {diseaseData.displayName} will appear here once
+                available
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Get stage names from the first cohort
   const firstCohort = diseaseData.cohortData[0];
   const stageNames = Object.keys(firstCohort).filter(
