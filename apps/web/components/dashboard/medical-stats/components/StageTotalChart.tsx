@@ -13,7 +13,7 @@ interface StageTotalChartProps {
 export const StageTotalChart: React.FC<StageTotalChartProps> = ({
   dataConfig,
   xKey = "name",
-  title = "Disease Stages Overview",
+  title = "Resumen de Etapas de Enfermedad",
 }) => {
   const { stageKeys, stageColors } = useChartDataLogic(dataConfig);
   const isMultiple = Array.isArray(dataConfig);
@@ -120,9 +120,9 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
             <div className="w-full h-[400px] flex items-center justify-center">
               <div className="text-center text-gray-500 dark:text-gray-400">
-                <p className="text-lg font-medium">No stage data available</p>
+                <p className="text-lg font-medium">No hay datos de etapas disponibles</p>
                 <p className="text-sm mt-2">
-                  Patient data will appear here once available
+                  Los datos del paciente aparecerán aquí cuando estén disponibles
                 </p>
               </div>
             </div>
@@ -135,11 +135,11 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
             <div className="flex items-center space-x-4">
               <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <Users className="w-4 h-4 mr-1" />
-                <span>{totalPatients} Total Patients</span>
+                <span>{totalPatients} Total de Pacientes</span>
               </div>
               {totalRequiringTreatment > 0 && (
                 <div className="text-amber-600 dark:text-amber-400 text-sm">
-                  {totalRequiringTreatment} require treatment
+                  {totalRequiringTreatment} requieren tratamiento
                 </div>
               )}
             </div>

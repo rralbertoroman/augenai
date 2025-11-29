@@ -38,7 +38,7 @@ const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>F1-Score vs Confidence</CardTitle>
+        <CardTitle>F1-Score vs Confianza</CardTitle>
       </CardHeader>
       <CardContent className="h-80">
         <div className="text-sm text-muted-foreground mb-2">
@@ -53,7 +53,7 @@ const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
             <XAxis
               dataKey="confidence"
               label={{
-                value: "Confidence Threshold",
+                value: "Umbral de Confianza",
                 position: "insideBottom",
                 offset: -5,
               }}
@@ -68,7 +68,7 @@ const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
             />
             <Tooltip
               formatter={(value: number) => [value.toFixed(3), "F1-Score"]}
-              labelFormatter={(label) => `Confidence: ${label}`}
+              labelFormatter={(label) => `Confianza: ${label}`}
             />
             <Legend />
             <Line
@@ -110,10 +110,10 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
     <Card className="w-full bg-background">
       <CardHeader>
         <CardTitle className="text-foreground">
-          Confusion Matrix - {data.disease}
+          Matriz de Confusión - {data.disease}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Rows show actual stages, columns show predicted stages
+          Las filas muestran las etapas reales, las columnas muestran las etapas predichas
         </p>
       </CardHeader>
       <CardContent>
@@ -123,7 +123,7 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
               <tr>
                 <th className="border p-2 bg-muted/50 dark:bg-muted/20">
                   <div className="text-sm font-medium text-foreground">
-                    Actual \ Predicted
+                    Real \ Predicho
                   </div>
                 </th>
                 {currentData.stages.map((stage, i) => (
@@ -269,7 +269,7 @@ const DiseaseF1ScoreChart = ({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{diseaseData.disease} - F1 Scores</CardTitle>
+        <CardTitle>{diseaseData.disease} - Puntuaciones F1</CardTitle>
       </CardHeader>
       <CardContent className="h-80">
         <ResponsiveContainer width="100%" height="100%">
@@ -281,21 +281,21 @@ const DiseaseF1ScoreChart = ({
             <XAxis dataKey="stage" />
             <YAxis
               domain={[0, 100]}
-              label={{ value: "Score %", angle: -90, position: "insideLeft" }}
+              label={{ value: "Puntuación %", angle: -90, position: "insideLeft" }}
             />
             <Tooltip
               formatter={(value: number, name: string) => [
                 `${value.toFixed(1)}%`,
                 {
                   f1Score: "F1-Score",
-                  precision: "Precision",
+                  precision: "Precisión",
                   recall: "Recall",
                 }[name] || name,
               ]}
             />
             <Legend />
             <Bar dataKey="f1Score" name="F1-Score" fill="#8884d8" />
-            <Bar dataKey="precision" name="Precision" fill="#82ca9d" />
+            <Bar dataKey="precision" name="Precisión" fill="#82ca9d" />
             <Bar dataKey="recall" name="Recall" fill="#ffc658" />
           </BarChart>
         </ResponsiveContainer>
@@ -321,7 +321,7 @@ const ModelStats = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">
-          No data available for model statistics.
+          No hay datos disponibles para las estadísticas del modelo.
         </p>
       </div>
     );
@@ -333,10 +333,10 @@ const ModelStats = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Model Performance</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Rendimiento del Modelo</h2>
         <div className="w-64">
           <label className="block text-sm font-medium mb-1">
-            Select Disease:
+            Seleccionar Enfermedad:
           </label>
           <select
             className="w-full p-2 border rounded"

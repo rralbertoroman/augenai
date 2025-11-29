@@ -72,7 +72,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       setPredictions(processedData);
     } catch (err) {
       console.error("Failed to fetch predictions with feedback:", err);
-      setError("Failed to load predictions. Please try again.");
+      setError("Error al cargar predicciones. Por favor intenta de nuevo.");
     } finally {
       setIsLoading(false);
     }

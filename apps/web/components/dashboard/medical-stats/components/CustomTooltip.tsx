@@ -26,7 +26,7 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({
       >
         <p className="font-bold mb-1">{customName}</p>
         <p className="text-xs opacity-80 mb-2">
-          Total Patients:{" "}
+          Total de Pacientes:{" "}
           {typeof dataItem.total === "number"
             ? dataItem.total.toLocaleString()
             : String(dataItem.total || "0")}

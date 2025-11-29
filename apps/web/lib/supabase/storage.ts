@@ -63,7 +63,7 @@ export async function uploadEyeScan(
         // Successful upload
         return { path: data.path };
       } catch (error) {
-        let errorMessage = "Upload failed";
+        let errorMessage = "Error al subir archivo";
 
         if (error instanceof Error) {
           errorMessage = error.message;
@@ -81,11 +81,11 @@ export async function uploadEyeScan(
 
     return {
       path: "",
-      error: lastError || "Upload failed after multiple attempts",
+      error: lastError || "Error al subir archivo después de múltiples intentos",
     };
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : "Upload failed";
+      error instanceof Error ? error.message : "Error al subir archivo";
     return {
       path: "",
       error: errorMessage,
