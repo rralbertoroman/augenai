@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AugenAI",
-  description: "AI-powered eye diagnosis platform",
+  description: "Plataforma de diagnóstico ocular con IA",
 };
 
 export default function RootLayout({

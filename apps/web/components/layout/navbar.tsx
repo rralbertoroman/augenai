@@ -42,7 +42,7 @@ export function Navbar() {
               }`}
             >
               <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
+              <span>Panel</span>
             </Link>
             <Link
               href="/patients"
