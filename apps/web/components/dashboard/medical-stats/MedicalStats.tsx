@@ -29,14 +29,10 @@ export const MedicalStats: React.FC = () => {
       <div className="space-y-8">
         {/* Overall Stage Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-          {stageTotalData.map((data, index) => (
-            <div key={index} className="mb-8 last:mb-0">
-              <StageTotalChart
-                dataConfig={[data]}
-                title={`${data.displayName} Stage Distribution`}
-              />
-            </div>
-          ))}
+          <StageTotalChart
+            dataConfig={stageTotalData}
+            title="Overall Disease Stage Distribution"
+          />
         </div>
 
         {/* Age Cohort Breakdown */}
