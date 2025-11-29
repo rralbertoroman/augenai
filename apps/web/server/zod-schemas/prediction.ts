@@ -26,6 +26,7 @@ export const EnrichedPredictionDTOSchema = z.object({
   patient_id: z.string(),
   patient_birth_date: z.string().optional(),
   request_id: z.string(),
+  user_id: z.string(),
   createdAt: z.date(),
   type: z.enum(["classification", "detection"]).optional(),
   bbox: z
