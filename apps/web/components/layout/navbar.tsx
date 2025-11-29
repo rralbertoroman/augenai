@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { LayoutDashboard, Users, PieChart } from "lucide-react";
+import Image from 'next/image';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -19,16 +20,7 @@ export function Navbar() {
         <div className="flex items-center gap-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
-              style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgpGMb8JuRm8aA4YrXreUmL5y0Dfpv1w9_ltrBK6ypk1eBya1Vu6vACGPRQaOJbk2gFVPyUetD1Rs6hvnlfsAn8pTw2X7LtOCDttL0SV71WXvLWSC1BT2FgaScswcNxAIjC45jPAlEm57tr-6T-gCTjdETQH6B2CV51a9EPhdkQPVcm8mYcpic7rbfGcsoUjea3vsqxpAXzSu53tr1sCrJGNNzr4uihF8AGbnQyCHPwxvxKoy6B-CngUbnEGudMbuM4zaIqttXwkc")',
-              }}
-            />
-            <h1 className="text-base font-bold leading-normal text-foreground dark:text-gray-200">
-              AugenAI
-            </h1>
+            <Image src="/augen-full.svg" alt="Logo" width={120} height={120} className="mx-1"/>
           </Link>
 
           {/* Navigation links */}
