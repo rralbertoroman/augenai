@@ -22,6 +22,7 @@ const processPredictionsInParallel = async (
   predictions: PredictionWithTasks[],
   requestContext: {
     patientId: string;
+    patientBirthDate?: string;
     requestId: string;
     bucketName: string;
     storagePath: string;
@@ -63,6 +64,7 @@ const processPredictionsInParallel = async (
               stage_idx: classInfo.stageIdx,
               stage_content: classInfo.diseaseStages[classInfo.stageIdx],
               patient_id: requestContext.patientId,
+              patient_birth_date: requestContext.patientBirthDate,
               request_id: requestContext.requestId,
               createdAt: classification.createdAt,
               type: "classification",
@@ -110,6 +112,7 @@ const processPredictionsInParallel = async (
               confidence: detection.confidence,
               lesion_name: lesionInfo.lesionName,
               patient_id: requestContext.patientId,
+              patient_birth_date: requestContext.patientBirthDate,
               request_id: requestContext.requestId,
               createdAt: detection.createdAt,
               type: "detection",
@@ -198,6 +201,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
         request.predictions,
         {
           patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
           requestId: request.id,
           bucketName: request.bucketName,
           storagePath: request.storagePath,
@@ -247,6 +251,7 @@ export const getAllPredictionRequestsWithFeedbacksByUserId = async (
         request.predictions,
         {
           patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
           requestId: request.id,
           bucketName: request.bucketName,
           storagePath: request.storagePath,
@@ -291,6 +296,7 @@ export const getPredictionRequestById = async (
     request.predictions,
     {
       patientId: request.patientId,
+      patientBirthDate: request.patient.dateOfBirth,
       requestId: request.id,
       bucketName: request.bucketName,
       storagePath: request.storagePath,

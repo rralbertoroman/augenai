@@ -24,6 +24,7 @@ export const EnrichedPredictionDTOSchema = z.object({
   stage_content: z.string().optional(),
   lesion_name: z.string().optional(),
   patient_id: z.string(),
+  patient_birth_date: z.string().optional(),
   request_id: z.string(),
   createdAt: z.date(),
   type: z.enum(["classification", "detection"]).optional(),

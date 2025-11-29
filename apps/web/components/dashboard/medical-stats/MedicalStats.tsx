@@ -1,9 +1,19 @@
 import React from "react";
-import { STAGE_TOTAL_CONFIG, COHORT_DATA_CONFIG } from "./constants";
+import { useMedicalStats } from "../../../hooks/use-medical-stats";
 import { StageTotalChart } from "./components/StageTotalChart";
 import { DiseaseCohortChart } from "./components/DiseaseCohortChart";
 
 export const MedicalStats: React.FC = () => {
+  const { stageTotalData, cohortData, isLoading, error } = useMedicalStats();
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading statistics...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -19,10 +29,14 @@ export const MedicalStats: React.FC = () => {
       <div className="space-y-8">
         {/* Overall Stage Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-          <StageTotalChart
-            dataConfig={STAGE_TOTAL_CONFIG}
-            title="Overall Disease Stage Distribution"
-          />
+          {stageTotalData.map((data, index) => (
+            <div key={index} className="mb-8 last:mb-0">
+              <StageTotalChart
+                dataConfig={[data]}
+                title={`${data.displayName} Stage Distribution`}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Age Cohort Breakdown */}
@@ -30,7 +44,7 @@ export const MedicalStats: React.FC = () => {
           <h3 className="text-xl font-semibold">Age Cohort Analysis</h3>
 
           <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            {COHORT_DATA_CONFIG.map((diseaseData, index) => (
+            {cohortData.map((diseaseData, index) => (
               <div
                 key={index}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6"
