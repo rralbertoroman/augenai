@@ -11,6 +11,9 @@ export function PredictionSharedTemplate({
 } {
   const subject = "Te han compartido una predicción";
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const logoUrl = `${appUrl}/augen-full.svg`;
+
   const html = `
     <!DOCTYPE html>
     <html lang="es">
@@ -26,23 +29,35 @@ export function PredictionSharedTemplate({
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #1f2937;
-            background-color: #f9fafb;
-          }
+            background-color: #D1FAE5;          }
           .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
+
           }
           .header {
             text-align: center;
-            padding: 30px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 20px 8px 20px;
+            background-color: #ffffff;
             border-radius: 12px 12px 0 0;
+          }
+          .brand-accent {
+            height: 6px;
+            background: #2bee6c;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 8px;
+          }
+          .logo {
+            max-width: 220px;
+            height: auto;
+            display: block;
+            margin: 0 auto 6px auto;
           }
           .header h1 {
             margin: 0;
-            color: #ffffff;
-            font-size: 28px;
+            color: #111813;
+            font-size: 18px;
             font-weight: 700;
           }
           .content {
@@ -63,8 +78,18 @@ export function PredictionSharedTemplate({
             line-height: 1.7;
           }
           .highlight {
-            color: #667eea;
-            font-weight: 600;
+            color: #111813;
+            font-weight: 700;
+          }
+          /* Force links inside message/highlight to be black (email clients may auto-link emails) */
+          .message a,
+          .message a:link,
+          .message a:visited,
+          .highlight a,
+          .highlight a:link,
+          .highlight a:visited {
+            color: #111813 !important;
+            text-decoration: none !important;
           }
           .button-container {
             text-align: center;
@@ -72,23 +97,21 @@ export function PredictionSharedTemplate({
           }
           .button {
             display: inline-block;
-            padding: 14px 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
+            padding: 12px 28px;
+            background: #2bee6c;
+            color: #4b5563;
             text-decoration: none;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 16px;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            transition: transform 0.2s;
+            box-shadow: 0 6px 16px rgba(45, 189, 95, 0.18);
           }
-          .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+          .button:active {
+            transform: translateY(1px);
           }
           .info-box {
             background-color: #f3f4f6;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #2bee6c;
             padding: 16px 20px;
             margin: 25px 0;
             border-radius: 4px;
@@ -101,12 +124,12 @@ export function PredictionSharedTemplate({
           .footer {
             text-align: center;
             padding: 20px;
-            color: #9ca3af;
+            color: gray;
             font-size: 13px;
             margin-top: 20px;
           }
           .footer a {
-            color: #667eea;
+            color: #2bee6c;
             text-decoration: none;
           }
           .divider {
@@ -119,6 +142,7 @@ export function PredictionSharedTemplate({
       <body>
         <div class="container">
           <div class="header">
+            <h1 style="color:#2bee6c; font-size: 36px; font-weight: 700;">AugenAI</h1>
             <h1>Predicción Compartida</h1>
           </div>
           <div class="content">
@@ -131,20 +155,23 @@ export function PredictionSharedTemplate({
 
             <div class="info-box">
               <p>
-                💡 <strong>Tip:</strong> Puedes revisar los detalles completos de la predicción, 
+                <strong>Tip:</strong> Puedes revisar los detalles completos de la predicción, 
                 incluyendo análisis y resultados, haciendo clic en el botón de abajo.
               </p>
             </div>
 
             <div class="button-container">
-              <a href="${predictionUrl}" class="button">
+              <a
+                href="${predictionUrl}"
+                style="display:inline-block;padding:12px 28px;background:#2bee6c;color:#111813 !important;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;box-shadow:0 6px 16px rgba(45,189,95,0.18);-webkit-text-size-adjust:none;-ms-text-size-adjust:none;"
+              >
                 Ver Predicción →
               </a>
             </div>
 
             <div class="divider"></div>
 
-            <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+            <p style="font-size: 14px; color: #6b7280; margin-top: 20px;text-align: center;">
               Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             </p>
           </div>
