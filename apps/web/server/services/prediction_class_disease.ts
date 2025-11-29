@@ -11,6 +11,8 @@ import {
   type PredictionClassDiseaseWithDisease,
 } from "../zod-schemas/prediction_class_disease";
 
+import { getCurrentUser } from "../auth";
+
 export const getPredictionClassDiseaseByClassIdAndModelId = async (
   data: GetByClassIdAndModelIdInput,
 ): Promise<PredictionClassDiseaseWithDisease | null> => {
@@ -67,9 +69,11 @@ export const getClassIdByStageDiseaseAndModel = async (
   return result.classId;
 };
 
-export const getAllPredictionClasses = async (): Promise<
-  PredictionClassDiseaseWithDisease[]
-> => {
+export const getAllPredictionClasses = async (
+  token: string,
+): Promise<PredictionClassDiseaseWithDisease[]> => {
+  await getCurrentUser(token);
+
   const results = await db
     .select({
       ...getTableColumns(PredictionClassesTable),

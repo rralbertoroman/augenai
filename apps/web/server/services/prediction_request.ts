@@ -26,6 +26,7 @@ const processPredictionsInParallel = async (
     requestId: string;
     bucketName: string;
     storagePath: string;
+    userId: string;
   },
   includeFeedbacks: boolean = false,
 ): Promise<EnrichedPredictionDTO[]> => {
@@ -66,6 +67,7 @@ const processPredictionsInParallel = async (
               patient_id: requestContext.patientId,
               patient_birth_date: requestContext.patientBirthDate,
               request_id: requestContext.requestId,
+              user_id: requestContext.userId,
               createdAt: classification.createdAt,
               type: "classification",
               bucket_name: requestContext.bucketName,
@@ -114,6 +116,7 @@ const processPredictionsInParallel = async (
               patient_id: requestContext.patientId,
               patient_birth_date: requestContext.patientBirthDate,
               request_id: requestContext.requestId,
+              user_id: requestContext.userId,
               createdAt: detection.createdAt,
               type: "detection",
               bbox: {
@@ -205,6 +208,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
           requestId: request.id,
           bucketName: request.bucketName,
           storagePath: request.storagePath,
+          userId: request.userId,
         },
         false,
       ),
@@ -255,6 +259,7 @@ export const getAllPredictionRequestsWithFeedbacksByUserId = async (
           requestId: request.id,
           bucketName: request.bucketName,
           storagePath: request.storagePath,
+          userId: request.userId,
         },
         true,
       ),
@@ -300,6 +305,7 @@ export const getPredictionRequestById = async (
       requestId: request.id,
       bucketName: request.bucketName,
       storagePath: request.storagePath,
+      userId: request.userId,
     },
     false,
   );
@@ -309,4 +315,44 @@ export const getPredictionRequestById = async (
     patient: request.patient,
     enrichedPredictions,
   };
+};
+
+export const getAllSystemPredictionRequests = async (
+  token: string,
+): Promise<EnrichedPredictionDTO[]> => {
+  await getCurrentUser(token); // Verify authentication only
+
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    with: {
+      predictions: {
+        with: {
+          classifications: true,
+          detections: true,
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
+
+  const results = await Promise.all(
+    predictionRequests.map((request) =>
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+          userId: request.userId,
+        },
+        false,
+      ),
+    ),
+  );
+
+  return results.flat();
 };
