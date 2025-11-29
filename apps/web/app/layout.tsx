@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AugenAI",
   description: "Plataforma de diagnóstico ocular con IA",
+  icons: "/augen-icon.svg",
 };
 
 export default function RootLayout({
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es">
       <body className="font-sans antialiased">
         <AppProviders>{children}</AppProviders>
       </body>
