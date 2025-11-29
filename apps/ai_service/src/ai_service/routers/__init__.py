@@ -1,7 +1,8 @@
 """API Routers"""
 
 from . import health as health
-from . import api as api
-from . import predictions as predictions
+from .health import router as health_router
+from .api import router as api_router
+from .predictions import router as predictions_router
 
-__all__ = ["health", "api", "predictions"]
+__all__ = ["health_router", "api_router", "predictions_router", "predictions"]
