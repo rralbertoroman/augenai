@@ -1,10 +1,67 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { EyeScanUpload } from "./eye-scan-upload";
-import { useDiagnosisPage } from "@/hooks/use-diagnosis-page";
+import { translateErrorMessage } from "@/lib/error-translator";
 
 export function DiagnosisContainer() {
-  const { isLoading: isSubmitting, handleScanSubmit } = useDiagnosisPage();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFormSubmit = async (data: any) => {
+    setIsSubmitting(true);
+
+    try {
+      if (!data.storagePath || !data.bucketName) {
+        throw new Error(translateErrorMessage("Imagen no cargada correctamente"));
+      }
+
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        throw new Error(translateErrorMessage("No autenticado"));
+      }
+
+      const formData = new FormData();
+      formData.append("storage_path", data.storagePath);
+      formData.append("bucket_name", data.bucketName);
+      formData.append("patient_id", data.patientId);
+      formData.append("task", data.task);
+      formData.append("image_type", data.imageType);
+      formData.append("diseases", JSON.stringify(data.diseases));
+
+      const response = await fetch("/api/predictions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al procesar la predicción");
+      }
+
+      const result = await response.json();
+      const requestId = result.request_id || result.requestId;
+
+      if (requestId) {
+        // Redirect to the request detail page after prediction completes
+        router.push(`/diagnosis/${requestId}`);
+      }
+    } catch (err) {
+      // Keep UX simple: console + toast could be added later
+      console.error("Error submitting diagnosis:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -19,10 +76,7 @@ export function DiagnosisContainer() {
             </h2>
 
             <div className="lg:col-span-5 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
-              <EyeScanUpload
-                onSubmit={handleScanSubmit}
-                isLoading={isSubmitting}
-              />
+              <EyeScanUpload onSubmit={handleFormSubmit} isLoading={isSubmitting} />
             </div>
           </section>
         </div>
