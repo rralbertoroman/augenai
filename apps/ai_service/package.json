@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "uv run fastapi dev src/ai_service/main.py",
+    "dev": ". .venv/bin/activate && uv run fastapi dev src/ai_service/main.py",
     "start": "uv run fastapi dev src/ai_service/main.py --port 8000",
+    "test": ". .venv/bin/activate && pytest",
     "install": "uv sync",
     "lint": "uv run ruff check --fix .",
     "format": "uv run ruff format ."

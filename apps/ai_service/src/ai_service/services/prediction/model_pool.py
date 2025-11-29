@@ -1,6 +1,9 @@
+from ai_service.logging_config import get_logger
 from typing import Callable, Dict
 
 from .factories import ModelInstance
+
+logger = get_logger(__name__)
 
 
 class ModelPool:
@@ -15,6 +18,10 @@ class ModelPool:
 
     def _create_model(self, model_id) -> ModelInstance:
         model_factory = self._get_model_instance(model_id)
+
+        if not model_factory:
+            raise ValueError(f"Model with id='{model_id}' was not found")
+
         model = model_factory(model_id)
         self._models_in_use[model_id] = model
         return model

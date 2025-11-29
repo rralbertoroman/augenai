@@ -14,6 +14,7 @@ from transformers import (
 )
 
 from ai_service.config import settings
+from ai_service.logging_config import get_logger
 from ai_service.models.schemas import (
     ClassificationResult,
     ClassificationObject,
@@ -22,7 +23,7 @@ from ai_service.models.schemas import (
 
 from .model_instance import ModelInstance
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def process_classification_output(
@@ -52,6 +53,15 @@ def process_classification_output(
     confidences = nn.functional.softmax(logits, dim=-1)
     confidences_with_idx = list(enumerate(confidences[0]))
 
+    num_scores = len(confidences_with_idx)
+    logger.info(
+        f"Found {num_scores} confidence scores with indices: {confidences_with_idx}",
+        extra={
+            "log_type": "prediction",
+            "num_scores": num_scores,
+        },
+    )
+
     # Filter predictions by confidence threshold
     classification_objects = [
         ClassificationObject(
@@ -62,6 +72,41 @@ def process_classification_output(
         for idx, confidence in confidences_with_idx
         if confidence > confidence_threshold
     ]
+
+    missing_predictions = len(confidences_with_idx) - len(classification_objects)
+    total_predictions = len(confidences_with_idx)
+
+    logger.info(
+        f"classification_objects: {classification_objects}, missing predictions: {missing_predictions}"
+    )
+
+    if missing_predictions > 0:
+        logger.warning(
+            f"Filtered out {missing_predictions} out of {total_predictions} predictions below confidence threshold of {confidence_threshold:.2f}",
+            extra={
+                "log_type": "prediction",
+                "confidence_threshold": confidence_threshold,
+                "missing_predictions": missing_predictions,
+                "total_predictions": total_predictions,
+                "kept_predictions": len(classification_objects),
+            },
+        )
+
+    if not classification_objects:
+        logger.warning(
+            "No predictions above confidence threshold. Returning 'Unknown' class.",
+            extra={
+                "log_type": "prediction",
+                "confidence_threshold": confidence_threshold,
+            },
+        )
+        classification_objects = [
+            ClassificationObject(
+                class_id=0,
+                confidence=0.0,
+                class_name="Unknown",
+            )
+        ]
 
     # Create and return the prediction result
     return ClassificationResult(
