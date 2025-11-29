@@ -19,15 +19,15 @@ const DashboardContent: React.FC = () => {
       <Tabs defaultValue="start" className="w-full">
         <TabsList className="grid w-full grid-cols-3 space-x-2 mb-4">
           <TabsTrigger value={TabsValue.START}>
-            <ClipboardPlus /> Start
+            <ClipboardPlus /> Inicio
           </TabsTrigger>
           <TabsTrigger value={TabsValue.MEDICAL_STATS}>
             <ChartColumnStacked />
-            Patient and Disease stats
+            Estadísticas de Pacientes y Enfermedades
           </TabsTrigger>
           <TabsTrigger value={TabsValue.MODEL_STATS}>
             <Sparkles />
-            Model Stats
+            Estadísticas del Modelo
           </TabsTrigger>
         </TabsList>
         <TabsContent value={TabsValue.START} className="p-4 border rounded-lg">
@@ -38,7 +38,7 @@ const DashboardContent: React.FC = () => {
           className="p-4 border rounded-lg"
         >
           <h2 className="text-xl font-semibold mb-4">
-            Patient and Disease stats
+            Estadísticas de Pacientes y Enfermedades
           </h2>
           <MedicalStats />
         </TabsContent>

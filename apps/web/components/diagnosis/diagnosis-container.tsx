@@ -15,7 +15,7 @@ export function DiagnosisContainer() {
             className="grid grid-cols-1 gap-6 lg:grid-cols-5"
           >
             <h2 id="diagnosis-section" className="sr-only">
-              Eye Diagnosis Form and Latest Prediction
+              Formulario de Diagnóstico Ocular y Última Predicción
             </h2>
 
             <div className="lg:col-span-5 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
