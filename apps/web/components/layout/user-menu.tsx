@@ -1,44 +1,41 @@
 "use client";
 
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, UserRound } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await signOut();
     router.push("/auth/login");
   };
 
-  const toggleMenu = () => {
+  const toggleMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
-  const handleChangePassword = () => {
-    // Navigate to change password page
-    router.push("/auth/update-password");
+  const handleEditProfile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to profile edit page
+    router.push("/profile/edit");
     setIsOpen(false);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
+  const handleMenuClick = (e: React.MouseEvent) => {
+    // Prevent the click from bubbling up and closing the dropdown
+    e.stopPropagation();
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const handleWrapperClick = () => {
+    // Close the dropdown when clicking on the wrapper (outside the menu)
+    setIsOpen(false);
+  };
 
   if (!user) {
     return null;
@@ -52,7 +49,7 @@ export function UserMenu() {
     "Usuario";
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" onClick={isOpen ? handleWrapperClick : undefined}>
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2">
           <span className="font-medium text-sm">{displayName}</span>
@@ -68,16 +65,22 @@ export function UserMenu() {
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+        <div
+          className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+          onClick={handleMenuClick}
+        >
           <button
-            onClick={handleChangePassword}
+            onClick={handleEditProfile}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <Settings className="w-4 h-4 mr-2" />
-            Cambiar contraseña
+            <UserRound className="w-4 h-4 mr-2" />
+            Editar perfil
           </button>
           <button
-            onClick={handleLogout}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLogout();
+            }}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <LogOut className="w-4 h-4 mr-2" />
