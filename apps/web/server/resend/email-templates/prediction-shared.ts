@@ -9,10 +9,16 @@ export function PredictionSharedTemplate({
   subject: string;
   html: string;
 } {
-  const subject = "Te han compartido una predicción";
-
-  // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-  // const logoUrl = `${appUrl}/augen-full.svg`;
+  const subject = "Te han compartido una predicción - AugenAI";
+  
+  // 3D Logo with Side Shapes
+  const logoHtml = `
+    <div style="text-align: center;">
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 32px 3px 3px 32px; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 64px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 50%; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 3px 32px 32px 3px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+    </div>
+  `;
 
   const html = `
     <!DOCTYPE html>
@@ -20,170 +26,159 @@ export function PredictionSharedTemplate({
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>${subject}</title>
         <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          
           body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #1f2937;
-            background-color: #D1FAE5;          }
+            color: #111813;
+            background-color: #f2f4f3;
+            -webkit-font-smoothing: antialiased;
+          }
+          .wrapper {
+            width: 100%;
+            background-color: #f2f4f3;
+            padding: 60px 0;
+          }
           .container {
-            max-width: 600px;
+            max-width: 560px;
             margin: 0 auto;
-            padding: 20px;
-
+            background-color: #ffffff;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.02);
           }
           .header {
+            padding: 48px 48px 32px;
             text-align: center;
-            padding: 20px 20px 8px 20px;
-            background-color: #ffffff;
-            border-radius: 12px 12px 0 0;
-          }
-          .brand-accent {
-            height: 6px;
-            background: #2bee6c;
-            border-radius: 6px 6px 0 0;
-            margin-bottom: 8px;
-          }
-          .logo {
-            max-width: 220px;
-            height: auto;
-            display: block;
-            margin: 0 auto 6px auto;
-          }
-          .header h1 {
-            margin: 0;
-            color: #111813;
-            font-size: 18px;
-            font-weight: 700;
+            background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
           }
           .content {
-            background-color: #ffffff;
-            padding: 40px 30px;
-            border-radius: 0 0 12px 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 0 48px 64px;
           }
-          .greeting {
-            font-size: 18px;
-            color: #374151;
-            margin-bottom: 20px;
-          }
-          .message {
-            font-size: 16px;
-            color: #4b5563;
-            margin-bottom: 30px;
-            line-height: 1.7;
-          }
-          .highlight {
-            color: #111813;
+          .section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #9ca3af;
             font-weight: 700;
+            margin-bottom: 16px;
+            display: block;
+            padding-left: 4px;
           }
-          /* Force links inside message/highlight to be black (email clients may auto-link emails) */
-          .message a,
-          .message a:link,
-          .message a:visited,
-          .highlight a,
-          .highlight a:link,
-          .highlight a:visited {
-            color: #111813 !important;
-            text-decoration: none !important;
+          .user-card {
+            background-color: #f9fafb;
+            border: 1px solid #edf2f0;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
           }
-          .button-container {
+          .user-info {
+            flex: 1;
+          }
+          .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111813;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
+          }
+          .user-email {
+            font-size: 14px;
+            color: #61896f;
+            text-decoration: none;
+            font-weight: 500;
+          }
+          .message-box {
+            background-color: #f9fafb;
+            border: 1px solid #edf2f0;
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             text-align: center;
-            margin: 35px 0;
+          }
+          .message-text {
+            font-size: 17px;
+            color: #374151;
+            margin: 0 0 32px;
+            line-height: 1.7;
+            font-weight: 500;
           }
           .button {
             display: inline-block;
-            padding: 12px 28px;
-            background: #2bee6c;
-            color: #4b5563;
+            padding: 18px 56px;
+            background: linear-gradient(180deg, #2bee6c 0%, #24d660 100%);
+            color: #ffffff !important;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 100px;
             font-weight: 700;
             font-size: 16px;
-            box-shadow: 0 6px 16px rgba(45, 189, 95, 0.18);
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(43, 238, 108, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
           }
-          .button:active {
-            transform: translateY(1px);
-          }
-          .info-box {
-            background-color: #f3f4f6;
-            border-left: 4px solid #2bee6c;
-            padding: 16px 20px;
-            margin: 25px 0;
-            border-radius: 4px;
-          }
-          .info-box p {
-            margin: 0;
-            font-size: 14px;
-            color: #6b7280;
+          .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(43, 238, 108, 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
           }
           .footer {
+            padding: 40px;
+            background-color: #fafbfc;
             text-align: center;
-            padding: 20px;
-            color: gray;
+            border-top: 1px solid #f0f2f1;
+          }
+          .footer-text {
             font-size: 13px;
-            margin-top: 20px;
-          }
-          .footer a {
-            color: #2bee6c;
-            text-decoration: none;
-          }
-          .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-            margin: 30px 0;
+            color: #9ca3af;
+            margin: 0;
+            line-height: 1.6;
+            font-weight: 500;
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1 style="color:#2bee6c; font-size: 36px; font-weight: 700;">AugenAI</h1>
-            <h1>Predicción Compartida</h1>
-          </div>
-          <div class="content">
-            ${recipientName ? `<p class="greeting">Hola ${recipientName},</p>` : '<p class="greeting">Hola,</p>'}
-            
-            <p class="message">
-              <span class="highlight">${senderName}</span> (<span class="highlight">${senderEmail}</span>) ha compartido una predicción contigo.
-              Esta predicción podría ser de tu interés y está disponible para que la revises.
-            </p>
+        <div class="wrapper">
+          <div class="container">
+            <div class="header">
+              ${logoHtml}
+              <h2 style="margin: 28px 0 0; font-size: 22px; font-weight: 700; color: #111813; letter-spacing: -0.5px;">Predicción Compartida</h2>
+            </div>
+            <div class="content">
+              
+              <span class="section-label">Compartido por</span>
+              <div class="user-card">
+                <div class="user-info">
+                  <h3 class="user-name">${senderName}</h3>
+                  <a href="mailto:${senderEmail}" class="user-email">${senderEmail}</a>
+                </div>
+              </div>
 
-            <div class="info-box">
-              <p>
-                <strong>Tip:</strong> Puedes revisar los detalles completos de la predicción, 
-                incluyendo análisis y resultados, haciendo clic en el botón de abajo.
+              <span class="section-label">Mensaje</span>
+              <div class="message-box">
+                <p class="message-text">
+                  ${recipientName ? `Hola <strong>${recipientName}</strong>, ` : 'Hola, '}<br>
+                  Te invito a revisar esta predicción generada por AugenAI.
+                </p>
+                <a href="${predictionUrl}" class="button">
+                  Ver Predicción
+                </a>
+              </div>
+
+            </div>
+            
+            <div class="footer">
+              <p class="footer-text">
+                Este correo fue enviado automáticamente por AugenAI.<br>
+                © ${new Date().getFullYear()} AugenAI. Todos los derechos reservados.
               </p>
             </div>
-
-            <div class="button-container">
-              <a
-                href="${predictionUrl}"
-                style="display:inline-block;padding:12px 28px;background:#2bee6c;color:#111813 !important;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;box-shadow:0 6px 16px rgba(45,189,95,0.18);-webkit-text-size-adjust:none;-ms-text-size-adjust:none;"
-              >
-                Ver Predicción →
-              </a>
-            </div>
-
-            <div class="divider"></div>
-
-            <p style="font-size: 14px; color: #6b7280; margin-top: 20px;text-align: center;">
-              Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
-            </p>
-          </div>
-          
-          <div class="footer">
-            <p>
-              Este correo fue enviado porque alguien compartió una predicción contigo.<br>
-              Si no esperabas este correo, puedes ignorarlo de forma segura.
-            </p>
-            <p style="margin-top: 15px;">
-              © ${new Date().getFullYear()} AugenAI. Todos los derechos reservados.
-            </p>
           </div>
         </div>
       </body>
@@ -195,3 +190,4 @@ export function PredictionSharedTemplate({
     html,
   };
 }
+
