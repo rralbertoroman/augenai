@@ -120,9 +120,12 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
             <div className="w-full h-[400px] flex items-center justify-center">
               <div className="text-center text-gray-500 dark:text-gray-400">
-                <p className="text-lg font-medium">No hay datos de etapas disponibles</p>
+                <p className="text-lg font-medium">
+                  No hay datos de etapas disponibles
+                </p>
                 <p className="text-sm mt-2">
-                  Los datos del paciente aparecerán aquí cuando estén disponibles
+                  Los datos del paciente aparecerán aquí cuando estén
+                  disponibles
                 </p>
               </div>
             </div>

@@ -1,7 +1,5 @@
 "use client";
 
-import { useDashboard } from "@/hooks/use-dashboard";
-import { SkeletonLoader } from "@/components/ui/skeleton-loader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Dashboard from "@/components/dashboard/dashboard";

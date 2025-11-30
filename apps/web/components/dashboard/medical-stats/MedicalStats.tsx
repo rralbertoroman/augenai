@@ -26,8 +26,8 @@ export const MedicalStats: React.FC = () => {
             Panel de Estadísticas Médicas
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Resumen de estadísticas de pacientes a través de diferentes condiciones
-            oculares y etapas.
+            Resumen de estadísticas de pacientes a través de diferentes
+            condiciones oculares y etapas.
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12">
@@ -36,7 +36,8 @@ export const MedicalStats: React.FC = () => {
               No hay datos de pacientes disponibles
             </p>
             <p className="text-sm">
-              Las estadísticas de pacientes aparecerán aquí cuando los datos estén disponibles
+              Las estadísticas de pacientes aparecerán aquí cuando los datos
+              estén disponibles
             </p>
           </div>
         </div>
@@ -51,8 +52,8 @@ export const MedicalStats: React.FC = () => {
           Panel de Estadísticas Médicas
         </h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          Resumen de estadísticas de pacientes a través de diferentes condiciones
-          oculares y etapas.
+          Resumen de estadísticas de pacientes a través de diferentes
+          condiciones oculares y etapas.
         </p>
       </div>
 
@@ -70,7 +71,9 @@ export const MedicalStats: React.FC = () => {
         {/* Age Cohort Breakdown */}
         {hasCohortData && (
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold">Análisis por Cohortes de Edad</h3>
+            <h3 className="text-xl font-semibold">
+              Análisis por Cohortes de Edad
+            </h3>
 
             <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
               {cohortData.map((diseaseData, index) => (

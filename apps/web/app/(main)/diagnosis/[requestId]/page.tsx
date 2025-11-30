@@ -10,6 +10,7 @@ import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
+import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 
 export default function PredictionDetailPage({
   params,
@@ -21,6 +22,27 @@ export default function PredictionDetailPage({
 
   // Feedback hook
   const feedback = useClassificationFeedback();
+
+  // Convert detection predictions to bounding boxes
+  const detectionBoxes =
+    request?.predictions
+      ?.filter((pred) => pred.type === "detection" && pred.bbox)
+      .map((pred) => {
+        return {
+          id: pred.id,
+          x: pred.bbox!.x_left,
+          y: pred.bbox!.y_top,
+          width: pred.bbox!.width,
+          height: pred.bbox!.height,
+          label: pred.lesion_name,
+          confidence: pred.confidence,
+        };
+      }) || [];
+
+  // Get image storage info from the first prediction
+  const imageInfo = request?.predictions?.[0];
+  const bucketName = imageInfo?.bucket_name;
+  const storagePath = imageInfo?.storage_path;
 
   if (isLoading) {
     return (
@@ -116,52 +138,74 @@ export default function PredictionDetailPage({
           </div>
         </div>
 
-        {/* Diagnósticos */}
-        <div className="rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
-          <div className="flex items-center justify-between px-6 pb-3 pt-5">
-            <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
-              Resultados de Diagnóstico
-            </h2>
-            {request?.predictions && request.predictions.length > 0 && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => feedback.handleOpenFeedback(request.predictions)}
-                className="text-md"
-              >
-                Brindar retroalimentación
-              </Button>
-            )}
-          </div>
-          <div className="p-6 space-y-6">
-            {request?.predictions && request.predictions.length > 0 ? (
-              <div className="space-y-4">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Predicciones ({request.predictions.length})
-                </p>
-                {request.predictions.map((diagnosis) => (
-                  <PredictionCard key={diagnosis.id} diagnosis={diagnosis} />
-                ))}
+        <div className="flex flex-row w-full space-x-3">
+          {/* Display the eye scan image if available */}
+          {bucketName && storagePath && (
+            <div className="w-1/2">
+              <div className="w-full max-w-full mx-auto">
+                <ImageBoundingBoxes
+                  bucketName={bucketName}
+                  path={storagePath}
+                  boxes={detectionBoxes}
+                />
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No hay diagnósticos disponibles para esta solicitud
-              </p>
-            )}
+            </div>
+          )}
+
+          {/* Diagnósticos */}
+          <div className="w-1/2 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
+            <div className="flex items-center justify-between px-6 pb-3 pt-5">
+              <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                Resultados de Diagnóstico
+              </h2>
+              {request?.predictions && request.predictions.length > 0 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    feedback.handleOpenFeedback(request.predictions)
+                  }
+                  className="text-md"
+                >
+                  Brindar retroalimentación
+                </Button>
+              )}
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="flex flex-row gap-4 w-full">
+                {request?.predictions && request.predictions.length > 0 ? (
+                  <div className="w-full space-y-4">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Predicciones ({request.predictions.length})
+                    </p>
+                    {request.predictions.map((diagnosis) => (
+                      <PredictionCard
+                        key={diagnosis.id}
+                        diagnosis={diagnosis}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No hay diagnósticos disponibles para esta solicitud
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <BatchFeedbackModal
+              open={feedback.openFeedbackModal}
+              onOpenChange={feedback.setOpenFeedbackModal}
+              predictions={feedback.predictions}
+              feedbackForms={feedback.feedbackForms}
+              diseases={feedback.diseases}
+              onUpdateForm={feedback.updateFeedbackForm}
+              loading={feedback.loading}
+              error={feedback.error}
+              onSubmit={feedback.handleSubmitFeedback}
+            />
           </div>
         </div>
-
-        <BatchFeedbackModal
-          open={feedback.openFeedbackModal}
-          onOpenChange={feedback.setOpenFeedbackModal}
-          predictions={feedback.predictions}
-          feedbackForms={feedback.feedbackForms}
-          diseases={feedback.diseases}
-          onUpdateForm={feedback.updateFeedbackForm}
-          loading={feedback.loading}
-          error={feedback.error}
-          onSubmit={feedback.handleSubmitFeedback}
-        />
       </div>
     </main>
   );
