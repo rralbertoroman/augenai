@@ -22,13 +22,14 @@ import {
   type PredictionWorkflowInput,
   type PredictionResponse,
   type MultiplePredictionsResponse,
-  type AIServicePredictionResponse,
-  type Classification,
   type EnrichedClassification,
   type EnrichedDetection,
-  type Detection,
-  type ProcessedDetection,
 } from "../zod-schemas/prediction_workflow";
+import {
+  type AIServicePredictionResponse,
+  type AIServiceClassification,
+  type AIServiceDetection,
+} from "../zod-schemas/ai_service";
 
 export async function processPredictionRequest(
   input: PredictionWorkflowInput,
@@ -221,7 +222,7 @@ async function processModelPrediction(
   if (task === "classification") {
     // Process Classifications
     const classifications = predictionResult.result
-      .predictions as Classification[];
+      .predictions as AIServiceClassification[];
 
     // Save to DB
     await createClassifications(
@@ -241,16 +242,9 @@ async function processModelPrediction(
   } else if (task === "detection") {
     // Process Detections
     // Need to cast carefully or validate
-    const detectionsRaw = predictionResult.result.predictions as Detection[];
+    const detectionsRaw = predictionResult.result.predictions as AIServiceDetection[];
     // Map raw box to expected format for DB and Enrichment
-    const detections = detectionsRaw.map((d) => ({
-      class_id: d.class_id,
-      confidence: d.confidence,
-      x_left: d.box[0],
-      y_top: d.box[1],
-      width: d.box[2],
-      height: d.box[3],
-    }));
+    const detections = detectionsRaw;
 
     // Save to DB
     await createDetections(
@@ -258,10 +252,10 @@ async function processModelPrediction(
         predictionId: savedPrediction.id,
         classId: d.class_id,
         confidence: d.confidence,
-        xLeft: d.x_left,
-        yTop: d.y_top,
-        width: d.width,
-        height: d.height,
+        xLeft: d.box[0],
+        yTop: d.box[1],
+        width: d.box[2],
+        height: d.box[3],
       })),
     );
     enrichedDetections = await enrichDetectionData(
@@ -288,7 +282,7 @@ async function processModelPrediction(
 }
 
 async function enrichClassificationData(
-  predictions: Classification[],
+  predictions: AIServiceClassification[],
   modelId: string,
   patientName: string,
 ): Promise<EnrichedClassification[]> {
@@ -324,7 +318,7 @@ async function enrichClassificationData(
 }
 
 async function enrichDetectionData(
-  detections: ProcessedDetection[],
+  detections: AIServiceDetection[],
   modelId: string,
   patientName: string,
 ): Promise<EnrichedDetection[]> {
@@ -350,10 +344,10 @@ async function enrichDetectionData(
       class_id: det.class_id,
       confidence: det.confidence,
       bbox: {
-        x_left: det.x_left,
-        y_top: det.y_top,
-        width: det.width,
-        height: det.height,
+        x_left: det.box[0],
+        y_top: det.box[1],
+        width: det.box[2],
+        height: det.box[3],
       },
       lesion_name: lesionInfo.lesionName,
       patient_name: patientName,

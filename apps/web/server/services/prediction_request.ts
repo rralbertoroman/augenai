@@ -11,7 +11,11 @@ import {
   type PredictionRequestDTO,
   type PredictionWithTasks,
 } from "../zod-schemas/prediction_request";
-import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
+import {
+  type EnrichedPredictionDTO,
+  type EnrichedClassification,
+  type EnrichedDetection,
+} from "../zod-schemas/prediction_workflow";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { getCurrentUser, verifyOwnership } from "../auth";
@@ -29,8 +33,9 @@ const processPredictionsInParallel = async (
     userId: string;
   },
   includeFeedbacks: boolean = false,
-): Promise<EnrichedPredictionDTO[]> => {
-  const tasks: Promise<EnrichedPredictionDTO>[] = [];
+): Promise<EnrichedPredictionDTO> => {
+  const classifications: EnrichedClassification[] = [];
+  const detections: EnrichedDetection[] = [];
 
   for (const prediction of predictions) {
     const { modelId } = prediction;
@@ -41,116 +46,108 @@ const processPredictionsInParallel = async (
       Array.isArray(prediction.classifications)
     ) {
       for (const classification of prediction.classifications) {
-        tasks.push(
-          (async () => {
-            const classInfo =
-              await getPredictionClassDiseaseByClassIdAndModelId({
-                classId: classification.classId,
-                modelId,
-              });
+        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          classId: classification.classId,
+          modelId,
+        });
 
-            if (!classInfo) {
-              throw new Error(
-                `Disease mapping not found for class_id ${classification.classId} and model ${modelId}`,
-              );
-            }
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${classification.classId} and model ${modelId}`,
+          );
+        }
 
-            return {
-              id: classification.id,
-              class_id: classification.classId,
-              model_id: modelId,
-              confidence: classification.confidence,
-              disease_id: classInfo.diseaseId,
-              disease_name: classInfo.diseaseName,
-              stage_idx: classInfo.stageIdx,
-              stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-              patient_id: requestContext.patientId,
-              patient_birth_date: requestContext.patientBirthDate,
-              request_id: requestContext.requestId,
-              user_id: requestContext.userId,
-              createdAt: classification.createdAt,
-              type: "classification",
-              bucket_name: requestContext.bucketName,
-              storage_path: requestContext.storagePath,
-              feedbacks:
-                includeFeedbacks && classification.feedbacks
-                  ? classification.feedbacks.map((f) => ({
-                      id: f.id,
-                      userProfileId: f.userProfileId,
-                      isMainUser: f.isMainUser,
-                      isMainData: f.isMainData,
-                      classId: f.classId,
-                      confidence: f.confidence,
-                      createdAt: f.createdAt,
-                    }))
-                  : undefined,
-            } as EnrichedPredictionDTO;
-          })(),
-        );
+        classifications.push({
+          id: classification.id,
+          class_id: classification.classId,
+          model_id: modelId,
+          confidence: classification.confidence,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          patient_id: requestContext.patientId,
+          patient_birth_date: requestContext.patientBirthDate,
+          request_id: requestContext.requestId,
+          user_id: requestContext.userId,
+          createdAt: classification.createdAt,
+          bucket_name: requestContext.bucketName,
+          storage_path: requestContext.storagePath,
+          feedbacks:
+            includeFeedbacks && classification.feedbacks
+              ? classification.feedbacks.map((f) => ({
+                  id: f.id,
+                  classificationId: f.classificationId,
+                  userProfileId: f.userProfileId,
+                  isMainUser: f.isMainUser,
+                  isMainData: f.isMainData,
+                  classId: f.classId,
+                  confidence: f.confidence,
+                  createdAt: f.createdAt,
+                  updatedAt: f.updatedAt,
+                }))
+              : undefined,
+        });
       }
     }
 
     // Process Detections
     if (prediction.detections && Array.isArray(prediction.detections)) {
       for (const detection of prediction.detections) {
-        tasks.push(
-          (async () => {
-            const lesionInfo =
-              await getPredictionClassLesionByClassIdAndModelId({
-                classId: detection.classId,
-                modelId,
-              });
+        const lesionInfo = await getPredictionClassLesionByClassIdAndModelId({
+          classId: detection.classId,
+          modelId,
+        });
 
-            if (!lesionInfo) {
-              throw new Error(
-                `Lesion mapping not found for class_id ${detection.classId} and model ${modelId}`,
-              );
-            }
+        if (!lesionInfo) {
+          throw new Error(
+            `Lesion mapping not found for class_id ${detection.classId} and model ${modelId}`,
+          );
+        }
 
-            return {
-              id: detection.id,
-              class_id: detection.classId,
-              model_id: modelId,
-              confidence: detection.confidence,
-              lesion_name: lesionInfo.lesionName,
-              patient_id: requestContext.patientId,
-              patient_birth_date: requestContext.patientBirthDate,
-              request_id: requestContext.requestId,
-              user_id: requestContext.userId,
-              createdAt: detection.createdAt,
-              type: "detection",
-              bbox: {
-                x_left: detection.xLeft,
-                y_top: detection.yTop,
-                width: detection.width,
-                height: detection.height,
-              },
-              bucket_name: requestContext.bucketName,
-              storage_path: requestContext.storagePath,
-              feedbacks:
-                includeFeedbacks && detection.feedbacks
-                  ? detection.feedbacks.map((f) => ({
-                      id: f.id,
-                      userProfileId: f.userProfileId,
-                      isMainUser: f.isMainUser,
-                      isMainData: f.isMainData,
-                      classId: f.classId,
-                      confidence: f.confidence,
-                      createdAt: f.createdAt,
-                      xLeft: f.xLeft,
-                      yTop: f.yTop,
-                      width: f.width,
-                      height: f.height,
-                    }))
-                  : undefined,
-            } as EnrichedPredictionDTO;
-          })(),
-        );
+        detections.push({
+          id: detection.id,
+          class_id: detection.classId,
+          model_id: modelId,
+          confidence: detection.confidence,
+          lesion_name: lesionInfo.lesionName,
+          patient_id: requestContext.patientId,
+          patient_birth_date: requestContext.patientBirthDate,
+          request_id: requestContext.requestId,
+          user_id: requestContext.userId,
+          createdAt: detection.createdAt,
+          bbox: {
+            x_left: detection.xLeft,
+            y_top: detection.yTop,
+            width: detection.width,
+            height: detection.height,
+          },
+          bucket_name: requestContext.bucketName,
+          storage_path: requestContext.storagePath,
+          feedbacks:
+            includeFeedbacks && detection.feedbacks
+              ? detection.feedbacks.map((f) => ({
+                  id: f.id,
+                  detectionId: f.detectionId,
+                  userProfileId: f.userProfileId,
+                  isMainUser: f.isMainUser,
+                  isMainData: f.isMainData,
+                  classId: f.classId,
+                  confidence: f.confidence,
+                  createdAt: f.createdAt,
+                  updatedAt: f.updatedAt,
+                  xLeft: f.xLeft,
+                  yTop: f.yTop,
+                  width: f.width,
+                  height: f.height,
+                }))
+              : undefined,
+        });
       }
     }
   }
 
-  return Promise.all(tasks);
+  return { classifications, detections };
 };
 
 export const createPredictionRequest = async (
@@ -215,7 +212,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
     ),
   );
 
-  return results.flat();
+  return results;
 };
 
 export const getAllPredictionRequestsWithFeedbacksByUserId = async (
@@ -266,7 +263,7 @@ export const getAllPredictionRequestsWithFeedbacksByUserId = async (
     ),
   );
 
-  return results.flat();
+  return results;
 };
 
 export const getPredictionRequestById = async (
@@ -275,7 +272,7 @@ export const getPredictionRequestById = async (
 ): Promise<{
   request: PredictionRequestDTO;
   patient: PatientDTO;
-  enrichedPredictions: EnrichedPredictionDTO[];
+  enrichedPrediction: EnrichedPredictionDTO;
 } | null> => {
   await getCurrentUser(token); // Verify authentication only
   const { id } = GetPredictionRequestByIdSchema.parse(data);
@@ -297,7 +294,7 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-  const enrichedPredictions = await processPredictionsInParallel(
+  const enrichedPrediction = await processPredictionsInParallel(
     request.predictions,
     {
       patientId: request.patientId,
@@ -313,7 +310,7 @@ export const getPredictionRequestById = async (
   return {
     request,
     patient: request.patient,
-    enrichedPredictions,
+    enrichedPrediction,
   };
 };
 
@@ -362,5 +359,5 @@ export const getAllSystemPredictionRequests = async (
     ),
   );
 
-  return results.flat();
+  return results;
 };

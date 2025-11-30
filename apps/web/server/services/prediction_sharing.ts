@@ -20,7 +20,12 @@ import { getCurrentUser, verifyOwnership } from "../auth";
 import { sendPredictionSharedEmail } from "../resend/services";
 import { getUserProfileById } from "./user_profile";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
-import { type EnrichedPredictionDTO } from "../zod-schemas/prediction";
+import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
+import {
+  type EnrichedPredictionDTO,
+  type EnrichedClassification,
+  type EnrichedDetection,
+} from "../zod-schemas/prediction_workflow";
 
 export const createPredictionSharing = async (
   token: string,
@@ -216,9 +221,12 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
     ],
   });
 
-  const enrichedPredictions: EnrichedPredictionDTO[] = [];
+  const results: EnrichedPredictionDTO[] = [];
 
   for (const request of predictionRequests) {
+    const classifications: EnrichedClassification[] = [];
+    const detections: EnrichedDetection[] = [];
+
     for (const prediction of request.predictions) {
       // Process Classifications
       if (
@@ -237,7 +245,7 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
             );
           }
 
-          enrichedPredictions.push({
+          classifications.push({
             id: classification.id,
             class_id: classification.classId,
             model_id: prediction.modelId,
@@ -250,7 +258,6 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
             patient_id: request.patientId,
             request_id: request.id,
             createdAt: classification.createdAt,
-            type: "classification",
             bucket_name: request.bucketName,
             storage_path: request.storagePath,
           });
@@ -260,31 +267,27 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
       // Process Detections
       if (prediction.detections && Array.isArray(prediction.detections)) {
         for (const detection of prediction.detections) {
-          const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          const lesionInfo = await getPredictionClassLesionByClassIdAndModelId({
             classId: detection.classId,
             modelId: prediction.modelId,
           });
 
-          if (!classInfo) {
+          if (!lesionInfo) {
             throw new Error(
-              `Disease mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
+              `Lesion mapping not found for class_id ${detection.classId} and model ${prediction.modelId}`,
             );
           }
 
-          enrichedPredictions.push({
+          detections.push({
             id: detection.id,
             class_id: detection.classId,
             model_id: prediction.modelId,
             user_id: userId,
             confidence: detection.confidence,
-            disease_id: classInfo.diseaseId,
-            disease_name: classInfo.diseaseName,
-            stage_idx: classInfo.stageIdx,
-            stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+            lesion_name: lesionInfo.lesionName,
             patient_id: request.patientId,
             request_id: request.id,
             createdAt: detection.createdAt,
-            type: "detection",
             bbox: {
               x_left: detection.xLeft,
               y_top: detection.yTop,
@@ -297,7 +300,9 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
         }
       }
     }
+
+    results.push({ classifications, detections });
   }
 
-  return enrichedPredictions;
+  return results;
 };
