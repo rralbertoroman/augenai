@@ -10,7 +10,7 @@ export function PredictionSharedTemplate({
   html: string;
 } {
   const subject = "Te han compartido una predicción - AugenAI";
-  
+
   // 3D Logo with Side Shapes
   const logoHtml = `
     <div style="text-align: center;">
@@ -163,7 +163,7 @@ export function PredictionSharedTemplate({
               <span class="section-label">Mensaje</span>
               <div class="message-box">
                 <p class="message-text">
-                  ${recipientName ? `Hola <strong>${recipientName}</strong>, ` : 'Hola, '}<br>
+                  ${recipientName ? `Hola <strong>${recipientName}</strong>, ` : "Hola, "}<br>
                   Te invito a revisar esta predicción generada por AugenAI.
                 </p>
                 <a href="${predictionUrl}" class="button">
@@ -190,4 +190,3 @@ export function PredictionSharedTemplate({
     html,
   };
 }
-

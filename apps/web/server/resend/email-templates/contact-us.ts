@@ -10,7 +10,7 @@ export function ContactUsTemplate({
   html: string;
 } {
   const subject = userSubject || "Nuevo mensaje de contacto - AugenAI";
-  
+
   // 3D Logo with Side Shapes
   const logoHtml = `
     <div style="text-align: center;">
@@ -160,7 +160,7 @@ export function ContactUsTemplate({
               <span class="section-label">Mensaje</span>
               <div class="message-container">
                 <div class="message-box">
-                  ${userSubject ? `<div class="subject-badge">${userSubject}</div>` : ''}
+                  ${userSubject ? `<div class="subject-badge">${userSubject}</div>` : ""}
                   <p class="message-text">${message}</p>
                 </div>
               </div>
