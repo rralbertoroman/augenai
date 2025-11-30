@@ -34,13 +34,31 @@ export function UpdatePasswordForm({
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
-    } catch (error: unknown) {
-      const userFriendlyMessage = translateErrorMessage(
-        error instanceof Error ? error.message : String(error),
-      );
-      setError(userFriendlyMessage);
+      // Update this route to redirect to the main route. The user already has an active session.
+      router.push("/");
+    } catch (error: any) {
+      console.error("Password update error:", error);
+
+      // Handle specific Supabase error responses
+      if (error && typeof error === 'object') {
+        if (error.code === 'weak_password') {
+          if (error.weak_password?.reasons?.includes('length')) {
+            setError('La contraseña debe tener al menos 6 caracteres.');
+          } else {
+            setError('La contraseña es demasiado débil. Por favor, use una contraseña más segura.');
+          }
+        } else if (error.message) {
+          // Use the existing translation function for other error messages
+          const userFriendlyMessage = translateErrorMessage(error.message);
+          setError(userFriendlyMessage);
+        } else {
+          setError('Ocurrió un error al actualizar la contraseña. Por favor, inténtelo de nuevo.');
+        }
+      } else {
+        // Handle string errors or other types
+        const userFriendlyMessage = translateErrorMessage(error as string || 'Error desconocido');
+        setError(userFriendlyMessage);
+      }
     } finally {
       setIsLoading(false);
     }
