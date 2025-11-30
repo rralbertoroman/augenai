@@ -8,7 +8,10 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllPredictionRequestsWithFeedbacksByUserId } from "@/server/services/prediction_request";
+import {
+  getAllPredictionRequestsWithFeedbacksByUserId,
+  getAllSystemPredictionRequests,
+} from "@/server/services/prediction_request";
 import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
 
 type DashboardContextType = {
@@ -25,8 +28,12 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
   undefined,
 );
 
-export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const { user, accessToken } = useAuth();
+export const DashboardProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { accessToken } = useAuth();
   const [predictions, setPredictions] = useState<EnrichedPredictionDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,25 +65,26 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchPredictions = useCallback(async () => {
-    if (!user?.id || !accessToken) return;
+    if (!accessToken) {
+      console.error("No access token found");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await getAllPredictionRequestsWithFeedbacksByUserId(
-        accessToken,
-        user.id,
-      );
+      const data = await getAllSystemPredictionRequests(accessToken);
       const processedData = processPredictions(data);
       setPredictions(processedData);
+      console.log(`Fetched ${processedData.length} predictions`);
     } catch (err) {
       console.error("Failed to fetch predictions with feedback:", err);
       setError("Error al cargar predicciones. Por favor intenta de nuevo.");
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, accessToken, processPredictions]);
+  }, [accessToken, processPredictions]);
 
   useEffect(() => {
     fetchPredictions();
@@ -117,7 +125,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       {children}
     </DashboardContext.Provider>
   );
-}
+};
 
 export function useDashboard() {
   const context = useContext(DashboardContext);

@@ -118,7 +118,7 @@ export default function Start() {
           {},
         );
 
-        console.log("Fetched patients:", patientMap);
+        console.log(`Fetched patients: ${Object.keys(patientMap).length}`);
         setPatients(patientMap);
       } catch (error) {
         console.error("Error fetching patients:", error);
