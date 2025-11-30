@@ -1,5 +1,5 @@
 import { normalizeError } from "./error_codes";
-import { Result } from "./schemas";
+import { Result, CustomError } from "./schemas";
 
 export async function tryCatch<T>(
   fn: () => Promise<T> | T,
@@ -22,4 +22,14 @@ export async function tryCatch<T>(
       error: normalizedError,
     };
   }
+}
+
+export function unwrap<T>(result: Result<T>): T {
+  if (!result.success) {
+    const error = new Error(result.error.message) as CustomError;
+    error.code = result.error.code;
+    error.status = result.error.status;
+    throw error;
+  }
+  return result.data;
 }
