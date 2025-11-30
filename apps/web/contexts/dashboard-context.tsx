@@ -8,10 +8,7 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import {
-  getAllPredictionRequestsWithFeedbacksByUserId,
-  getAllSystemPredictionRequests,
-} from "@/server/services/prediction_request";
+import { getAllSystemPredictionRequests } from "@/server/services/prediction_request";
 import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
 
 type DashboardContextType = {

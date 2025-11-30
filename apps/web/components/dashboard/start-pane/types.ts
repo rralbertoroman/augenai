@@ -9,13 +9,14 @@ export type Prediction = {
   createdAt: string | Date;
   bucket_name: string;
   storage_path: string;
-  patient_age: number;
+  patient_birthdate: string;
   feedback_status: string;
   feedbacks?: Array<{ isMainData: boolean }>;
   isMainData: boolean;
   class_id: number;
   model_id: string;
   bbox: {
+    label?: string;
     x_left: number;
     y_top: number;
     width: number;

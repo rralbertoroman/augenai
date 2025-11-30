@@ -154,6 +154,7 @@ export default function Start() {
           disease_name: pred.disease_name,
           stage_content: pred.stage_content,
           confidence: pred.confidence,
+          patient_birthdate: pred.patient_birth_date!,
           createdAt:
             typeof pred.createdAt === "string"
               ? new Date(pred.createdAt)
@@ -165,7 +166,10 @@ export default function Start() {
           feedbacks: pred.feedbacks || [],
           class_id: pred.class_id,
           model_id: pred.model_id,
-          bbox: pred.bbox,
+          bbox: {
+            ...pred.bbox,
+            label: pred.lesion_name,
+          },
           type: pred.type,
           // Handle isMainData safely
           isMainData: "isMainData" in pred ? Boolean(pred.isMainData) : false,
