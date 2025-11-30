@@ -28,7 +28,6 @@ export interface BoundingBox {
   height: number; // height (relative 0-1 or absolute pixels)
   label?: string;
   confidence?: number;
-  color?: string;
 }
 
 interface ImageBoundingBoxesProps {

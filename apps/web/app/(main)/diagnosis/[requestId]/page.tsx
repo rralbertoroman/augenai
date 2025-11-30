@@ -28,16 +28,6 @@ export default function PredictionDetailPage({
     request?.predictions
       ?.filter((pred) => pred.type === "detection" && pred.bbox)
       .map((pred) => {
-        // Color coding by lesion type
-        const colorMap: Record<string, string> = {
-          Microaneurisma: "#4afe50", // green
-          Exudado: "#3030fa", // blue
-          Hemorragia: "#ff22ff", // violet
-          "Exudados duros": "#3030fa", // blue
-          "Exudados blandos": "#60a5fa", // light blue
-          Neovascularización: "#ef4444", // red
-        };
-
         return {
           id: pred.id,
           x: pred.bbox!.x_left,
@@ -46,7 +36,6 @@ export default function PredictionDetailPage({
           height: pred.bbox!.height,
           label: pred.lesion_name,
           confidence: pred.confidence,
-          color: colorMap[pred.lesion_name || ""] || "#ff0000",
         };
       }) || [];
 
