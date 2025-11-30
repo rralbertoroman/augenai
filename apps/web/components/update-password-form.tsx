@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { SupabaseError } from "@/lib/types/error-types";
 
 export function UpdatePasswordForm({
   className,
@@ -36,26 +37,33 @@ export function UpdatePasswordForm({
       if (error) throw error;
       // Update this route to redirect to the main route. The user already has an active session.
       router.push("/");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Password update error:", error);
 
       // Handle specific Supabase error responses
-      if (error && typeof error === "object") {
-        if (error.code === "weak_password") {
-          if (error.weak_password?.reasons?.includes("length")) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        "message" in error
+      ) {
+        const errorObj = error as SupabaseError;
+
+        if (errorObj.code === "weak_password") {
+          if (errorObj.weak_password?.reasons?.includes("length")) {
             setError("La contraseña debe tener al menos 6 caracteres.");
           } else {
             setError(
               "La contraseña es demasiado débil. Por favor, use una contraseña más segura.",
             );
           }
-        } else if (error.code === "same_password") {
+        } else if (errorObj.code === "same_password") {
           setError(
             "La nueva contraseña debe ser diferente de la contraseña actual.",
           );
-        } else if (error.message) {
+        } else if (errorObj.message) {
           // Use the existing translation function for other error messages
-          const userFriendlyMessage = translateErrorMessage(error.message);
+          const userFriendlyMessage = translateErrorMessage(errorObj.message);
           setError(userFriendlyMessage);
         } else {
           setError(
