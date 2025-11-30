@@ -65,10 +65,7 @@ export const DashboardProvider = ({
   }, []);
 
   const fetchPredictions = useCallback(async () => {
-    if (!accessToken) {
-      console.error("No access token found");
-      return;
-    }
+    if (!accessToken) return;
 
     setIsLoading(true);
     setError(null);
