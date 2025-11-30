@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { getConfidenceBadge } from "@/hooks/use-predictions";
-import Image from "next/image";
 
 export interface PredictionCardProps {
   diagnosis: {

@@ -8,7 +8,7 @@ import { StepPatient } from "./form-steps/step-patient";
 import { StepTask } from "./form-steps/step-task";
 import { StepUpload } from "./form-steps/step-upload";
 
-interface ScanData {
+export interface ScanData {
   patientId: string;
   task: string;
   imageType: string;

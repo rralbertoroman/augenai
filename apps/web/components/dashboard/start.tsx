@@ -8,6 +8,7 @@ import { getPatientsByUserId } from "@/server/services/patient";
 import { Loader2, Grid, List } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import SupabaseImage from "../ui/supabase-image";
 
 // Formatting functions using native Date methods
 function formatDate(date: Date) {
@@ -69,8 +70,8 @@ type Prediction = {
   stage_content: string;
   confidence: number;
   createdAt: string | Date;
-  storage_path?: string;
-  image_url: string;
+  bucket_name: string;
+  storage_path: string;
   patient_age: number;
   feedback_status: string;
   feedbacks?: Array<{ isMainData: boolean }>;
@@ -85,7 +86,8 @@ type PredictionGroup = {
   requestDate: Date;
   patientName: string;
   predictions: Prediction[];
-  thumbnailUrl: string;
+  bucket_name: string;
+  storage_path: string;
 };
 
 type PatientInfo = {
@@ -144,9 +146,8 @@ export default function Start() {
         ...prediction,
         disease_name: prediction.disease_name || "Enfermedad no especificada",
         stage_content: prediction.stage_content || "No especificada",
-        image_url: prediction.storage_path
-          ? `/api/storage/${prediction.storage_path}`
-          : "/placeholder.svg",
+        bucket_name: prediction.bucket_name,
+        storage_path: prediction.storage_path,
         patient_name: patientName,
         patient_age: patientAge,
         feedback_status: prediction.feedbacks?.[0]?.isMainData
@@ -185,8 +186,8 @@ export default function Start() {
             typeof pred.createdAt === "string"
               ? new Date(pred.createdAt)
               : pred.createdAt,
+          bucket_name: pred.bucket_name,
           storage_path: pred.storage_path,
-          image_url: pred.image_url,
           patient_age: pred.patient_age,
           feedback_status: pred.feedback_status,
           feedbacks: pred.feedbacks || [],
@@ -209,7 +210,8 @@ export default function Start() {
           ),
         ),
         predictions: processedPreds,
-        thumbnailUrl: firstPred.image_url,
+        bucket_name: firstPred.bucket_name,
+        storage_path: firstPred.storage_path,
       } as PredictionGroup;
     })
     .sort((a, b) => b.requestDate.getTime() - a.requestDate.getTime());
@@ -256,13 +258,15 @@ export default function Start() {
     return (
       <div
         key={`${group.requestId}-${group.patientId}`}
-        className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow"
+        className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
       >
-        <div className="relative aspect-square bg-muted shrink-0">
-          <img
-            src={group.thumbnailUrl}
+        <div className="flex flex-col relative bg-muted w-fit h-fit">
+          <SupabaseImage
+            bucketName={group.bucket_name}
+            path={group.storage_path}
+            width={200}
+            height={200}
             alt={`Imagen de ${group.patientName}`}
-            className="w-full h-full object-cover"
           />
           <div className="absolute bottom-2 right-2">
             <Badge variant="secondary">
@@ -305,11 +309,13 @@ export default function Start() {
     return (
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-colors">
         <div className="flex">
-          <div className="w-24 h-24 bg-muted shrink-0">
-            <img
-              src={group.thumbnailUrl}
+          <div className="bg-muted w-fit h-fit">
+            <SupabaseImage
+              bucketName={group.bucket_name}
+              path={group.storage_path}
+              width={200}
+              height={200}
               alt={`Imagen de ${group.patientName}`}
-              className="w-full h-full object-cover"
             />
           </div>
           <div className="p-4 grow">

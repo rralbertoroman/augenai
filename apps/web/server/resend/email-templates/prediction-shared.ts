@@ -11,8 +11,8 @@ export function PredictionSharedTemplate({
 } {
   const subject = "Te han compartido una predicción";
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-  const logoUrl = `${appUrl}/augen-full.svg`;
+  // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  // const logoUrl = `${appUrl}/augen-full.svg`;
 
   const html = `
     <!DOCTYPE html>
