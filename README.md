@@ -156,9 +156,33 @@ augenai/
 │   │   ├── tests/            # Test files
 │   │   └── types/            # TypeScript type definitions
 │   │
-│   └── ai_service/            # FastAPI AI service
-│       ├── src/              # Source code
-│       └── pyproject.toml    # Python dependencies
+│   └── ai_service/            # FastAPI AI service for medical image analysis
+│       ├── src/
+│       │   └── ai_service/
+│       │       ├── main.py              # FastAPI app entry point with CORS & logging
+│       │       ├── config.py            # Environment configuration
+│       │       ├── logging_config.py    # Structured logging setup
+│       │       ├── routers/             # API route handlers
+│       │       │   ├── health.py        # Health check endpoints
+│       │       │   ├── predictions.py   # ML prediction endpoints
+│       │       │   └── api.py           # Main API router
+│       │       ├── services/            # Business logic layer
+│       │       │   ├── model/           # Model management services
+│       │       │   └── prediction/      # Prediction services
+│       │       │       ├── service.py           # Prediction orchestration
+│       │       │       ├── model_pool.py        # Model pooling & caching
+│       │       │       └── factories/           # Model factories
+│       │       ├── models/              # Pydantic schemas
+│       │       │   └── schemas.py       # Request/response models
+│       │       └── auth/                # Authentication middleware
+│       ├── tests/                # Pytest test suite
+│       │   ├── routers/          # Router tests
+│       │   ├── prediction/       # Prediction service tests
+│       │   ├── model/            # Model service tests
+│       │   └── dr_sample/        # Sample medical images for testing
+│       ├── weights/              # Pre-trained model weights
+│       ├── pyproject.toml        # Python dependencies (uv)
+│       └── Dockerfile            # Container configuration
 │
 ├── package.json              # Root package.json
 ├── turbo.json               # Turborepo configuration
