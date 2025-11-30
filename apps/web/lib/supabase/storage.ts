@@ -81,7 +81,8 @@ export async function uploadEyeScan(
 
     return {
       path: "",
-      error: lastError || "Error al subir archivo después de múltiples intentos",
+      error:
+        lastError || "Error al subir archivo después de múltiples intentos",
     };
   } catch (error) {
     const errorMessage =

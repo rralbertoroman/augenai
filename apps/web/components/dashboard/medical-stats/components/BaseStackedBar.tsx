@@ -6,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { BaseStackedBarProps } from "../types";
@@ -27,9 +26,6 @@ interface CustomTooltipProps {
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
-    // Get the data point being hovered
-    const dataPoint = payload[0]?.payload;
-
     // Filter out entries with zero values and sort them for consistent display
     const validEntries = payload
       .filter((entry) => {
@@ -81,7 +77,9 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
       <div className="w-full h-[400px] flex items-center justify-center">
         <div className="text-center text-gray-500 dark:text-gray-400">
           <p className="text-lg font-medium">No hay datos disponibles</p>
-          <p className="text-sm mt-2">Los datos aparecerán aquí cuando estén disponibles</p>
+          <p className="text-sm mt-2">
+            Los datos aparecerán aquí cuando estén disponibles
+          </p>
         </div>
       </div>
     );

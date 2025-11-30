@@ -1,5 +1,5 @@
 import React from "react";
-import { BarChart3, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { BaseStackedBar } from "./BaseStackedBar";
 import { useChartDataLogic } from "../utils";
 import { CohortDataConfigItem } from "../types";
@@ -11,7 +11,7 @@ interface DiseaseCohortChartProps {
 export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
   diseaseData,
 }) => {
-  const { stageKeys, stageColors, colors } = useChartDataLogic(diseaseData);
+  const { stageColors } = useChartDataLogic(diseaseData);
 
   // Handle empty cohort data
   if (!diseaseData.cohortData || diseaseData.cohortData.length === 0) {
@@ -23,7 +23,9 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
           <div className="w-full h-[400px] flex items-center justify-center">
             <div className="text-center text-gray-500 dark:text-gray-400">
-              <p className="text-lg font-medium">No hay datos de cohortes disponibles</p>
+              <p className="text-lg font-medium">
+                No hay datos de cohortes disponibles
+              </p>
               <p className="text-sm mt-2">
                 Los datos para {diseaseData.displayName} aparecerán aquí cuando
                 estén disponibles
@@ -68,7 +70,8 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{totalPatients}</span> Total de Pacientes
+            <span className="font-medium">{totalPatients}</span> Total de
+            Pacientes
           </div>
           {totalRequiringTreatment > 0 && (
             <div className="flex items-center text-amber-600 dark:text-amber-400 text-sm">

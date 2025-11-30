@@ -85,7 +85,7 @@ export const useChartDataLogic = <
       const stageData = datasets as unknown as StageTotalConfig[];
       return processStageData(stageData);
     }
-  }, [datasets, isCohortData]);
+  }, [isEmpty, datasets, isCohortData]);
 
   const getColorForStage = (stageName: string, index: number) => {
     const stageInfo = stageMap.get(stageName);

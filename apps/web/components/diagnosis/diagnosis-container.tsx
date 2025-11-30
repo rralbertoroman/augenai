@@ -4,17 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EyeScanUpload } from "./eye-scan-upload";
 import { translateErrorMessage } from "@/lib/error-translator";
-
+import { ScanData } from "./eye-scan-upload";
 export function DiagnosisContainer() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: ScanData) => {
     setIsSubmitting(true);
 
     try {
       if (!data.storagePath || !data.bucketName) {
-        throw new Error(translateErrorMessage("Imagen no cargada correctamente"));
+        throw new Error(
+          translateErrorMessage("Imagen no cargada correctamente"),
+        );
       }
 
       const { createClient } = await import("@/lib/supabase/client");
@@ -76,7 +78,10 @@ export function DiagnosisContainer() {
             </h2>
 
             <div className="lg:col-span-5 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
-              <EyeScanUpload onSubmit={handleFormSubmit} isLoading={isSubmitting} />
+              <EyeScanUpload
+                onSubmit={handleFormSubmit}
+                isLoading={isSubmitting}
+              />
             </div>
           </section>
         </div>

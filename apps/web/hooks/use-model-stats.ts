@@ -5,6 +5,7 @@ import { usePredictionsWithFeedback } from "@/hooks/use-predictions-with-feedbac
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
 import { EnrichedPredictionDTO } from "@/server/zod-schemas";
+import { useAuth } from "@/contexts/auth-context";
 
 export interface F1ScoreData {
   confidence: number;
@@ -29,6 +30,7 @@ export type ProcessedEnrichedPrediction = EnrichedPredictionDTO & {
 };
 
 export function useModelStats() {
+  const { accessToken } = useAuth();
   const { predictions, isLoading: isPredictionsLoading } =
     usePredictionsWithFeedback();
   const [predictionClasses, setPredictionClasses] = useState<
@@ -39,24 +41,7 @@ export function useModelStats() {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const [classesData, diseasesData] = await Promise.all([
-          getAllPredictionClasses(),
-          // We need a way to get diseases without token if possible, or pass token.
-          // Since this is a client component, we should probably use a server action that handles auth or is public.
-          // For now, assuming getAllDiseases handles auth internally via session or similar if called from server action wrapper,
-          // but wait, getAllDiseases takes a token.
-          // Let's check if we can get diseases another way or if we need to pass token.
-          // Actually, for now let's just fetch classes and derive diseases from there if possible,
-          // or assume we can use the server action directly if it's set up for it.
-          // The previous plan mentioned fetching diseases.
-          // Let's try to use the server action. If it fails due to auth, we might need to pass token.
-          // But wait, server actions in Next.js can access cookies.
-          // Let's assume getAllDiseases needs a token and we might not have it easily here without useAuth.
-          // However, we can just derive the diseases list from the predictionClasses if needed,
-          // or better, create a wrapper server action that gets the current user's token/session.
-          // For simplicity, let's just use predictionClasses to build the map.
-          getAllPredictionClasses(),
-        ]);
+        const classesData = await getAllPredictionClasses(accessToken!);
         setPredictionClasses(classesData);
       } catch (error) {
         console.error("Failed to fetch metadata:", error);
@@ -66,7 +51,7 @@ export function useModelStats() {
     };
 
     fetchMetadata();
-  }, []);
+  }, [accessToken]);
 
   // Process data
   const stats = useMemo(() => {
