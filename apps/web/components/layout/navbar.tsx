@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { LayoutDashboard, Users, PieChart } from "lucide-react";
-import Image from 'next/image';
+import Image from "next/image";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -20,7 +20,13 @@ export function Navbar() {
         <div className="flex items-center gap-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/augen-full.svg" alt="Logo" width={120} height={120} className="mx-1"/>
+            <Image
+              src="/augen-full.svg"
+              alt="Logo"
+              width={120}
+              height={120}
+              className="mx-1"
+            />
           </Link>
 
           {/* Navigation links */}

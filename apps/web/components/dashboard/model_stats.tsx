@@ -113,7 +113,8 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
           Matriz de Confusión - {data.disease}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Las filas muestran las etapas reales, las columnas muestran las etapas predichas
+          Las filas muestran las etapas reales, las columnas muestran las etapas
+          predichas
         </p>
       </CardHeader>
       <CardContent>
@@ -281,7 +282,11 @@ const DiseaseF1ScoreChart = ({
             <XAxis dataKey="stage" />
             <YAxis
               domain={[0, 100]}
-              label={{ value: "Puntuación %", angle: -90, position: "insideLeft" }}
+              label={{
+                value: "Puntuación %",
+                angle: -90,
+                position: "insideLeft",
+              }}
             />
             <Tooltip
               formatter={(value: number, name: string) => [
@@ -333,7 +338,9 @@ const ModelStats = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Rendimiento del Modelo</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          Rendimiento del Modelo
+        </h2>
         <div className="w-64">
           <label className="block text-sm font-medium mb-1">
             Seleccionar Enfermedad:

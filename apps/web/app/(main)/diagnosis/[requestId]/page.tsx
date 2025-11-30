@@ -10,7 +10,6 @@ import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
-import Image from "next/image";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 
 export default function PredictionDetailPage({
@@ -20,11 +19,41 @@ export default function PredictionDetailPage({
 }) {
   const { requestId } = use(params);
   const { request, isLoading, error } = usePredictionRequestDetail(requestId);
-  const image_url =
-    "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Feyeswidebay.com.au%2Fwp-content%2Fuploads%2F2017%2F01%2Fdiabetic-retinopathy-3-720x480.jpg&f=1&nofb=1&ipt=4c1c919150823fc6b081f544d8d17a4a39cca9df9e956feaae7beda5203e56c2";
 
   // Feedback hook
   const feedback = useClassificationFeedback();
+
+  // Convert detection predictions to bounding boxes
+  const detectionBoxes =
+    request?.predictions
+      ?.filter((pred) => pred.type === "detection" && pred.bbox)
+      .map((pred) => {
+        // Color coding by lesion type
+        const colorMap: Record<string, string> = {
+          Microaneurisma: "#4afe50", // green
+          Exudado: "#3030fa", // blue
+          Hemorragia: "#ff22ff", // violet
+          "Exudados duros": "#3030fa", // blue
+          "Exudados blandos": "#60a5fa", // light blue
+          Neovascularización: "#ef4444", // red
+        };
+
+        return {
+          id: pred.id,
+          x: pred.bbox!.x_left,
+          y: pred.bbox!.y_top,
+          width: pred.bbox!.width,
+          height: pred.bbox!.height,
+          label: pred.lesion_name,
+          confidence: pred.confidence,
+          color: colorMap[pred.lesion_name || ""] || "#ff0000",
+        };
+      }) || [];
+
+  // Get image storage info from the first prediction
+  const imageInfo = request?.predictions?.[0];
+  const bucketName = imageInfo?.bucket_name;
+  const storagePath = imageInfo?.storage_path;
 
   if (isLoading) {
     return (
@@ -122,10 +151,14 @@ export default function PredictionDetailPage({
 
         <div className="flex flex-row w-full space-x-3">
           {/* Display the eye scan image if available */}
-          {image_url && (
+          {bucketName && storagePath && (
             <div className="w-1/2">
               <div className="w-full max-w-full mx-auto">
-                <ImageBoundingBoxes imageUrl={image_url} />
+                <ImageBoundingBoxes
+                  bucketName={bucketName}
+                  path={storagePath}
+                  boxes={detectionBoxes}
+                />
               </div>
             </div>
           )}

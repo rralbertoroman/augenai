@@ -1,7 +1,24 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
+import SupabaseImage from "@/components/ui/supabase-image";
+
+// Color palette with tones of blue, green, violet, and pink
+const COLOR_PALETTE = [
+  "#3B82F6", // Blue
+  "#10B981", // Green
+  "#8B5CF6", // Violet
+  "#EC4899", // Pink
+  "#2563EB", // Dark Blue
+  "#059669", // Dark Green
+  "#7C3AED", // Dark Violet
+  "#DB2777", // Dark Pink
+  "#60A5FA", // Light Blue
+  "#34D399", // Light Green
+  "#A78BFA", // Light Violet
+  "#F472B6", // Light Pink
+];
 
 export interface BoundingBox {
   id: string;
@@ -15,13 +32,16 @@ export interface BoundingBox {
 }
 
 interface ImageBoundingBoxesProps {
-  imageUrl: string;
+  imageUrl?: string; // For backward compatibility with external URLs
+  bucketName?: string; // Supabase bucket name
+  path?: string; // Path in Supabase bucket
   boxes?: BoundingBox[];
   className?: string;
 }
 
 export function ImageBoundingBoxes({
-  imageUrl,
+  bucketName,
+  path,
   boxes = [],
   className = "",
 }: ImageBoundingBoxesProps) {
@@ -33,68 +53,24 @@ export function ImageBoundingBoxes({
     height: 0,
   });
 
-  // Mock data if no boxes provided
-  const displayBoxes = React.useMemo(() => {
-    if (boxes.length > 0) return boxes;
+  // Create a color map based on class order of appearance
+  const colorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const seenLabels: string[] = [];
 
-    const mocks: BoundingBox[] = [];
+    boxes.forEach((box) => {
+      if (box.label && !map.has(box.label)) {
+        seenLabels.push(box.label);
+        const colorIndex = (seenLabels.length - 1) % COLOR_PALETTE.length;
+        map.set(box.label, COLOR_PALETTE[colorIndex]);
+      }
+    });
 
-    // Assume a typical retinal image size for mock data generation
-    const mockImageWidth = 1000;
-    const mockImageHeight = 1000;
-
-    // Generate Microaneurysms (small, green)
-    for (let i = 0; i < 50; i++) {
-      mocks.push({
-        id: `mock-ma-${i}`,
-        x: 150 + Math.random() * 300,
-        y: 100 + Math.random() * 300,
-        width: 10 + Math.random() * 20,
-        height: 10 + Math.random() * 20,
-        label: "Microaneurisma",
-        confidence: 0.8 + Math.random() * 0.19,
-        color: "#4afe50", // green-400
-      });
-    }
-
-    // Generate Exudates (small/medium, blue)
-    for (let i = 0; i < 15; i++) {
-      mocks.push({
-        id: `mock-ex-${i}`,
-        x: 150 + Math.random() * 400,
-        y: 200 + Math.random() * 250,
-        width: 20 + Math.random() * 30,
-        height: 20 + Math.random() * 30,
-        label: "Exudado",
-        confidence: 0.75 + Math.random() * 0.2,
-        color: "#3030fa", // blue-400
-      });
-    }
-
-    // Generate Hemorrhages (larger, violet)
-    for (let i = 0; i < 3; i++) {
-      mocks.push({
-        id: `mock-hem-${i}`,
-        x: 150 + Math.random() * 500,
-        y: 300 + Math.random() * 300,
-        width: 60 + Math.random() * 10,
-        height: 60 + Math.random() * 10,
-        label: "Hemorragia",
-        confidence: 0.7 + Math.random() * 0.25,
-        color: "#ff22ff", // violet-500
-      });
-    }
-
-    return mocks;
+    return map;
   }, [boxes]);
 
-  // Handle image load to set dimensions
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { naturalWidth, naturalHeight, width, height } = e.currentTarget;
-    // We'll rely on the rendered width/height for the SVG overlay
-    setDimensions({ width, height });
-    setNaturalDimensions({ width: naturalWidth, height: naturalHeight });
-  };
+  // Use only the boxes provided via props
+  const displayBoxes = boxes;
 
   // Update dimensions on resize using ResizeObserver
   useEffect(() => {
@@ -105,6 +81,13 @@ export function ImageBoundingBoxes({
         const img = entry.target.querySelector("img");
         if (img) {
           setDimensions({ width: img.width, height: img.height });
+          // Also update natural dimensions if not set
+          if (naturalDimensions.width === 0 && img.naturalWidth > 0) {
+            setNaturalDimensions({
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            });
+          }
         }
       }
     });
@@ -112,7 +95,7 @@ export function ImageBoundingBoxes({
     resizeObserver.observe(containerRef.current);
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [naturalDimensions.width]);
 
   // D3 Render Logic
   useEffect(() => {
@@ -137,6 +120,11 @@ export function ImageBoundingBoxes({
       const w = box.width * scaleX;
       const h = box.height * scaleY;
 
+      // Get color from colorMap or use default
+      const color = box.label
+        ? colorMap.get(box.label) || "#3B82F6"
+        : "#3B82F6";
+
       const g = svg.append("g");
 
       // Rectangle
@@ -146,27 +134,28 @@ export function ImageBoundingBoxes({
         .attr("width", w)
         .attr("height", h)
         .attr("fill", "none")
-        .attr("stroke", box.color || "red")
+        .attr("stroke", color)
         .attr("stroke-width", 2)
         .attr("class", "cursor-pointer hover:stroke-4 transition-all");
     });
-  }, [displayBoxes, dimensions, naturalDimensions]);
+  }, [displayBoxes, dimensions, naturalDimensions, colorMap]);
 
   // Extract unique labels for legend
   const uniqueLabels = Array.from(new Set(displayBoxes.map((b) => b.label)))
     .map((label) => {
-      const box = displayBoxes.find((b) => b.label === label);
-      return { label, color: box?.color };
+      return { label, color: label ? colorMap.get(label) : undefined };
     })
     .filter((item) => item.label);
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
-      <img
-        src={imageUrl}
+      <SupabaseImage
+        bucketName={bucketName!}
+        path={path!}
+        width={1000}
+        height={1000}
         alt="Diagnosis"
         className="block max-w-full h-auto rounded-lg"
-        onLoad={onImageLoad}
       />
       <svg
         ref={svgRef}
@@ -183,7 +172,7 @@ export function ImageBoundingBoxes({
               <div key={item.label} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: item.color || "red" }}
+                  style={{ backgroundColor: item.color || "#3B82F6" }}
                 />
                 <span className="text-xs font-medium text-white">
                   {item.label}
