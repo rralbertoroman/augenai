@@ -15,6 +15,7 @@ import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
 import { type OptimalModel } from "../zod-schemas/model";
 import { sendPredictionToSupervisor } from "./prediction_sharing";
+import { getPatientById } from "./patient";
 
 import {
   PredictionWorkflowInputSchema,
@@ -34,14 +35,20 @@ export async function processPredictionRequest(
 ): Promise<MultiplePredictionsResponse> {
   console.log("[PREDICTION_WORKFLOW] Starting prediction request", { input });
   const validatedInput = PredictionWorkflowInputSchema.parse(input);
-  const { task, imageType, diseases, storagePath, bucketName } = validatedInput;
+  const { task, imageType, diseases, storagePath, bucketName, patientId } =
+    validatedInput;
   console.log("[PREDICTION_WORKFLOW] Validated input", {
     task,
     imageType,
     diseases,
     storagePath,
     bucketName,
+    patientId,
   });
+
+  // Fetch patient details
+  const patient = await getPatientById(patientId);
+  const patientName = patient ? patient.name : "Unknown Patient";
 
   // 1. Select optimal models
   console.log("[PREDICTION_WORKFLOW] Selecting optimal models...");
@@ -95,6 +102,7 @@ export async function processPredictionRequest(
       fileName,
       predictionRequest.id,
       task,
+      patientName,
     );
 
     if (predictionResponse) {
@@ -183,6 +191,7 @@ async function processModelPrediction(
   fileName: string,
   requestId: string,
   task: string,
+  patientName: string,
 ): Promise<PredictionResponse | null> {
   // 1. Fetch from AI Service
   const predictionResult = await fetchPredictionFromAIService(
@@ -227,6 +236,7 @@ async function processModelPrediction(
     enrichedClassifications = await enrichClassificationData(
       classifications,
       model.id,
+      patientName,
     );
   } else if (task === "detection") {
     // Process Detections
@@ -254,7 +264,11 @@ async function processModelPrediction(
         height: d.height,
       })),
     );
-    enrichedDetections = await enrichDetectionData(detections, model.id);
+    enrichedDetections = await enrichDetectionData(
+      detections,
+      model.id,
+      patientName,
+    );
   }
 
   return {
@@ -276,6 +290,7 @@ async function processModelPrediction(
 async function enrichClassificationData(
   predictions: Classification[],
   modelId: string,
+  patientName: string,
 ): Promise<EnrichedClassification[]> {
   const enrichedClassifications: EnrichedClassification[] = [];
 
@@ -301,6 +316,7 @@ async function enrichClassificationData(
       disease_name: classInfo.diseaseName,
       stage_idx: classInfo.stageIdx,
       stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+      patient_name: patientName,
     });
   }
 
@@ -310,6 +326,7 @@ async function enrichClassificationData(
 async function enrichDetectionData(
   detections: ProcessedDetection[],
   modelId: string,
+  patientName: string,
 ): Promise<EnrichedDetection[]> {
   const enrichedDetections: EnrichedDetection[] = [];
 
@@ -339,6 +356,7 @@ async function enrichDetectionData(
         height: det.height,
       },
       lesion_name: lesionInfo.lesionName,
+      patient_name: patientName,
     });
   }
 

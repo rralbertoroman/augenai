@@ -1,53 +1,25 @@
-import { useEffect, useState } from "react";
-
 interface ProgressProps {
-  value: number;
+  value?: number;
   className?: string;
+  isUploading?: boolean;
 }
 
-export function Progress({ value, className = "" }: ProgressProps) {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    // Animate from current value to new value
-    const startValue = displayValue;
-    const endValue = Math.min(100, Math.max(0, value));
-    const duration = 300; // ms
-    const startTime = Date.now();
-
-    let animationFrameId: number;
-
-    const animate = () => {
-      const currentTime = Date.now();
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Easing function for smooth animation
-      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      const currentValue = startValue + (endValue - startValue) * easeOutCubic;
-
-      setDisplayValue(currentValue);
-
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(animate);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [value, displayValue]);
+export function Progress({
+  value = 0,
+  className = "",
+  isUploading = false,
+}: ProgressProps) {
+  // When uploading, always show 100% with pulsing animation
+  const displayValue = isUploading ? 100 : value;
 
   return (
     <div
       className={`w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner ${className}`}
     >
       <div
-        className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out relative shadow-sm"
+        className={`bg-primary h-2.5 rounded-full transition-all duration-300 ease-out relative shadow-sm ${
+          isUploading ? "animate-pulse" : ""
+        }`}
         style={{ width: `${displayValue}%` }}
       >
         <div className="absolute inset-0 rounded-full overflow-hidden">

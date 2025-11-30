@@ -30,7 +30,6 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [storagePath, setStoragePath] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -82,7 +81,6 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
 
     // Reset previous upload state when changing file
     setStoragePath("");
-    setUploadProgress(0);
     setIsUploading(false);
 
     // Revoke previous preview URL if it exists
@@ -116,23 +114,8 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       formData.imageType.toLowerCase() === "fundus" ? "fundus" : "oct";
 
     setIsUploading(true);
-    setUploadProgress(10);
-
-    // Simulate gradual progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 90) return prev;
-        return prev + Math.random() * 15;
-      });
-    }, 150);
 
     const { path, error } = await uploadEyeScan(file, imageType);
-
-    clearInterval(progressInterval);
-    setUploadProgress(100);
-
-    // Small delay to show 100% before hiding
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
     if (error) {
       const userFriendlyError = translateErrorMessage(
@@ -140,7 +123,6 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
       );
       setErrors((prev) => ({ ...prev, file: userFriendlyError }));
       setIsUploading(false);
-      setUploadProgress(0);
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
       setStoragePath("");
@@ -229,7 +211,6 @@ export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
     formData,
     selectedFile,
     errors,
-    uploadProgress,
     isUploading,
     storagePath,
     imagePreview,

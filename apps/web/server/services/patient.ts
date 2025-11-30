@@ -90,3 +90,13 @@ export const getPatientsByUserId = async (
     .where(eq(PatientsTable.doctorId, user.userId));
   return patients;
 };
+
+export const getPatientById = async (
+  patientId: string,
+): Promise<PatientDTO | null> => {
+  const [patient] = await db
+    .select()
+    .from(PatientsTable)
+    .where(eq(PatientsTable.id, patientId));
+  return patient || null;
+};
