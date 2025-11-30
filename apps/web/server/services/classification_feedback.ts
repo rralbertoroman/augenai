@@ -6,11 +6,16 @@ import { ClassificationFeedbackTable } from "../db/schemas";
 import {
   CreateClassificationFeedbackSchema,
   GetFeedbackByClassificationSchema,
+  GetFeedbackByIdSchema,
+  UpdateIsMainUserSchema,
   type CreateClassificationFeedbackInput,
   type GetFeedbackByClassificationInput,
+  type GetFeedbackByIdInput,
+  type UpdateIsMainUserInput,
   type ClassificationFeedbackDTO,
 } from "../zod-schemas/classification_feedback";
-import { getCurrentUser } from "../auth";
+import { getCurrentUser, verifyOwnership } from "../auth";
+
 
 export const createClassificationFeedback = async (
   token: string,
@@ -45,4 +50,45 @@ export const getFeedbackByClassification = async (
     .from(ClassificationFeedbackTable)
     .where(eq(ClassificationFeedbackTable.classificationId, classificationId));
   return feedback;
+};
+
+export const getFeedbackById = async (
+  data: GetFeedbackByIdInput,
+): Promise<ClassificationFeedbackDTO> => {
+  const { id } = GetFeedbackByIdSchema.parse(data);
+  
+  const [feedback] = await db
+    .select()
+    .from(ClassificationFeedbackTable)
+    .where(eq(ClassificationFeedbackTable.id, id));
+
+  if (!feedback) {
+    throw new Error("Classification feedback not found");
+  }
+
+  return feedback;
+};
+
+export const updateIsMainData = async (
+  token: string,
+  data: UpdateIsMainUserInput,
+): Promise<ClassificationFeedbackDTO> => {
+  const user = await getCurrentUser(token);
+  const { id, isMainData } = UpdateIsMainUserSchema.parse(data);
+
+  const existingFeedback = await getFeedbackById({ id });
+
+  verifyOwnership(user, existingFeedback.userProfileId);
+
+  const [updatedFeedback] = await db
+    .update(ClassificationFeedbackTable)
+    .set({ isMainData })
+    .where(eq(ClassificationFeedbackTable.id, id))
+    .returning();
+
+  if (!updatedFeedback) {
+    throw new Error("Error updating the classification feedback");
+  }
+
+  return updatedFeedback;
 };
