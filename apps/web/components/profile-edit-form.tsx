@@ -20,6 +20,7 @@ import {
   getUserProfileById,
   updateUserProfile,
 } from "@/server/services/user_profile";
+import { SupabaseError } from "@/lib/types/error-types";
 
 export function ProfileEditForm({
   className,
@@ -103,23 +104,26 @@ export function ProfileEditForm({
       setTimeout(() => {
         router.push("/");
       }, 1500);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Profile update error:", err);
       let errorMessage =
         "Ocurrió un error al actualizar el perfil. Por favor, inténtelo de nuevo.";
 
-      if (err && typeof err === "object") {
+      // Define type for error object to avoid 'any'
+      if (err && typeof err === "object" && "code" in err && "message" in err) {
+        const errorObj = err as SupabaseError;
+
         // Note: 'weak_password' error is not applicable for profile update,
         // but keeping it in case the service throws it for some reason
-        if (err.code === "weak_password") {
-          if (err.weak_password?.reasons?.includes("length")) {
+        if (errorObj.code === "weak_password") {
+          if (errorObj.weak_password?.reasons?.includes("length")) {
             errorMessage = "La contraseña debe tener al menos 6 caracteres.";
           } else {
             errorMessage =
               "La contraseña es demasiado débil. Por favor, use una contraseña más segura.";
           }
-        } else if (err.message) {
-          errorMessage = translateErrorMessage(err.message);
+        } else if (errorObj.message) {
+          errorMessage = translateErrorMessage(errorObj.message);
         }
       } else {
         errorMessage = translateErrorMessage(
