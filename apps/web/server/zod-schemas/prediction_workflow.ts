@@ -41,6 +41,7 @@ export const EnrichedClassificationSchema = ClassificationSchema.extend({
   disease_name: z.string(),
   stage_idx: z.number(),
   stage_content: z.string(),
+  patient_name: z.string(),
 });
 
 // Enriched detection with DB info
@@ -49,6 +50,7 @@ export const EnrichedDetectionSchema = z.object({
   confidence: z.number(),
   bbox: BBoxSchema,
   lesion_name: z.string(),
+  patient_name: z.string(),
 });
 
 // Individual prediction response

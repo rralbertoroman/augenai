@@ -40,7 +40,6 @@ export function EyeScanUpload({
     formData,
     selectedFile,
     errors,
-    uploadProgress,
     isUploading,
     storagePath,
     imagePreview,
@@ -90,7 +89,6 @@ export function EyeScanUpload({
               eyeSelection={formData.eyeSelection}
               selectedFile={selectedFile}
               isUploading={isUploading}
-              uploadProgress={uploadProgress}
               storagePath={storagePath}
               imagePreview={imagePreview}
               selectedDiseases={formData.diseases}
