@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { ClassificationFeedbackDTOSchema } from "./classification_feedback";
+import { DetectionFeedbackDTOSchema } from "./detection_feedback";
 
 export const PredictionWorkflowInputSchema = z.object({
   token: z.string().min(1),
@@ -10,47 +12,54 @@ export const PredictionWorkflowInputSchema = z.object({
   diseases: z.array(z.string().min(1)).min(1),
 });
 
-// Base classification from AI service
-export const ClassificationSchema = z.object({
-  class_id: z.number(),
-  confidence: z.number(),
-});
-
-// Base detection from AI service
-export const DetectionSchema = z.object({
-  class_id: z.number(),
-  confidence: z.number(),
-  box: z.array(z.number()).length(4),
-});
-
-export const BBoxSchema = z.object({
-  x_left: z.number(),
-  y_top: z.number(),
-  width: z.number(),
-  height: z.number(),
-});
-
-// Intermediate detection structure after processing AI service response
-export const ProcessedDetectionSchema = ClassificationSchema.extend(
-  BBoxSchema.shape,
-);
-
 // Enriched classification with DB info
-export const EnrichedClassificationSchema = ClassificationSchema.extend({
+export const EnrichedClassificationSchema = z.object({
+  id: z.string().optional(),
+  class_id: z.number(),
+  confidence: z.number(),
   disease_id: z.string(),
   disease_name: z.string(),
   stage_idx: z.number(),
   stage_content: z.string(),
-  patient_name: z.string(),
+  patient_name: z.string().optional(),
+  patient_id: z.string().optional(),
+  patient_birth_date: z.string().optional(),
+  model_id: z.string().optional(),
+  request_id: z.string().optional(),
+  user_id: z.string().optional(),
+  bucket_name: z.string().optional(),
+  storage_path: z.string().optional(),
+  createdAt: z.date().optional(),
+  feedbacks: z.array(ClassificationFeedbackDTOSchema).optional(),
 });
 
 // Enriched detection with DB info
 export const EnrichedDetectionSchema = z.object({
+  id: z.string().optional(),
   class_id: z.number(),
   confidence: z.number(),
-  bbox: BBoxSchema,
+  bbox: z.object({
+    x_left: z.number(),
+    y_top: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
   lesion_name: z.string(),
-  patient_name: z.string(),
+  patient_name: z.string().optional(),
+  patient_id: z.string().optional(),
+  patient_birth_date: z.string().optional(),
+  model_id: z.string().optional(),
+  request_id: z.string().optional(),
+  user_id: z.string().optional(),
+  bucket_name: z.string().optional(),
+  storage_path: z.string().optional(),
+  createdAt: z.date().optional(),
+  feedbacks: z.array(DetectionFeedbackDTOSchema).optional(),
+});
+
+export const EnrichedPredictionDTOSchema = z.object({
+  classifications: z.array(EnrichedClassificationSchema).default([]),
+  detections: z.array(EnrichedDetectionSchema).default([]),
 });
 
 // Individual prediction response
@@ -74,29 +83,12 @@ export const MultiplePredictionsResponseSchema = z.object({
   models_used: z.array(z.string()),
 });
 
-// Raw AI service response
-export const AIServicePredictionResponseSchema = z.object({
-  status: z.enum(["success", "error"]),
-  error: z.string().optional(),
-  result: z.object({
-    predictions: z
-      .array(z.union([ClassificationSchema, DetectionSchema]))
-      .optional(),
-    metadata: z.object({
-      inference_time_ms: z.number(),
-      model_version: z.string(),
-    }),
-  }),
-});
-
 // INPUT TYPES
 export type PredictionWorkflowInput = z.infer<
   typeof PredictionWorkflowInputSchema
 >;
 
 // OUTPUT TYPES
-export type Classification = z.output<typeof ClassificationSchema>;
-export type Detection = z.output<typeof DetectionSchema>;
 export type EnrichedClassification = z.output<
   typeof EnrichedClassificationSchema
 >;
@@ -105,7 +97,6 @@ export type PredictionResponse = z.output<typeof PredictionResponseSchema>;
 export type MultiplePredictionsResponse = z.output<
   typeof MultiplePredictionsResponseSchema
 >;
-export type AIServicePredictionResponse = z.output<
-  typeof AIServicePredictionResponseSchema
->;
-export type ProcessedDetection = z.output<typeof ProcessedDetectionSchema>;
+export type EnrichedPredictionDTO = z.output<
+  typeof EnrichedPredictionDTOSchema
+>;export type EnrichedTask = EnrichedClassification | EnrichedDetection;
