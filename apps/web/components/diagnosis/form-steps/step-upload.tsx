@@ -8,7 +8,6 @@ interface StepUploadProps {
   eyeSelection: "left" | "right";
   selectedFile: File | null;
   isUploading: boolean;
-  uploadProgress: number;
   storagePath: string;
   imagePreview: string;
   selectedDiseases: string[];
@@ -24,7 +23,6 @@ export function StepUpload({
   eyeSelection,
   selectedFile,
   isUploading,
-  uploadProgress,
   storagePath,
   imagePreview,
   selectedDiseases,
@@ -84,7 +82,7 @@ export function StepUpload({
         />
         {isUploading && (
           <div className="space-y-1">
-            <Progress value={uploadProgress} />
+            <Progress isUploading={isUploading} />
             <p className="text-xs text-[#666666]">Subiendo...</p>
           </div>
         )}
