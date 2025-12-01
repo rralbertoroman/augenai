@@ -8,7 +8,13 @@ import { getPatientsByUserId } from "@/server/services/patient";
 import { Loader2, Grid, List } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import SupabaseImage from "../ui/supabase-image";
+import { GridCard } from "./start-pane/grid-card";
+import { ListRow } from "./start-pane/list-row";
+import type {
+  Prediction,
+  PredictionGroup,
+  PatientInfo,
+} from "./start-pane/types";
 
 // Formatting functions using native Date methods
 function formatDate(date: Date) {
@@ -60,48 +66,11 @@ function isToday(date: Date) {
   );
 }
 
-// Group predictions by request and patient
-type Prediction = {
-  id: string;
-  request_id: string;
-  patient_id: string;
-  patient_name: string;
-  disease_name: string;
-  stage_content: string;
-  confidence: number;
-  createdAt: string | Date;
-  bucket_name: string;
-  storage_path: string;
-  patient_age: number;
-  feedback_status: string;
-  feedbacks?: Array<{ isMainData: boolean }>;
-  isMainData: boolean;
-  class_id: number;
-  model_id: string;
-};
-
-type PredictionGroup = {
-  requestId: string;
-  patientId: string;
-  requestDate: Date;
-  patientName: string;
-  predictions: Prediction[];
-  bucket_name: string;
-  storage_path: string;
-};
-
-type PatientInfo = {
-  id: string;
-  name: string;
-  age: number;
-  // Add other patient fields as needed
-};
-
 export default function Start() {
   const { predictions, isLoading, error } = useDashboard();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [patients, setPatients] = useState<Record<string, PatientInfo>>({});
-  const { accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
 
   // Fetch patient information
   useEffect(() => {
@@ -118,7 +87,7 @@ export default function Start() {
           {},
         );
 
-        console.log("Fetched patients:", patientMap);
+        console.log(`Fetched patients: ${Object.keys(patientMap).length}`);
         setPatients(patientMap);
       } catch (error) {
         console.error("Error fetching patients:", error);
@@ -134,11 +103,14 @@ export default function Start() {
   const todayPredictions = predictions
     .filter((prediction) => {
       const predDate = new Date(prediction.createdAt);
-      return isToday(predDate);
+
+      if (!user) return false;
+
+      const userId = prediction.user_id;
+      return isToday(predDate) && userId === user.id;
     })
     .map((prediction) => {
       const patient = patients[prediction.patient_id || ""];
-      console.log(patients, patient);
       const patientName = patient?.name || `Paciente`;
       const patientAge = patient?.age || 0;
 
@@ -182,6 +154,7 @@ export default function Start() {
           disease_name: pred.disease_name,
           stage_content: pred.stage_content,
           confidence: pred.confidence,
+          patient_birthdate: pred.patient_birth_date!,
           createdAt:
             typeof pred.createdAt === "string"
               ? new Date(pred.createdAt)
@@ -193,6 +166,11 @@ export default function Start() {
           feedbacks: pred.feedbacks || [],
           class_id: pred.class_id,
           model_id: pred.model_id,
+          bbox: {
+            ...pred.bbox,
+            label: pred.lesion_name,
+          },
+          type: pred.type,
           // Handle isMainData safely
           isMainData: "isMainData" in pred ? Boolean(pred.isMainData) : false,
         };
@@ -250,121 +228,19 @@ export default function Start() {
     );
   }
 
-  // Render a prediction card for grid view (3x3 layout)
-  const renderGridCard = (group: PredictionGroup) => {
-    const mainPrediction = group.predictions[0];
-    const feedbackVariant = getFeedbackVariant(mainPrediction.feedback_status);
-
-    return (
-      <div
-        key={`${group.requestId}-${group.patientId}`}
-        className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
-      >
-        <div className="flex flex-col relative bg-muted w-fit h-fit">
-          <SupabaseImage
-            bucketName={group.bucket_name}
-            path={group.storage_path}
-            width={200}
-            height={200}
-            alt={`Imagen de ${group.patientName}`}
-          />
-          <div className="absolute bottom-2 right-2">
-            <Badge variant="secondary">
-              {Math.round(mainPrediction.confidence * 100)}%
-            </Badge>
-          </div>
-        </div>
-        <div className="p-4 flex flex-col grow">
-          <div className="grow">
-            <div className="flex justify-between items-start gap-2">
-              <Badge variant={feedbackVariant.variant} className="shrink-0">
-                {feedbackVariant.text}
-              </Badge>
-            </div>
-
-            <div className="mt-3">
-              <h4 className="text-sm font-medium text-foreground/90 truncate">
-                {mainPrediction.disease_name} - {mainPrediction.stage_content}
-              </h4>
-            </div>
-          </div>
-          <div className="mt-3 pt-2 border-t flex justify-between items-center text-xs">
-            <span className="text-muted-foreground">
-              {formatTime(group.requestDate)}
-            </span>
-            <span className="text-muted-foreground">
-              {formatDate(group.requestDate)}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Render a list row for list view
-  const renderListRow = (group: PredictionGroup) => {
-    const mainPrediction = group.predictions[0];
-    const feedbackVariant = getFeedbackVariant(mainPrediction.feedback_status);
-
-    return (
-      <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-colors">
-        <div className="flex">
-          <div className="bg-muted w-fit h-fit">
-            <SupabaseImage
-              bucketName={group.bucket_name}
-              path={group.storage_path}
-              width={200}
-              height={200}
-              alt={`Imagen de ${group.patientName}`}
-            />
-          </div>
-          <div className="p-4 grow">
-            <div className="flex justify-between items-start gap-2">
-              <div className="min-w-0">
-                <h3 className="font-medium">{group.patientName}</h3>
-                <p className="text-xs text-muted-foreground">
-                  ID: {group.requestId.split("-")[0]} •{" "}
-                  {mainPrediction.patient_age} años
-                </p>
-              </div>
-              <Badge variant={feedbackVariant.variant} className="shrink-0">
-                {feedbackVariant.text}
-              </Badge>
-            </div>
-            <div className="mt-2">
-              <h4 className="text-sm font-medium text-foreground/90">
-                {mainPrediction.disease_name}
-              </h4>
-              <div className="mt-1">
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
-                  {mainPrediction.stage_content}
-                </span>
-              </div>
-            </div>
-            <div className="mt-2 pt-2 border-t flex justify-between items-center text-xs">
-              <span className="text-muted-foreground">
-                {formatTime(group.requestDate)}
-              </span>
-              <span className="text-muted-foreground">
-                {formatDate(group.requestDate)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   // Render a request group (single item per request+patient)
   const renderRequestGroup = (group: PredictionGroup) => {
-    console.log("PredictionGroup:", group);
     return (
       <Link
         key={`${group.requestId}-${group.patientId}`}
         href={`/diagnosis/${group.requestId}`}
         className="block hover:opacity-90 transition-opacity"
       >
-        {viewMode === "grid" ? renderGridCard(group) : renderListRow(group)}
+        {viewMode === "grid" ? (
+          <GridCard group={group} />
+        ) : (
+          <ListRow group={group} />
+        )}
       </Link>
     );
   };
@@ -376,7 +252,7 @@ export default function Start() {
         <div className="flex items-center space-x-4">
           <span className="text-sm text-muted-foreground">
             {predictionGroups.length}{" "}
-            {predictionGroups.length === 1 ? "paciente" : "pacientes"}
+            {predictionGroups.length === 1 ? "predicción" : "predicciones"}
           </span>
           <div className="flex space-x-1 border rounded-lg p-1 bg-muted">
             <Button
