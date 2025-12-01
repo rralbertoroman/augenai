@@ -22,6 +22,21 @@ export function translateErrorMessage(error: string | Error): string {
   if (lowerMessage.includes("weak password")) {
     return "La contraseña es muy débil. Por favor, elige una contraseña más segura";
   }
+  if (lowerMessage.includes("length")) {
+    return "La contraseña debe tener al menos 6 caracteres.";
+  }
+  if (lowerMessage.includes("characters")) {
+    return "La contraseña debe contener al menos un carácter de cada: minúsculas, mayúsculas y números.";
+  }
+  if (lowerMessage.includes("same password")) {
+    return "La nueva contraseña debe ser diferente de la contraseña actual.";
+  }
+  if (lowerMessage.includes("contraseñas no coinciden")) {
+    return "Las contraseñas no coinciden";
+  }
+  if (lowerMessage.includes("por favor, completa ambos campos de contraseña")) {
+    return "Por favor, completa ambos campos de contraseña.";
+  }
   if (lowerMessage.includes("email rate limit exceeded")) {
     return "Has intentado demasiadas veces. Por favor, intenta más tarde";
   }
