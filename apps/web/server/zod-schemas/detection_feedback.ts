@@ -49,9 +49,7 @@ export type GetFeedbackByDetectionInput = z.input<
   typeof GetFeedbackByDetectionSchema
 >;
 export type GetFeedbackByIdInput = z.input<typeof GetFeedbackByIdSchema>;
-export type UpdateIsMainUserInput = z.input<
-  typeof UpdateIsMainUserSchema
->;
+export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 
 // OUTPUT TYPES
 export type DetectionFeedbackDTO = z.output<typeof DetectionFeedbackDTOSchema>;
