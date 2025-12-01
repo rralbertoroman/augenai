@@ -8,6 +8,7 @@ import * as classLesionService from "@/server/services/prediction_class_lesion";
 import * as classificationService from "@/server/services/classification";
 import * as detectionService from "@/server/services/detection";
 import * as predictionSharingService from "@/server/services/prediction_sharing";
+import * as patientService from "@/server/services/patient";
 import { supabaseAdmin } from "@/server/supabase/client";
 import { PredictionWorkflowInput } from "@/server/zod-schemas/prediction_workflow";
 import { OptimalModel } from "@/server/zod-schemas/model";
@@ -25,6 +26,7 @@ vi.mock("@/server/services/prediction_class_lesion");
 vi.mock("@/server/services/classification");
 vi.mock("@/server/services/detection");
 vi.mock("@/server/services/prediction_sharing");
+vi.mock("@/server/services/patient");
 vi.mock("@/server/supabase/client", () => ({
   supabaseAdmin: {
     storage: {
@@ -88,6 +90,17 @@ describe("Prediction Workflow", () => {
       updatedAt: new Date(),
     } as PredictionDTO);
 
+    vi.mocked(patientService.getPatientById).mockResolvedValue({
+      id: "patient-123",
+      name: "Test Patient",
+      dateOfBirth: "2000-01-01",
+      gender: "male",
+      clinicalConditions: [],
+      doctorId: "doctor-123",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
     global.fetch = vi.fn();
   });
 
@@ -121,9 +134,10 @@ describe("Prediction Workflow", () => {
     const result = await processPredictionRequest(MOCK_INPUT);
 
     expect(result.predictions).toHaveLength(1);
-    expect(result.predictions[0].status).toBe("success");
-    expect(result.predictions[0].result.classifications).toBeDefined();
-    expect(result.predictions[0].result.classifications?.[0].disease_name).toBe(
+    expect(result.predictions[0].prediction_id).toBe("pred-123");
+    expect(result.predictions[0].model_id).toBe(MOCK_MODEL.id);
+    expect(result.predictions[0].classifications).toHaveLength(1);
+    expect(result.predictions[0].classifications[0].disease_name).toBe(
       "Melanoma",
     );
 
@@ -178,11 +192,9 @@ describe("Prediction Workflow", () => {
     const result = await processPredictionRequest(detectionInput);
 
     expect(result.predictions).toHaveLength(1);
-    expect(result.predictions[0].result.detections).toBeDefined();
-    expect(result.predictions[0].result.detections?.[0].lesion_name).toBe(
-      "Nevus",
-    );
-    expect(result.predictions[0].result.detections?.[0].bbox).toEqual({
+    expect(result.predictions[0].detections).toHaveLength(1);
+    expect(result.predictions[0].detections[0].lesion_name).toBe("Nevus");
+    expect(result.predictions[0].detections[0].bbox).toEqual({
       x_left: 10,
       y_top: 10,
       width: 50,

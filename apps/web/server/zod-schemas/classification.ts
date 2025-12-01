@@ -6,7 +6,7 @@ export const CreateClassificationSchema = z.object({
   confidence: z.number(),
 });
 
-export const ClassificationSchema = CreateClassificationSchema.extend({
+export const ClassificationDTOSchema = CreateClassificationSchema.extend({
   id: z.uuid(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -18,4 +18,4 @@ export type CreateClassificationInput = z.infer<
 >;
 
 // OUTPUT TYPES
-export type ClassificationDTO = z.infer<typeof ClassificationSchema>;
+export type ClassificationDTO = z.infer<typeof ClassificationDTOSchema>;
