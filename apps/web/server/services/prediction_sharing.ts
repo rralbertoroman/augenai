@@ -25,6 +25,7 @@ import {
   type EnrichedPredictionDTO,
   type EnrichedClassification,
   type EnrichedDetection,
+  type EnrichedPredictionRequestDTO,
 } from "../zod-schemas/prediction_workflow";
 
 export const createPredictionSharing = async (
@@ -181,7 +182,7 @@ export const updateHasFeedback = async (
 export const getSharedPredictionRequestsWithPredictionsByUserId = async (
   token: string,
   data: GetSharedPredictionRequestsByUserInput,
-): Promise<EnrichedPredictionDTO[]> => {
+): Promise<EnrichedPredictionRequestDTO[]> => {
   const user = await getCurrentUser(token);
   const { userId } = GetSharedPredictionRequestsByUserSchema.parse(data);
 
@@ -221,13 +222,15 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
     ],
   });
 
-  const results: EnrichedPredictionDTO[] = [];
+  const results: EnrichedPredictionRequestDTO[] = [];
 
   for (const request of predictionRequests) {
-    const classifications: EnrichedClassification[] = [];
-    const detections: EnrichedDetection[] = [];
+    const enrichedPredictions: EnrichedPredictionDTO[] = [];
 
     for (const prediction of request.predictions) {
+      const classifications: EnrichedClassification[] = [];
+      const detections: EnrichedDetection[] = [];
+
       // Process Classifications
       if (
         prediction.classifications &&
@@ -248,18 +251,11 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
           classifications.push({
             id: classification.id,
             class_id: classification.classId,
-            model_id: prediction.modelId,
-            user_id: userId,
             confidence: classification.confidence,
             disease_id: classInfo.diseaseId,
             disease_name: classInfo.diseaseName,
             stage_idx: classInfo.stageIdx,
             stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-            patient_id: request.patientId,
-            request_id: request.id,
-            createdAt: classification.createdAt,
-            bucket_name: request.bucketName,
-            storage_path: request.storagePath,
           });
         }
       }
@@ -281,27 +277,43 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
           detections.push({
             id: detection.id,
             class_id: detection.classId,
-            model_id: prediction.modelId,
-            user_id: userId,
             confidence: detection.confidence,
             lesion_name: lesionInfo.lesionName,
-            patient_id: request.patientId,
-            request_id: request.id,
-            createdAt: detection.createdAt,
             bbox: {
               x_left: detection.xLeft,
               y_top: detection.yTop,
               width: detection.width,
               height: detection.height,
             },
-            bucket_name: request.bucketName,
-            storage_path: request.storagePath,
           });
         }
       }
+
+      enrichedPredictions.push({
+        prediction_id: prediction.id,
+        model_id: prediction.modelId,
+        created_at: prediction.createdAt,
+        classifications,
+        detections,
+      });
     }
 
-    results.push({ classifications, detections });
+    results.push({
+      id: request.id,
+      user_id: request.userId,
+      patient_id: request.patientId,
+      task: request.task,
+      image_type: request.imageType,
+      diseases: request.diseases,
+      storage_path: request.storagePath,
+      bucket_name: request.bucketName,
+      models_used: request.modelsUsed,
+      created_at: request.createdAt,
+      updated_at: request.updatedAt,
+      patient_name: request.patient.name,
+      patient_birth_date: request.patient.dateOfBirth,
+      predictions: enrichedPredictions,
+    });
   }
 
   return results;

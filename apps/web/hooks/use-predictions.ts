@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/services/prediction_request";
+import { getAllClassificationsWithExtrasByUserId } from "@/server/services/classification";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
-import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
+import type { EnrichedClassificationWithExtras } from "@/server/zod-schemas";
 
-export type Prediction = EnrichedPredictionDTO;
+// Use the Zod type directly
+export type Prediction = EnrichedClassificationWithExtras;
 
 // Confidence badge constants
 const CONFIDENCE_THRESHOLDS = {
@@ -75,10 +76,7 @@ export function usePredictions() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getAllPredictionRequestsWithPredictionsByUserId(
-        token,
-        userId,
-      );
+      const data = await getAllClassificationsWithExtrasByUserId(token, userId);
       setPredictions(data);
     } catch (err) {
       const errorMessage = translateErrorMessage(
@@ -93,8 +91,10 @@ export function usePredictions() {
 
   // Filtering function for predictions
   function getFilteredPredictions(query: string): Prediction[] {
-    return predictions.filter((prediction) =>
-      prediction.id.toLowerCase().includes(query.toLowerCase()),
+    return predictions.filter(
+      (prediction) =>
+        prediction.id?.toLowerCase().includes(query.toLowerCase()) ||
+        prediction.disease_name.toLowerCase().includes(query.toLowerCase()),
     );
   }
 
