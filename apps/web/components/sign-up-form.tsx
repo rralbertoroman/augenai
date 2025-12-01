@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Clipboard } from "@/components/common/clipboard";
 import {
   Card,
   CardContent,
@@ -76,11 +77,12 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Registrarse</CardTitle>
-          <CardDescription>Crea una nueva cuenta</CardDescription>
-        </CardHeader>
+      <Clipboard>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Registrarse</CardTitle>
+            <CardDescription>Crea una nueva cuenta</CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
@@ -143,7 +145,8 @@ export function SignUpForm({
             </div>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </Clipboard>
     </div>
   );
 }

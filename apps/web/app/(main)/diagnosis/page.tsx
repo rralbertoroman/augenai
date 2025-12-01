@@ -2,7 +2,7 @@
 
 import { usePredictionRequests } from "@/hooks/use-prediction-requests";
 import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
-import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import { SkeletonLoader } from "@/components/common/skeleton-loader";
 import { useState } from "react";
 import { SharePredictionModal } from "@/components/predictions/share-prediction-modal";
 import Link from "next/link";
