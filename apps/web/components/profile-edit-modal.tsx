@@ -128,13 +128,20 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
     } catch (err: unknown) {
       console.error("Profile update error:", err);
 
-
       // Helper function to safely get reasons array
       const getWeakPasswordReasons = (error: unknown): string[] | null => {
-        if (error && typeof error === "object" &&
-            "code" in error && error.code === "weak_password" &&
-            "weak_password" in error && error.weak_password && typeof error.weak_password === "object" &&
-            "reasons" in error.weak_password && error.weak_password.reasons && Array.isArray(error.weak_password.reasons)) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          error.code === "weak_password" &&
+          "weak_password" in error &&
+          error.weak_password &&
+          typeof error.weak_password === "object" &&
+          "reasons" in error.weak_password &&
+          error.weak_password.reasons &&
+          Array.isArray(error.weak_password.reasons)
+        ) {
           return (error as SupabaseWeakPasswordError).weak_password!.reasons!;
         }
         return null;
@@ -150,37 +157,60 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
         } else {
           setError(translateErrorMessage("weak password"));
         }
-      } else if (err instanceof Error && (err as { constructor: { name: string } }).constructor.name === "AuthWeakPasswordError") {
+      } else if (
+        err instanceof Error &&
+        (err as { constructor: { name: string } }).constructor.name ===
+          "AuthWeakPasswordError"
+      ) {
         // Handle AuthWeakPasswordError specifically
         const message = err.message.toLowerCase();
 
         // Determine the appropriate error message based on the content of the message
         let errorMessageKey = "weak password"; // default
 
-        if ((message.includes("length") || message.includes("at least 6")) && message.includes("characters")) {
+        if (
+          (message.includes("length") || message.includes("at least 6")) &&
+          message.includes("characters")
+        ) {
           // Specific case for "at least 6 characters" - treat as length issue
           errorMessageKey = "length";
-        } else if ((message.includes("characters") || message.includes("character")) && message.includes("each")) {
+        } else if (
+          (message.includes("characters") || message.includes("character")) &&
+          message.includes("each")
+        ) {
           // Specific case for character type requirements (both plural and singular)
           errorMessageKey = "characters";
-        } else if (message.includes("length") || message.includes("6 characters") || message.includes("at least 6")) {
+        } else if (
+          message.includes("length") ||
+          message.includes("6 characters") ||
+          message.includes("at least 6")
+        ) {
           errorMessageKey = "length";
-        } else if (message.includes("characters") || message.includes("character")) {
+        } else if (
+          message.includes("characters") ||
+          message.includes("character")
+        ) {
           errorMessageKey = "characters";
         }
 
         setError(translateErrorMessage(errorMessageKey));
       } else {
         // For other errors, use the standard translation
-        let errorMessage = "Ocurrió un error al actualizar el perfil. Por favor, inténtelo de nuevo.";
+        let errorMessage =
+          "Ocurrió un error al actualizar el perfil. Por favor, inténtelo de nuevo.";
 
-        if (err && typeof err === "object" && "message" in err && typeof err.message === "string") {
+        if (
+          err &&
+          typeof err === "object" &&
+          "message" in err &&
+          typeof err.message === "string"
+        ) {
           errorMessage = translateErrorMessage(err.message);
         } else if (err instanceof Error) {
           errorMessage = translateErrorMessage(err.message);
         } else {
           errorMessage = translateErrorMessage(
-            err as string || "Error desconocido",
+            (err as string) || "Error desconocido",
           );
         }
 

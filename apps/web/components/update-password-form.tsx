@@ -77,13 +77,20 @@ export function UpdatePasswordForm({
     } catch (error: unknown) {
       console.error("Password update error:", error);
 
-
       // Helper function to safely get reasons array
       const getWeakPasswordReasons = (error: unknown): string[] | null => {
-        if (error && typeof error === "object" &&
-            "code" in error && error.code === "weak_password" &&
-            "weak_password" in error && error.weak_password && typeof error.weak_password === "object" &&
-            "reasons" in error.weak_password && error.weak_password.reasons && Array.isArray(error.weak_password.reasons)) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          error.code === "weak_password" &&
+          "weak_password" in error &&
+          error.weak_password &&
+          typeof error.weak_password === "object" &&
+          "reasons" in error.weak_password &&
+          error.weak_password.reasons &&
+          Array.isArray(error.weak_password.reasons)
+        ) {
           return (error as SupabaseWeakPasswordError).weak_password!.reasons!;
         }
         return null;
@@ -92,7 +99,10 @@ export function UpdatePasswordForm({
       // Check if this is a Supabase weak_password error with reasons
       const reasons = getWeakPasswordReasons(error);
       if (reasons) {
-        console.log("Handling Supabase weak_password error with reasons:", error);
+        console.log(
+          "Handling Supabase weak_password error with reasons:",
+          error,
+        );
         console.log("Supabase reasons:", reasons);
 
         if (reasons.includes("characters")) {
@@ -105,37 +115,60 @@ export function UpdatePasswordForm({
           console.log("Setting generic weak password error message");
           setError(translateErrorMessage("weak password"));
         }
-      } else if (error instanceof Error && (error as { constructor: { name: string } }).constructor.name === "AuthWeakPasswordError") {
+      } else if (
+        error instanceof Error &&
+        (error as { constructor: { name: string } }).constructor.name ===
+          "AuthWeakPasswordError"
+      ) {
         // Handle AuthWeakPasswordError specifically
         const message = error.message.toLowerCase();
 
         // Determine the appropriate error message based on the content of the message
         let errorMessageKey = "weak password"; // default
 
-        if ((message.includes("length") || message.includes("at least 6")) && message.includes("characters")) {
+        if (
+          (message.includes("length") || message.includes("at least 6")) &&
+          message.includes("characters")
+        ) {
           // Specific case for "at least 6 characters" - treat as length issue
           errorMessageKey = "length";
-        } else if ((message.includes("characters") || message.includes("character")) && message.includes("each")) {
+        } else if (
+          (message.includes("characters") || message.includes("character")) &&
+          message.includes("each")
+        ) {
           // Specific case for character type requirements (both plural and singular)
           errorMessageKey = "characters";
-        } else if (message.includes("length") || message.includes("6 characters") || message.includes("at least 6")) {
+        } else if (
+          message.includes("length") ||
+          message.includes("6 characters") ||
+          message.includes("at least 6")
+        ) {
           errorMessageKey = "length";
-        } else if (message.includes("characters") || message.includes("character")) {
+        } else if (
+          message.includes("characters") ||
+          message.includes("character")
+        ) {
           errorMessageKey = "characters";
         }
 
         setError(translateErrorMessage(errorMessageKey));
       } else {
         // For other errors, use the standard translation
-        let errorMessage = "Ocurrió un error al actualizar la contraseña. Por favor, inténtelo de nuevo.";
+        let errorMessage =
+          "Ocurrió un error al actualizar la contraseña. Por favor, inténtelo de nuevo.";
 
-        if (error && typeof error === "object" && "message" in error && typeof error.message === "string") {
+        if (
+          error &&
+          typeof error === "object" &&
+          "message" in error &&
+          typeof error.message === "string"
+        ) {
           errorMessage = translateErrorMessage(error.message);
         } else if (error instanceof Error) {
           errorMessage = translateErrorMessage(error.message);
         } else {
           errorMessage = translateErrorMessage(
-            error as string || "Error desconocido",
+            (error as string) || "Error desconocido",
           );
         }
 
@@ -168,7 +201,9 @@ export function UpdatePasswordForm({
                   value={password}
                   onChange={handlePasswordChange}
                 />
-                {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
+                {passwordError && (
+                  <p className="text-sm text-red-500">{passwordError}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="confirm-password">Confirmar contraseña</Label>

@@ -52,7 +52,10 @@ export function UserMenu() {
 
   return (
     <>
-      <div className="relative" onClick={isOpen ? handleWrapperClick : undefined}>
+      <div
+        className="relative"
+        onClick={isOpen ? handleWrapperClick : undefined}
+      >
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
             <span className="font-medium text-sm">{displayName}</span>
