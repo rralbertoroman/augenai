@@ -63,17 +63,15 @@ export function GridCard({ group }: GridCardProps) {
       key={`${group.requestId}-${group.patientId}`}
       className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-row hover:shadow-md transition-shadow"
     >
-      {group.bucket_name && group.storage_path && (
-        <div className="flex flex-col bg-muted w-fit h-10">
-          <SupabaseImage
-            bucketName={group.bucket_name}
-            path={group.storage_path}
-            width={200}
-            height={200}
-            alt={`Imagen de ${group.patientName}`}
-          />
-        </div>
-      )}
+      <div className="flex flex-col bg-muted w-fit h-10">
+        <SupabaseImage
+          bucketName={group.bucket_name}
+          path={group.storage_path}
+          width={200}
+          height={200}
+          alt={`Imagen de ${group.patientName}`}
+        />
+      </div>
       <div className="p-4 flex flex-col grow w-1/2">
         <div className="grow">
           <div className="flex justify-between items-start gap-2">
@@ -92,15 +90,25 @@ export function GridCard({ group }: GridCardProps) {
               </h3>
             </div>
             <h4 className="text-sm truncate">
-              <div className="flex flex-col">
-                <div>{mainPrediction.disease_name}</div>
-                <div className="flex flex-row justify-between">
-                  {mainPrediction.stage_content}
-                  <Badge variant="secondary" className="h-fit">
-                    {Math.round(mainPrediction.confidence * 100)}% confianza
+              {mainPrediction.type == "classification" ? (
+                <div className="flex flex-col">
+                  <div>{mainPrediction.disease_name}</div>
+
+                  <div className="flex flex-row justify-between">
+                    {mainPrediction.stage_content}
+                    <Badge variant="secondary" className="h-fit">
+                      {Math.round(mainPrediction.confidence * 100)}% confianza
+                    </Badge>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-row justify-between ">
+                  {group.predictions.length} lesiones detectadas
+                  <Badge variant="secondary">
+                    {Math.round(averageConfidence * 100)}% confianza promedio
                   </Badge>
                 </div>
-              </div>
+              )}
             </h4>
           </div>
         </div>

@@ -16,6 +16,7 @@ import {
 } from "../zod-schemas/detection_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
 
+
 export const createDetectionFeedback = async (
   token: string,
   data: CreateDetectionFeedbackInput,
@@ -55,7 +56,7 @@ export const getFeedbackById = async (
   data: GetFeedbackByIdInput,
 ): Promise<DetectionFeedbackDTO> => {
   const { id } = GetFeedbackByIdSchema.parse(data);
-
+  
   const [feedback] = await db
     .select()
     .from(DetectionFeedbackTable)

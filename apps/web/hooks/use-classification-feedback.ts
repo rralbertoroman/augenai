@@ -3,7 +3,7 @@ import { createClassificationFeedback } from "@/server/services/classification_f
 import { getAllDiseases } from "@/server/services/disease";
 import { getClassIdByStageDiseaseAndModel } from "@/server/services/prediction_class_disease";
 import { useAuth } from "@/contexts/auth-context";
-import type { EnrichedClassificationWithExtras } from "@/server/zod-schemas";
+import { EnrichedPredictionDTO } from "@/server/zod-schemas";
 
 interface FeedbackFormData {
   diagnosisId: string;
@@ -39,12 +39,10 @@ export function useClassificationFeedback() {
     }
   }, [accessToken]);
 
-  const handleOpenFeedback = (
-    allPredictions: EnrichedClassificationWithExtras[],
-  ) => {
+  const handleOpenFeedback = (allPredictions: EnrichedPredictionDTO[]) => {
     setPredictions(
       allPredictions.map((pred) => ({
-        id: pred.id || pred.prediction_id || "",
+        id: pred.id,
         disease_id: pred.disease_id ?? "",
         disease_name: pred.disease_name ?? "",
         confidence: pred.confidence,
@@ -54,9 +52,8 @@ export function useClassificationFeedback() {
     );
     const initialForms: Record<string, FeedbackFormData> = {};
     allPredictions.forEach((pred) => {
-      const id = pred.id || pred.prediction_id || "";
-      initialForms[id] = {
-        diagnosisId: id,
+      initialForms[pred.id] = {
+        diagnosisId: pred.id,
         stageIdx: pred.stage_idx ?? 0,
       };
     });

@@ -9,36 +9,36 @@ import {
   type CreatePredictionRequestInput,
   type GetPredictionRequestByIdInput,
   type PredictionRequestDTO,
+  type PredictionWithTasks,
 } from "../zod-schemas/prediction_request";
 import {
   type EnrichedPredictionDTO,
-  type EnrichedPredictionRequestDTO,
   type EnrichedClassification,
   type EnrichedDetection,
-  type PredictionRequestWithRelations,
 } from "../zod-schemas/prediction_workflow";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import { PatientDTO } from "../zod-schemas";
 
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-/**
- * Internal Helper: Processes raw DB predictions into the enriched DTO format.
- * Maps disease/lesion IDs to names and structures the hierarchy (Request -> Predictions -> Classifications/Detections).
- */
-const buildEnrichedPredictionRequest = async (
-  request: PredictionRequestWithRelations,
+// Helper function to process predictions in parallel
+const processPredictionsInParallel = async (
+  predictions: PredictionWithTasks[],
+  requestContext: {
+    patientId: string;
+    patientBirthDate?: string;
+    requestId: string;
+    bucketName: string;
+    storagePath: string;
+    userId: string;
+  },
   includeFeedbacks: boolean = false,
-): Promise<EnrichedPredictionRequestDTO> => {
-  const enrichedPredictions: EnrichedPredictionDTO[] = [];
+): Promise<EnrichedPredictionDTO> => {
+  const classifications: EnrichedClassification[] = [];
+  const detections: EnrichedDetection[] = [];
 
-  for (const prediction of request.predictions) {
-    const { modelId, id: predictionId, createdAt } = prediction;
-    const classifications: EnrichedClassification[] = [];
-    const detections: EnrichedDetection[] = [];
+  for (const prediction of predictions) {
+    const { modelId } = prediction;
 
     // Process Classifications
     if (
@@ -60,11 +60,19 @@ const buildEnrichedPredictionRequest = async (
         classifications.push({
           id: classification.id,
           class_id: classification.classId,
+          model_id: modelId,
           confidence: classification.confidence,
           disease_id: classInfo.diseaseId,
           disease_name: classInfo.diseaseName,
           stage_idx: classInfo.stageIdx,
           stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          patient_id: requestContext.patientId,
+          patient_birth_date: requestContext.patientBirthDate,
+          request_id: requestContext.requestId,
+          user_id: requestContext.userId,
+          createdAt: classification.createdAt,
+          bucket_name: requestContext.bucketName,
+          storage_path: requestContext.storagePath,
           feedbacks:
             includeFeedbacks && classification.feedbacks
               ? classification.feedbacks.map((f) => ({
@@ -100,14 +108,22 @@ const buildEnrichedPredictionRequest = async (
         detections.push({
           id: detection.id,
           class_id: detection.classId,
+          model_id: modelId,
           confidence: detection.confidence,
           lesion_name: lesionInfo.lesionName,
+          patient_id: requestContext.patientId,
+          patient_birth_date: requestContext.patientBirthDate,
+          request_id: requestContext.requestId,
+          user_id: requestContext.userId,
+          createdAt: detection.createdAt,
           bbox: {
             x_left: detection.xLeft,
             y_top: detection.yTop,
             width: detection.width,
             height: detection.height,
           },
+          bucket_name: requestContext.bucketName,
+          storage_path: requestContext.storagePath,
           feedbacks:
             includeFeedbacks && detection.feedbacks
               ? detection.feedbacks.map((f) => ({
@@ -129,44 +145,11 @@ const buildEnrichedPredictionRequest = async (
         });
       }
     }
-
-    enrichedPredictions.push({
-      prediction_id: predictionId,
-      model_id: modelId,
-      created_at: createdAt,
-      classifications,
-      detections,
-    });
   }
 
-  return {
-    id: request.id,
-    user_id: request.userId,
-    patient_id: request.patientId,
-    task: request.task,
-    image_type: request.imageType,
-    diseases: request.diseases,
-    storage_path: request.storagePath,
-    bucket_name: request.bucketName,
-    models_used: request.modelsUsed,
-    created_at: request.createdAt,
-    updated_at: request.updatedAt,
-    patient_name: request.patient.name,
-    patient_birth_date: request.patient.dateOfBirth,
-    image_bucket: request.bucketName,
-    image_path: request.storagePath,
-    predictions: enrichedPredictions,
-  };
+  return { classifications, detections };
 };
 
-// ============================================================================
-// CREATION
-// ============================================================================
-
-/**
- * Creates a new Prediction Request record in the database.
- * Usage (Internal): Used by the prediction workflow to initialize a request.
- */
 export const createPredictionRequest = async (
   token: string,
   data: CreatePredictionRequestInput,
@@ -189,18 +172,10 @@ export const createPredictionRequest = async (
   return predictionRequest;
 };
 
-// ============================================================================
-// USER QUERIES (REQUESTS)
-// ============================================================================
-
-/**
- * Retrieves all prediction requests for a user, including their predictions (classifications/detections).
- * Usage (FE): Used by the Dashboard (PredictionRequestList) to show the history of requests.
- */
 export const getAllPredictionRequestsWithPredictionsByUserId = async (
   token: string,
   userId: string,
-): Promise<EnrichedPredictionRequestDTO[]> => {
+): Promise<EnrichedPredictionDTO[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
@@ -222,21 +197,28 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
 
   const results = await Promise.all(
     predictionRequests.map((request) =>
-      buildEnrichedPredictionRequest(request, false),
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+          userId: request.userId,
+        },
+        false,
+      ),
     ),
   );
 
   return results;
 };
 
-/**
- * Retrieves all prediction requests for a user, including feedback data.
- * Usage (FE): Potentially used for a detailed history view that highlights feedback status.
- */
 export const getAllPredictionRequestsWithFeedbacksByUserId = async (
   token: string,
   userId: string,
-): Promise<EnrichedPredictionRequestDTO[]> => {
+): Promise<EnrichedPredictionDTO[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
@@ -266,70 +248,32 @@ export const getAllPredictionRequestsWithFeedbacksByUserId = async (
 
   const results = await Promise.all(
     predictionRequests.map((request) =>
-      buildEnrichedPredictionRequest(request, true),
-    ),
-  );
-
-  return results;
-};
-
-// ============================================================================
-// SYSTEM/ADMIN QUERIES
-// ============================================================================
-
-/**
- * Retrieves all prediction requests across the system (admin view).
- * Usage (FE): Likely for an admin panel to view all system activity.
- */
-export const getAllSystemPredictionRequests = async (
-  token: string,
-): Promise<EnrichedPredictionRequestDTO[]> => {
-  await getCurrentUser(token); // Verify authentication only
-
-  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
-    with: {
-      predictions: {
-        with: {
-          classifications: {
-            with: {
-              feedbacks: true,
-            },
-          },
-          detections: {
-            with: {
-              feedbacks: true,
-            },
-          },
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+          userId: request.userId,
         },
-      },
-      patient: true,
-    },
-    orderBy: (predictionRequests, { desc }) => [
-      desc(predictionRequests.createdAt),
-    ],
-  });
-
-  const results = await Promise.all(
-    predictionRequests.map((request) =>
-      buildEnrichedPredictionRequest(request, true),
+        true,
+      ),
     ),
   );
 
   return results;
 };
 
-// ============================================================================
-// SINGLE REQUEST QUERIES
-// ============================================================================
-
-/**
- * Retrieves a single prediction request by ID with full details.
- * Usage (FE): Used by the Prediction Detail Page (diagnosis/[id]).
- */
 export const getPredictionRequestById = async (
   token: string,
   data: GetPredictionRequestByIdInput,
-): Promise<EnrichedPredictionRequestDTO | null> => {
+): Promise<{
+  request: PredictionRequestDTO;
+  patient: PatientDTO;
+  enrichedPrediction: EnrichedPredictionDTO;
+} | null> => {
   await getCurrentUser(token); // Verify authentication only
   const { id } = GetPredictionRequestByIdSchema.parse(data);
 
@@ -350,5 +294,70 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-  return await buildEnrichedPredictionRequest(request, false);
+  const enrichedPrediction = await processPredictionsInParallel(
+    request.predictions,
+    {
+      patientId: request.patientId,
+      patientBirthDate: request.patient.dateOfBirth,
+      requestId: request.id,
+      bucketName: request.bucketName,
+      storagePath: request.storagePath,
+      userId: request.userId,
+    },
+    false,
+  );
+
+  return {
+    request,
+    patient: request.patient,
+    enrichedPrediction,
+  };
+};
+
+export const getAllSystemPredictionRequests = async (
+  token: string,
+): Promise<EnrichedPredictionDTO[]> => {
+  await getCurrentUser(token); // Verify authentication only
+
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    with: {
+      predictions: {
+        with: {
+          classifications: {
+            with: {
+              feedbacks: true,
+            },
+          },
+          detections: {
+            with: {
+              feedbacks: true,
+            },
+          },
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
+
+  const results = await Promise.all(
+    predictionRequests.map((request) =>
+      processPredictionsInParallel(
+        request.predictions,
+        {
+          patientId: request.patientId,
+          patientBirthDate: request.patient.dateOfBirth,
+          requestId: request.id,
+          bucketName: request.bucketName,
+          storagePath: request.storagePath,
+          userId: request.userId,
+        },
+        true,
+      ),
+    ),
+  );
+
+  return results;
 };
