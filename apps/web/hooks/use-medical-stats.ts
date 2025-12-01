@@ -177,5 +177,6 @@ export function useMedicalStats() {
     isLoading,
     error,
     refreshStats: refreshData,
+    calculateAge,
   };
 }

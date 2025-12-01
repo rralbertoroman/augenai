@@ -92,7 +92,7 @@ export const useChartDataLogic = <
     if (!stageInfo) return colors.intermediateOranges[0];
 
     if (stageInfo.isLast) return colors.lastStage;
-    if (stageName.toLowerCase().includes("healthy")) return colors.healthy;
+    if (stageName.toLowerCase().includes("normal")) return colors.healthy;
     if (stageInfo.isTx)
       return colors.intermediateRed[
         Math.min(index, colors.intermediateRed.length - 1)
