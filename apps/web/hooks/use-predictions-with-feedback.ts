@@ -2,19 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllClassificationsWithFeedbacksAndExtrasByUserId } from "@/server/services/classification";
-import type { EnrichedClassificationWithExtras } from "@/server/zod-schemas";
-
-// Use the Zod type directly with additional processing fields
-export interface ClassificationWithFeedback
-  extends EnrichedClassificationWithExtras {
-  predicted_class_id?: number;
-  original_confidence?: number;
-  isReviewed?: boolean;
-}
+import { getAllPredictionRequestsWithFeedbacksByUserId } from "@/server/services/prediction_request";
+import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
 
 type UsePredictionsWithFeedbackReturn = {
-  predictions: ClassificationWithFeedback[];
+  predictions: EnrichedPredictionDTO[];
   isLoading: boolean;
   error: string | null;
   refreshPredictions: () => Promise<void>;
@@ -22,37 +14,33 @@ type UsePredictionsWithFeedbackReturn = {
 
 export function usePredictionsWithFeedback(): UsePredictionsWithFeedbackReturn {
   const { user, accessToken } = useAuth();
-  const [predictions, setPredictions] = useState<ClassificationWithFeedback[]>(
-    [],
-  );
+  const [predictions, setPredictions] = useState<EnrichedPredictionDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const processPredictions = useCallback(
-    (data: EnrichedClassificationWithExtras[]) => {
-      return data.map((classification) => {
-        // Find the main feedback (where isMainData is true)
-        const mainFeedback = classification.feedbacks?.find(
-          (fb) => fb.isMainData,
-        );
+  const processPredictions = useCallback((data: EnrichedPredictionDTO[]) => {
+    return data.map((prediction) => {
+      // Find the main feedback (where isMainData is true)
+      const mainFeedback = prediction.feedbacks?.find((fb) => fb.isMainData);
 
-        const processed: ClassificationWithFeedback = {
-          ...classification,
-        };
+      if (!mainFeedback) return prediction;
 
-        if (mainFeedback) {
-          processed.class_id = mainFeedback.classId;
-          processed.confidence = mainFeedback.confidence;
-          processed.predicted_class_id = classification.class_id;
-          processed.original_confidence = classification.confidence;
-          processed.isReviewed = true;
-        }
-
-        return processed;
-      });
-    },
-    [],
-  );
+      // For now, we can only update the class_id from feedback
+      // since that's the only feedback data we have
+      return {
+        ...prediction,
+        // Update class_id from feedback
+        class_id: mainFeedback.classId,
+        // Update confidence from feedback
+        confidence: mainFeedback.confidence,
+        // Store original values
+        predicted_class_id: prediction.class_id,
+        original_confidence: prediction.confidence,
+        // Mark as reviewed if there's a main feedback
+        isReviewed: true,
+      };
+    });
+  }, []);
 
   const fetchPredictions = useCallback(async () => {
     if (!user?.id || !accessToken) return;
@@ -61,7 +49,7 @@ export function usePredictionsWithFeedback(): UsePredictionsWithFeedbackReturn {
     setError(null);
 
     try {
-      const data = await getAllClassificationsWithFeedbacksAndExtrasByUserId(
+      const data = await getAllPredictionRequestsWithFeedbacksByUserId(
         accessToken,
         user.id,
       );

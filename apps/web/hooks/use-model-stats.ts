@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import {
-  usePredictionsWithFeedback,
-  type ClassificationWithFeedback,
-} from "@/hooks/use-predictions-with-feedback";
+import { usePredictionsWithFeedback } from "@/hooks/use-predictions-with-feedback";
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
+import { EnrichedPredictionDTO } from "@/server/zod-schemas";
 import { useAuth } from "@/contexts/auth-context";
 
 export interface F1ScoreData {
@@ -20,8 +18,16 @@ export interface ConfusionMatrixData {
   matrix: number[][];
 }
 
-// Use the ClassificationWithFeedback type directly
-export type ProcessedEnrichedPrediction = ClassificationWithFeedback;
+export type ProcessedEnrichedPrediction = EnrichedPredictionDTO & {
+  class_id: number;
+  // Update confidence from feedback
+  confidence: number;
+  // Store original values
+  predicted_class_id: number;
+  original_confidence: number;
+  // Mark as reviewed if there's a main feedback
+  isReviewed: boolean;
+};
 
 export function useModelStats() {
   const { accessToken } = useAuth();
