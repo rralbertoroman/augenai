@@ -102,12 +102,12 @@ export default function Start() {
   // Filter and process today's predictions with patient info
   const todayPredictions = predictions
     .filter((prediction) => {
-      const predDate = new Date(prediction.createdAt);
+      // Use a fallback date if createdAt is not available
+      const predDate = new Date(prediction.created_at);
 
       if (!user) return false;
 
-      const userId = prediction.user_id;
-      return isToday(predDate) && userId === user.id;
+      return isToday(predDate);
     })
     .map((prediction) => {
       const patient = patients[prediction.patient_id || ""];
@@ -116,12 +116,12 @@ export default function Start() {
 
       return {
         ...prediction,
+        request_id: prediction.request_id,
         disease_name: prediction.disease_name || "Enfermedad no especificada",
         stage_content: prediction.stage_content || "No especificada",
-        bucket_name: prediction.bucket_name,
-        storage_path: prediction.storage_path,
         patient_name: patientName,
         patient_age: patientAge,
+        createdAt: new Date(prediction.created_at),
         feedback_status: prediction.feedbacks?.[0]?.isMainData
           ? "reviewed"
           : "pending",
@@ -147,30 +147,20 @@ export default function Start() {
       const processedPreds = preds.map((pred) => {
         // Create a new object with all required fields
         const processedPred = {
-          id: pred.id,
+          id: pred.id || pred.prediction_id,
           request_id: pred.request_id,
           patient_id: pred.patient_id,
           patient_name: pred.patient_name,
           disease_name: pred.disease_name,
           stage_content: pred.stage_content,
           confidence: pred.confidence,
-          patient_birthdate: pred.patient_birth_date!,
-          createdAt:
-            typeof pred.createdAt === "string"
-              ? new Date(pred.createdAt)
-              : pred.createdAt,
-          bucket_name: pred.bucket_name,
-          storage_path: pred.storage_path,
+          patient_birthdate: pred.patient_birth_date || "",
+          createdAt: pred.createdAt,
           patient_age: pred.patient_age,
           feedback_status: pred.feedback_status,
           feedbacks: pred.feedbacks || [],
           class_id: pred.class_id,
           model_id: pred.model_id,
-          bbox: {
-            ...pred.bbox,
-            label: pred.lesion_name,
-          },
-          type: pred.type,
           // Handle isMainData safely
           isMainData: "isMainData" in pred ? Boolean(pred.isMainData) : false,
         };
@@ -188,8 +178,6 @@ export default function Start() {
           ),
         ),
         predictions: processedPreds,
-        bucket_name: firstPred.bucket_name,
-        storage_path: firstPred.storage_path,
       } as PredictionGroup;
     })
     .sort((a, b) => b.requestDate.getTime() - a.requestDate.getTime());

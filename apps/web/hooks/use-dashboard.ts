@@ -30,7 +30,7 @@ export function useDashboard() {
     .slice()
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     )
     .slice(0, 4);
 

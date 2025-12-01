@@ -41,9 +41,7 @@ export type GetFeedbackByClassificationInput = z.input<
   typeof GetFeedbackByClassificationSchema
 >;
 export type GetFeedbackByIdInput = z.input<typeof GetFeedbackByIdSchema>;
-export type UpdateIsMainUserInput = z.input<
-  typeof UpdateIsMainUserSchema
->;
+export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 
 // OUTPUT TYPES
 export type ClassificationFeedbackDTO = z.output<

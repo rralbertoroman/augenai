@@ -88,8 +88,10 @@ describe("Prediction Request Service", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result?.enrichedPredictions).toHaveLength(1);
-      expect(result?.enrichedPredictions[0].disease_name).toBe("Disease A");
+      expect(result?.predictions).toHaveLength(1);
+      expect(result?.predictions[0].classifications[0].disease_name).toBe(
+        "Disease A",
+      );
     });
 
     it("should return null if request not found", async () => {
@@ -152,8 +154,10 @@ describe("Prediction Request Service", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].lesion_name).toBe("Lesion B");
-      expect(result[0].bbox).toBeDefined();
+      expect(result[0].predictions[0].detections[0].lesion_name).toBe(
+        "Lesion B",
+      );
+      expect(result[0].predictions[0].detections[0].bbox).toBeDefined();
     });
   });
 });
