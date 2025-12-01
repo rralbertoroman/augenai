@@ -24,10 +24,6 @@ export const GetFeedbackByClassificationSchema = z.object({
   classificationId: z.uuid(),
 });
 
-export const GetFeedbackByIdSchema = z.object({
-  id: z.uuid(),
-});
-
 export const UpdateIsMainUserSchema = z.object({
   id: z.uuid(),
   isMainData: z.boolean(),
@@ -40,10 +36,7 @@ export type CreateClassificationFeedbackInput = z.input<
 export type GetFeedbackByClassificationInput = z.input<
   typeof GetFeedbackByClassificationSchema
 >;
-export type GetFeedbackByIdInput = z.input<typeof GetFeedbackByIdSchema>;
-export type UpdateIsMainUserInput = z.input<
-  typeof UpdateIsMainUserSchema
->;
+export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 
 // OUTPUT TYPES
 export type ClassificationFeedbackDTO = z.output<

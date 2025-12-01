@@ -52,13 +52,24 @@ describe("Prediction Request Service", () => {
         id: "123e4567-e89b-12d3-a456-426614174000",
         userId: "user-123",
         patientId: "patient-1",
+        task: "classification",
+        imageType: "dermoscopy",
+        diseases: ["melanoma"],
+        modelsUsed: ["model-1"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
         bucketName: "bucket",
         storagePath: "path",
-        patient: { dateOfBirth: "2000-01-01" },
+        patient: {
+          id: "patient-1",
+          name: "John Doe",
+          dateOfBirth: "2000-01-01",
+        },
         predictions: [
           {
             id: "pred-1",
             modelId: "model-1",
+            createdAt: new Date(),
             classifications: [
               { id: "c-1", classId: 0, confidence: 0.9, createdAt: new Date() },
             ],
@@ -83,20 +94,24 @@ describe("Prediction Request Service", () => {
         updatedAt: new Date(),
       } as PredictionClassDiseaseWithDisease);
 
-      const result = await getPredictionRequestById(MOCK_TOKEN, {
-        id: "123e4567-e89b-12d3-a456-426614174000",
-      });
+      const result = await getPredictionRequestById(
+        MOCK_TOKEN,
+        "123e4567-e89b-12d3-a456-426614174000",
+      );
 
       expect(result).toBeDefined();
-      expect(result?.enrichedPredictions).toHaveLength(1);
-      expect(result?.enrichedPredictions[0].disease_name).toBe("Disease A");
+      expect(result?.predictions).toHaveLength(1);
+      expect(result?.predictions[0].classifications[0].disease_name).toBe(
+        "Disease A",
+      );
     });
 
     it("should return null if request not found", async () => {
       mockFindFirst.mockResolvedValue(null);
-      const result = await getPredictionRequestById(MOCK_TOKEN, {
-        id: "123e4567-e89b-12d3-a456-426614174000",
-      });
+      const result = await getPredictionRequestById(
+        MOCK_TOKEN,
+        "123e4567-e89b-12d3-a456-426614174000",
+      );
       expect(result).toBeNull();
     });
   });
@@ -108,13 +123,24 @@ describe("Prediction Request Service", () => {
           id: "req-1",
           userId: "user-123",
           patientId: "patient-1",
+          task: "detection",
+          imageType: "dermoscopy",
+          diseases: ["melanoma"],
+          modelsUsed: ["model-1"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
           bucketName: "bucket",
           storagePath: "path",
-          patient: { dateOfBirth: "2000-01-01" },
+          patient: {
+            id: "patient-1",
+            name: "John Doe",
+            dateOfBirth: "2000-01-01",
+          },
           predictions: [
             {
               id: "pred-1",
               modelId: "model-1",
+              createdAt: new Date(),
               classifications: [],
               detections: [
                 {
@@ -152,8 +178,10 @@ describe("Prediction Request Service", () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].lesion_name).toBe("Lesion B");
-      expect(result[0].bbox).toBeDefined();
+      expect(result[0].predictions[0].detections[0].lesion_name).toBe(
+        "Lesion B",
+      );
+      expect(result[0].predictions[0].detections[0].bbox).toBeDefined();
     });
   });
 });

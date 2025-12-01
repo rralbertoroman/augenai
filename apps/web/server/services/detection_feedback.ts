@@ -6,16 +6,13 @@ import { DetectionFeedbackTable } from "../db/schemas";
 import {
   CreateDetectionFeedbackSchema,
   GetFeedbackByDetectionSchema,
-  GetFeedbackByIdSchema,
   UpdateIsMainUserSchema,
   type CreateDetectionFeedbackInput,
   type GetFeedbackByDetectionInput,
-  type GetFeedbackByIdInput,
   type UpdateIsMainUserInput,
   type DetectionFeedbackDTO,
 } from "../zod-schemas/detection_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
-
 
 export const createDetectionFeedback = async (
   token: string,
@@ -53,10 +50,8 @@ export const getFeedbackByDetection = async (
 };
 
 export const getFeedbackById = async (
-  data: GetFeedbackByIdInput,
+  id: string,
 ): Promise<DetectionFeedbackDTO> => {
-  const { id } = GetFeedbackByIdSchema.parse(data);
-  
   const [feedback] = await db
     .select()
     .from(DetectionFeedbackTable)
@@ -76,7 +71,7 @@ export const updateIsMainData = async (
   const user = await getCurrentUser(token);
   const { id, isMainData } = UpdateIsMainUserSchema.parse(data);
 
-  const existingFeedback = await getFeedbackById({ id });
+  const existingFeedback = await getFeedbackById(id);
 
   verifyOwnership(user, existingFeedback.userProfileId);
 

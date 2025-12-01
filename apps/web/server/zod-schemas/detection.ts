@@ -10,7 +10,7 @@ export const CreateDetectionSchema = z.object({
   height: z.number(),
 });
 
-export const DetectionSchema = CreateDetectionSchema.extend({
+export const DetectionDTOSchema = CreateDetectionSchema.extend({
   id: z.uuid(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -20,4 +20,4 @@ export const DetectionSchema = CreateDetectionSchema.extend({
 export type CreateDetectionInput = z.infer<typeof CreateDetectionSchema>;
 
 // OUTPUT TYPES
-export type DetectionDTO = z.infer<typeof DetectionSchema>;
+export type DetectionDTO = z.infer<typeof DetectionDTOSchema>;
