@@ -4,7 +4,7 @@ import { usePatients } from "@/hooks/use-patients";
 import { PatientList } from "@/components/patients/patient-list";
 import { PatientDetail } from "@/components/patients/patient-detail";
 import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
-import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import { SkeletonLoader } from "@/components/common/skeleton-loader";
 import { useState } from "react";
 
 export default function PatientsPage() {

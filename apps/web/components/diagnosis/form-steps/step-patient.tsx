@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import { SkeletonLoader } from "@/components/common/skeleton-loader";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface StepPatientProps {

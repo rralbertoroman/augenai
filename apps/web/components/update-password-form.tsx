@@ -5,6 +5,7 @@ import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { SupabaseWeakPasswordError } from "@/lib/supabase/errors";
 import { Button } from "@/components/ui/button";
+import { Clipboard } from "@/components/common/clipboard";
 import {
   Card,
   CardContent,
@@ -181,13 +182,14 @@ export function UpdatePasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Restablecer contraseña</CardTitle>
-          <CardDescription>
-            Por favor, ingresa tu nueva contraseña a continuación.
-          </CardDescription>
-        </CardHeader>
+      <Clipboard>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Restablecer contraseña</CardTitle>
+            <CardDescription>
+              Por favor, ingresa tu nueva contraseña a continuación.
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleForgotPassword}>
             <div className="flex flex-col gap-6">
@@ -223,7 +225,8 @@ export function UpdatePasswordForm({
             </div>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </Clipboard>
     </div>
   );
 }

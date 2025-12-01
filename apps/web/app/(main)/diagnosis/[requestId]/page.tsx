@@ -2,7 +2,7 @@
 
 import { usePredictionRequestDetail } from "@/hooks/use-prediction-request-detail";
 import { formatDate } from "@/hooks/use-prediction-requests";
-import { SkeletonLoader } from "@/components/ui/skeleton-loader";
+import { SkeletonLoader } from "@/components/common/skeleton-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PredictionCard } from "@/components/predictions/prediction-card";

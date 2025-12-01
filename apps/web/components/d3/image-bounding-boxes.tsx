@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
-import SupabaseImage from "@/components/ui/supabase-image";
+import SupabaseImage from "@/components/common/supabase-image";
 
 // Color palette with tones of blue, green, violet, and pink
 const COLOR_PALETTE = [

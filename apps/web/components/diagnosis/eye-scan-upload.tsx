@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clipboard } from "@/components/common/clipboard";
 import { Button } from "@/components/ui/button";
 import { useDiagnosisForm } from "@/hooks/use-diagnosis-form";
 import { StepIndicator } from "./form-steps/step-indicator";
@@ -56,13 +57,14 @@ export function EyeScanUpload({
   } = useDiagnosisForm(onSubmit);
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-2xl">Diagnóstico ocular</CardTitle>
-        <div className="mt-4">
-          <StepIndicator steps={STEPS} currentStep={currentStep} />
-        </div>
-      </CardHeader>
+    <Clipboard>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl">Diagnóstico ocular</CardTitle>
+          <div className="mt-4">
+            <StepIndicator steps={STEPS} currentStep={currentStep} />
+          </div>
+        </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-5">
           {currentStep === 1 && (
@@ -139,6 +141,7 @@ export function EyeScanUpload({
           </div>
         </form>
       </CardContent>
-    </Card>
+      </Card>
+    </Clipboard>
   );
 }

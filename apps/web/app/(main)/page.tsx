@@ -10,7 +10,7 @@ export default function HomePage() {
       <div className="flex items-center justify-between gap-3">
         {/**Welcome */}
         <div className="flex flex-col gap-3">
-          <p className="text-foreground dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+          <p className=" dark:text-white text-5xl font-semibold leading-tight tracking-[-0.033em] pb-6 text-emerald-400">
             Bienvenido
           </p>
         </div>
