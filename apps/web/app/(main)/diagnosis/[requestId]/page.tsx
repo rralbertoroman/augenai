@@ -25,24 +25,24 @@ export default function PredictionDetailPage({
 
   // Convert detection predictions to bounding boxes
   const detectionBoxes =
-    request?.predictions?.flatMap((pred) =>
-      pred.detections.map((det) => ({
-        id: det.id || pred.prediction_id,
-        x: det.bbox.x_left,
-        y: det.bbox.y_top,
-        width: det.bbox.width,
-        height: det.bbox.height,
-        label: det.lesion_name,
-        confidence: det.confidence,
-      })),
-    ) || [];
+    request?.predictions
+      ?.filter((pred) => pred.type === "detection" && pred.bbox)
+      .map((pred) => {
+        return {
+          id: pred.id,
+          x: pred.bbox!.x_left,
+          y: pred.bbox!.y_top,
+          width: pred.bbox!.width,
+          height: pred.bbox!.height,
+          label: pred.lesion_name,
+          confidence: pred.confidence,
+        };
+      }) || [];
 
-  // Use classifications with extras from the request
-  const allClassifications = request?.classifications || [];
-
-  // Get image storage info from the request
-  const bucketName = undefined; // Image info is not in the new format at prediction level
-  const storagePath = undefined;
+  // Get image storage info from the first prediction
+  const imageInfo = request?.predictions?.[0];
+  const bucketName = imageInfo?.bucket_name;
+  const storagePath = imageInfo?.storage_path;
 
   if (isLoading) {
     return (
@@ -158,16 +158,12 @@ export default function PredictionDetailPage({
               <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
                 Resultados de Diagnóstico
               </h2>
-              {allClassifications.length > 0 && (
+              {request?.predictions && request.predictions.length > 0 && (
                 <Button
                   type="button"
                   size="sm"
                   onClick={() =>
-                    feedback.handleOpenFeedback(
-                      allClassifications as Parameters<
-                        typeof feedback.handleOpenFeedback
-                      >[0],
-                    )
+                    feedback.handleOpenFeedback(request.predictions)
                   }
                   className="text-md"
                 >
@@ -177,22 +173,15 @@ export default function PredictionDetailPage({
             </div>
             <div className="p-6 space-y-6">
               <div className="flex flex-row gap-4 w-full">
-                {allClassifications.length > 0 ? (
+                {request?.predictions && request.predictions.length > 0 ? (
                   <div className="w-full space-y-4">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Predicciones ({allClassifications.length})
+                      Predicciones ({request.predictions.length})
                     </p>
-                    {allClassifications.map((diagnosis, idx) => (
+                    {request.predictions.map((diagnosis) => (
                       <PredictionCard
-                        key={
-                          diagnosis.id || `${diagnosis.prediction_id}-${idx}`
-                        }
-                        diagnosis={{
-                          id: diagnosis.id || diagnosis.prediction_id,
-                          disease_name: diagnosis.disease_name,
-                          stage_content: diagnosis.stage_content,
-                          confidence: diagnosis.confidence,
-                        }}
+                        key={diagnosis.id}
+                        diagnosis={diagnosis}
                       />
                     ))}
                   </div>

@@ -90,20 +90,15 @@ export {
 export {
   PredictionWorkflowInputSchema,
   EnrichedClassificationSchema,
-  EnrichedClassificationWithExtrasSchema,
-  EnrichedDetectionSchema,
-  EnrichedDetectionWithExtrasSchema,
+  PredictionResponseSchema,
+  MultiplePredictionsResponseSchema,
   EnrichedPredictionDTOSchema,
-  EnrichedPredictionRequestDTOSchema,
   type PredictionWorkflowInput,
   type EnrichedClassification,
-  type EnrichedClassificationWithExtras,
-  type EnrichedDetection,
-  type EnrichedDetectionWithExtras,
+  type PredictionResponse,
+  type MultiplePredictionsResponse,
   type EnrichedPredictionDTO,
-  type EnrichedPredictionRequestDTO,
   type EnrichedTask,
-  type EnrichedTaskWithExtras,
 } from "./prediction_workflow";
 
 // AI Service schemas
@@ -133,4 +128,7 @@ export {
 } from "./prediction_sharing";
 
 // Prediction schemas
-export { CreatePredictionSchema, PredictionDTOSchema } from "./prediction";
+export {
+  CreatePredictionSchema,
+  PredictionDTOSchema,
+} from "./prediction";

@@ -121,8 +121,9 @@ describe("Prediction Workflow", () => {
     const result = await processPredictionRequest(MOCK_INPUT);
 
     expect(result.predictions).toHaveLength(1);
-    expect(result.predictions[0].classifications).toHaveLength(1);
-    expect(result.predictions[0].classifications[0].disease_name).toBe(
+    expect(result.predictions[0].status).toBe("success");
+    expect(result.predictions[0].result.classifications).toBeDefined();
+    expect(result.predictions[0].result.classifications?.[0].disease_name).toBe(
       "Melanoma",
     );
 
@@ -177,9 +178,11 @@ describe("Prediction Workflow", () => {
     const result = await processPredictionRequest(detectionInput);
 
     expect(result.predictions).toHaveLength(1);
-    expect(result.predictions[0].detections).toHaveLength(1);
-    expect(result.predictions[0].detections[0].lesion_name).toBe("Nevus");
-    expect(result.predictions[0].detections[0].bbox).toEqual({
+    expect(result.predictions[0].result.detections).toBeDefined();
+    expect(result.predictions[0].result.detections?.[0].lesion_name).toBe(
+      "Nevus",
+    );
+    expect(result.predictions[0].result.detections?.[0].bbox).toEqual({
       x_left: 10,
       y_top: 10,
       width: 50,

@@ -5,7 +5,7 @@ import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/servic
 import { getAllDiseases } from "@/server/services/disease";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
-import type { EnrichedPredictionDTO } from "@/server/zod-schemas";
+import { EnrichedPredictionDTO } from "@/server/zod-schemas";
 
 export interface EnrichedPredictionRequest {
   id: string;
@@ -49,49 +49,69 @@ export function usePredictionRequests() {
     setIsLoading(true);
     setError(null);
     try {
-      const [predictionRequests, diseasesData] = await Promise.all([
+      // Fetch both enriched predictions and diseases in parallel
+      const [enrichedPredictions, diseasesData] = await Promise.all([
         getAllPredictionRequestsWithPredictionsByUserId(token, userId),
         getAllDiseases(token),
       ]);
 
+      // Create a map of disease ID to disease name
       const diseaseMap = new Map(
         diseasesData.map((disease) => [disease.id, disease.name]),
       );
 
-      const enrichedRequests: EnrichedPredictionRequest[] =
-        predictionRequests.map((req) => {
-          // Collect unique disease IDs from all classifications
-          const diseaseIds = new Set<string>();
-          req.predictions.forEach((pred) => {
-            pred.classifications.forEach((c) => diseaseIds.add(c.disease_id));
+      const requestsMap = new Map();
+
+      for (const enrichedDiagnosis of enrichedPredictions) {
+        const requestId = enrichedDiagnosis.request_id;
+        if (!requestsMap.has(requestId)) {
+          requestsMap.set(requestId, {
+            id: requestId,
+            diagnoses: [],
+            patient_id: enrichedDiagnosis.patient_id,
+            createdAt: enrichedDiagnosis.createdAt,
+            diseases: new Set<string>(),
           });
-
-          const diseaseIdsArray = Array.from(diseaseIds);
-          const diseaseNames = diseaseIdsArray
-            .map((id) => diseaseMap.get(id) || id)
-            .filter(Boolean);
-
-          // Count total classifications + detections
-          const totalPredictions = req.predictions.reduce(
-            (sum, pred) =>
-              sum + pred.classifications.length + pred.detections.length,
-            0,
-          );
-
-          return {
-            id: req.id,
-            createdAt: req.created_at,
-            patient: {
-              name: req.patient_name || "Patient",
-            },
-            task: req.task,
-            imageType: req.image_type,
-            diseases: diseaseIdsArray,
-            diseaseNames,
-            totalPredictions,
-            predictions: req.predictions,
-          };
+        }
+        const request = requestsMap.get(requestId);
+        request.diseases.add(enrichedDiagnosis.disease_id);
+        request.diagnoses.push({
+          id: enrichedDiagnosis.id,
+          classId: enrichedDiagnosis.class_id,
+          model_id: enrichedDiagnosis.model_id,
+          confidence: enrichedDiagnosis.confidence,
+          disease_id: enrichedDiagnosis.disease_id,
+          disease_name: enrichedDiagnosis.disease_name,
+          stage_idx: enrichedDiagnosis.stage_idx,
+          stage_content: enrichedDiagnosis.stage_content,
+          type: enrichedDiagnosis.type,
+          bbox: enrichedDiagnosis.bbox,
         });
+      }
+
+      const enrichedRequests: EnrichedPredictionRequest[] = Array.from(
+        requestsMap.values(),
+      ).map((group) => {
+        const diseaseIds = Array.from(group.diseases) as string[];
+        const diseaseNames = diseaseIds
+          .map((diseaseId: string) => diseaseMap.get(diseaseId) || diseaseId)
+          .filter(Boolean) as string[];
+
+        return {
+          id: group.id,
+          createdAt: group.createdAt,
+          patient: {
+            name: "Patient",
+            email: "",
+          },
+          task: "classification",
+          imageType: "fundus",
+          diseases: diseaseIds,
+          diseaseNames,
+          totalPredictions: group.diagnoses.length,
+          predictions: group.diagnoses,
+        };
+      });
 
       setRequests(enrichedRequests);
     } catch (err) {
