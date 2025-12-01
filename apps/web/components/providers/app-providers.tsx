@@ -1,12 +1,12 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ThemeProvider } from "@/contexts/theme-context";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/auth-context";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>{children}</AuthProvider>
     </ThemeProvider>
   );

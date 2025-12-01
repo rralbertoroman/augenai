@@ -155,17 +155,12 @@ export function ImageBoundingBoxes({
         height={1000}
         alt="Diagnosis"
         className="block max-w-full h-auto rounded-lg"
-      />
-      <svg
-        ref={svgRef}
-        className="absolute top-0 left-0 pointer-events-none"
-        width={dimensions.width}
-        height={dimensions.height}
-        style={{ pointerEvents: "none" }} // Let clicks pass through if needed, or remove to interact with boxes
+        boundingBoxes={displayBoxes}
+        colorMap={colorMap}
       />
       {/* Legend Overlay */}
       {uniqueLabels.length > 0 && (
-        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-md p-2 shadow-lg border border-white/10">
+        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-md p-2 shadow-lg border border-white/10 z-10">
           <div className="flex flex-col gap-1">
             {uniqueLabels.map((item) => (
               <div key={item.label} className="flex items-center gap-2">
