@@ -6,16 +6,13 @@ import { ClassificationFeedbackTable } from "../db/schemas";
 import {
   CreateClassificationFeedbackSchema,
   GetFeedbackByClassificationSchema,
-  GetFeedbackByIdSchema,
   UpdateIsMainUserSchema,
   type CreateClassificationFeedbackInput,
   type GetFeedbackByClassificationInput,
-  type GetFeedbackByIdInput,
   type UpdateIsMainUserInput,
   type ClassificationFeedbackDTO,
 } from "../zod-schemas/classification_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
-
 
 export const createClassificationFeedback = async (
   token: string,
@@ -53,10 +50,8 @@ export const getFeedbackByClassification = async (
 };
 
 export const getFeedbackById = async (
-  data: GetFeedbackByIdInput,
+  id: string,
 ): Promise<ClassificationFeedbackDTO> => {
-  const { id } = GetFeedbackByIdSchema.parse(data);
-  
   const [feedback] = await db
     .select()
     .from(ClassificationFeedbackTable)
@@ -76,7 +71,7 @@ export const updateIsMainData = async (
   const user = await getCurrentUser(token);
   const { id, isMainData } = UpdateIsMainUserSchema.parse(data);
 
-  const existingFeedback = await getFeedbackById({ id });
+  const existingFeedback = await getFeedbackById(id);
 
   verifyOwnership(user, existingFeedback.userProfileId);
 

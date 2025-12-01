@@ -32,10 +32,6 @@ export const GetFeedbackByDetectionSchema = z.object({
   detectionId: z.uuid(),
 });
 
-export const GetFeedbackByIdSchema = z.object({
-  id: z.uuid(),
-});
-
 export const UpdateIsMainUserSchema = z.object({
   id: z.uuid(),
   isMainData: z.boolean(),
@@ -48,10 +44,7 @@ export type CreateDetectionFeedbackInput = z.input<
 export type GetFeedbackByDetectionInput = z.input<
   typeof GetFeedbackByDetectionSchema
 >;
-export type GetFeedbackByIdInput = z.input<typeof GetFeedbackByIdSchema>;
-export type UpdateIsMainUserInput = z.input<
-  typeof UpdateIsMainUserSchema
->;
+export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 
 // OUTPUT TYPES
 export type DetectionFeedbackDTO = z.output<typeof DetectionFeedbackDTOSchema>;
