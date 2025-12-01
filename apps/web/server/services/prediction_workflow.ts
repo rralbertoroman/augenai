@@ -20,8 +20,8 @@ import { getPatientById } from "./patient";
 import {
   PredictionWorkflowInputSchema,
   type PredictionWorkflowInput,
-  type PredictionResponse,
-  type MultiplePredictionsResponse,
+  type EnrichedPredictionDTO,
+  type EnrichedPredictionRequestDTO,
   type EnrichedClassification,
   type EnrichedDetection,
 } from "../zod-schemas/prediction_workflow";
@@ -31,9 +31,27 @@ import {
   type AIServiceDetection,
 } from "../zod-schemas/ai_service";
 
+// ============================================================================
+// MAIN WORKFLOW
+// ============================================================================
+
+/**
+ * Main entry point for the prediction workflow.
+ * This function orchestrates the entire process of:
+ * 1. Validating input and fetching patient data
+ * 2. Selecting optimal AI models based on task and disease
+ * 3. Downloading the image from storage
+ * 4. Creating a prediction request record in the DB
+ * 5. Sending the image to the AI Service for each selected model
+ * 6. Saving the results (predictions, classifications, detections) to the DB
+ * 7. Sharing the prediction with a supervisor if configured
+ * 8. Returning the fully enriched prediction request with all results
+ *
+ * Usage (FE): Called by the Server Action or API endpoint when a user submits a new diagnosis request.
+ */
 export async function processPredictionRequest(
   input: PredictionWorkflowInput,
-): Promise<MultiplePredictionsResponse> {
+): Promise<EnrichedPredictionRequestDTO> {
   console.log("[PREDICTION_WORKFLOW] Starting prediction request", { input });
   const validatedInput = PredictionWorkflowInputSchema.parse(input);
   const { task, imageType, diseases, storagePath, bucketName, patientId } =
@@ -47,11 +65,17 @@ export async function processPredictionRequest(
     patientId,
   });
 
-  // Fetch patient details
+  // 1. Get patient data
+  console.log("[PREDICTION_WORKFLOW] Fetching patient data...");
   const patient = await getPatientById(patientId);
-  const patientName = patient ? patient.name : "Unknown Patient";
+  if (!patient) {
+    throw new Error(`Patient not found: ${patientId}`);
+  }
+  console.log("[PREDICTION_WORKFLOW] Patient data fetched", {
+    patientName: patient.name,
+  });
 
-  // 1. Select optimal models
+  // 2. Select optimal models
   console.log("[PREDICTION_WORKFLOW] Selecting optimal models...");
   const selectedModels = await selectOptimalModels(task, imageType, diseases);
   console.log("[PREDICTION_WORKFLOW] Selected models", {
@@ -64,7 +88,7 @@ export async function processPredictionRequest(
     throw new Error("No suitable models found for the given criteria");
   }
 
-  // 2. Download image
+  // 3. Download image
   console.log("[PREDICTION_WORKFLOW] Downloading image from storage...", {
     bucketName,
     storagePath,
@@ -78,7 +102,7 @@ export async function processPredictionRequest(
     size: imageBlob.size,
   });
 
-  // 3. Create prediction request record
+  // 4. Create prediction request record
   console.log("[PREDICTION_WORKFLOW] Saving prediction request...");
   const predictionRequest = await savePredictionRequest(
     validatedInput,
@@ -88,9 +112,9 @@ export async function processPredictionRequest(
     requestId: predictionRequest.id,
   });
 
-  // 4. Run predictions
+  // 5. Run predictions
   console.log("[PREDICTION_WORKFLOW] Starting predictions for all models...");
-  const allPredictions: PredictionResponse[] = [];
+  const allPredictions: EnrichedPredictionDTO[] = [];
 
   for (const model of selectedModels) {
     console.log("[PREDICTION_WORKFLOW] Processing prediction for model", {
@@ -103,7 +127,6 @@ export async function processPredictionRequest(
       fileName,
       predictionRequest.id,
       task,
-      patientName,
     );
 
     if (predictionResponse) {
@@ -116,7 +139,7 @@ export async function processPredictionRequest(
       try {
         await sendPredictionToSupervisor(
           input.token,
-          predictionResponse.db_prediction_id,
+          predictionResponse.prediction_id,
         );
       } catch (error) {
         console.error(
@@ -141,14 +164,36 @@ export async function processPredictionRequest(
     "[PREDICTION_WORKFLOW] Prediction workflow completed successfully",
     { predictionsCount: allPredictions.length },
   );
+
+  // 6. Build and return EnrichedPredictionRequestDTO
   return {
+    id: predictionRequest.id,
+    user_id: predictionRequest.userId,
+    patient_id: predictionRequest.patientId,
+    task: predictionRequest.task,
+    image_type: predictionRequest.imageType,
+    diseases: predictionRequest.diseases,
+    storage_path: predictionRequest.storagePath,
+    bucket_name: predictionRequest.bucketName,
+    models_used: predictionRequest.modelsUsed,
+    created_at: predictionRequest.createdAt,
+    updated_at: predictionRequest.updatedAt,
+    patient_name: patient.name,
+    patient_birth_date: patient.dateOfBirth,
+    image_bucket: bucketName,
+    image_path: storagePath,
     predictions: allPredictions,
-    models_used: selectedModels.map((m) => m.name),
   };
 }
 
-// --- Helper Functions ---
+// ============================================================================
+// INFRASTRUCTURE HELPERS
+// ============================================================================
 
+/**
+ * Downloads the image file from Supabase Storage.
+ * Internal helper.
+ */
 async function downloadImageFromStorage(
   bucketName: string,
   storagePath: string,
@@ -171,6 +216,61 @@ async function downloadImageFromStorage(
   return { imageBlob, fileName };
 }
 
+/**
+ * Sends the image to the external AI Service API.
+ * Internal helper.
+ */
+async function fetchPredictionFromAIService(
+  imageBlob: Blob,
+  fileName: string,
+  modelName: string,
+): Promise<AIServicePredictionResponse | null> {
+  const predictionFormData = new FormData();
+  predictionFormData.append("image", imageBlob, fileName);
+  predictionFormData.append("model_id", modelName);
+
+  if (ENVIRONMENT === "test") {
+    predictionFormData.append("is_mocked", "true");
+  }
+
+  try {
+    const predictionResponse = await fetch(
+      `${AI_PREDICTION_SERVICE_URL}/predict`,
+      {
+        method: "POST",
+        headers: {
+          "X-API-Key": AI_PREDICTION_SERVICE_SECRET_KEY,
+        },
+        body: predictionFormData,
+      },
+    );
+
+    if (!predictionResponse.ok) {
+      const errorData = await predictionResponse.json().catch(() => ({}));
+      console.error("[PREDICTION_WORKFLOW] AI Service returned error", {
+        status: predictionResponse.status,
+        statusText: predictionResponse.statusText,
+        modelName,
+        errorData,
+      });
+      return null;
+    }
+
+    return await predictionResponse.json();
+  } catch (error) {
+    console.error(`Error fetching prediction from model ${modelName}:`, error);
+    return null;
+  }
+}
+
+// ============================================================================
+// DATA PROCESSING HELPERS
+// ============================================================================
+
+/**
+ * Creates the initial Prediction Request record in the database.
+ * Internal helper.
+ */
 async function savePredictionRequest(
   input: PredictionWorkflowInput,
   selectedModels: OptimalModel[],
@@ -186,14 +286,21 @@ async function savePredictionRequest(
   });
 }
 
+/**
+ * Processes a single model prediction:
+ * 1. Calls AI Service
+ * 2. Saves Prediction record
+ * 3. Saves Classifications/Detections
+ * 4. Enriches data with disease/lesion info
+ * Internal helper.
+ */
 async function processModelPrediction(
   model: OptimalModel,
   imageBlob: Blob,
   fileName: string,
   requestId: string,
   task: string,
-  patientName: string,
-): Promise<PredictionResponse | null> {
+): Promise<EnrichedPredictionDTO | null> {
   // 1. Fetch from AI Service
   const predictionResult = await fetchPredictionFromAIService(
     imageBlob,
@@ -237,12 +344,12 @@ async function processModelPrediction(
     enrichedClassifications = await enrichClassificationData(
       classifications,
       model.id,
-      patientName,
     );
   } else if (task === "detection") {
     // Process Detections
     // Need to cast carefully or validate
-    const detectionsRaw = predictionResult.result.predictions as AIServiceDetection[];
+    const detectionsRaw = predictionResult.result
+      .predictions as AIServiceDetection[];
     // Map raw box to expected format for DB and Enrichment
     const detections = detectionsRaw;
 
@@ -258,33 +365,25 @@ async function processModelPrediction(
         height: d.box[3],
       })),
     );
-    enrichedDetections = await enrichDetectionData(
-      detections,
-      model.id,
-      patientName,
-    );
+    enrichedDetections = await enrichDetectionData(detections, model.id);
   }
 
   return {
-    status: predictionResult.status,
-    error: predictionResult.error,
-    result: {
-      classifications:
-        enrichedClassifications.length > 0
-          ? enrichedClassifications
-          : undefined,
-      detections:
-        enrichedDetections.length > 0 ? enrichedDetections : undefined,
-      metadata: predictionResult.result.metadata,
-    },
-    db_prediction_id: savedPrediction.id,
+    prediction_id: savedPrediction.id,
+    model_id: model.id,
+    created_at: savedPrediction.createdAt,
+    classifications: enrichedClassifications,
+    detections: enrichedDetections,
   };
 }
 
+/**
+ * Maps raw classification results to disease information (Name, Stage).
+ * Internal helper.
+ */
 async function enrichClassificationData(
   predictions: AIServiceClassification[],
   modelId: string,
-  patientName: string,
 ): Promise<EnrichedClassification[]> {
   const enrichedClassifications: EnrichedClassification[] = [];
 
@@ -310,17 +409,19 @@ async function enrichClassificationData(
       disease_name: classInfo.diseaseName,
       stage_idx: classInfo.stageIdx,
       stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-      patient_name: patientName,
     });
   }
 
   return enrichedClassifications;
 }
 
+/**
+ * Maps raw detection results to lesion information (Name).
+ * Internal helper.
+ */
 async function enrichDetectionData(
   detections: AIServiceDetection[],
   modelId: string,
-  patientName: string,
 ): Promise<EnrichedDetection[]> {
   const enrichedDetections: EnrichedDetection[] = [];
 
@@ -350,52 +451,8 @@ async function enrichDetectionData(
         height: det.box[3],
       },
       lesion_name: lesionInfo.lesionName,
-      patient_name: patientName,
     });
   }
 
   return enrichedDetections;
-}
-
-async function fetchPredictionFromAIService(
-  imageBlob: Blob,
-  fileName: string,
-  modelName: string,
-): Promise<AIServicePredictionResponse | null> {
-  const predictionFormData = new FormData();
-  predictionFormData.append("image", imageBlob, fileName);
-  predictionFormData.append("model_id", modelName);
-
-  if (ENVIRONMENT === "test") {
-    predictionFormData.append("is_mocked", "true");
-  }
-
-  try {
-    const predictionResponse = await fetch(
-      `${AI_PREDICTION_SERVICE_URL}/predict`,
-      {
-        method: "POST",
-        headers: {
-          "X-API-Key": AI_PREDICTION_SERVICE_SECRET_KEY,
-        },
-        body: predictionFormData,
-      },
-    );
-
-    if (!predictionResponse.ok) {
-      const errorData = await predictionResponse.json().catch(() => ({}));
-      console.error("[PREDICTION_WORKFLOW] AI Service returned error", {
-        status: predictionResponse.status,
-        statusText: predictionResponse.statusText,
-        modelName,
-        errorData,
-      });
-      return null;
-    }
-
-    return await predictionResponse.json();
-  } catch (error) {
-    console.error(`Error fetching prediction from model ${modelName}:`, error);
-    return null;
-  }
 }

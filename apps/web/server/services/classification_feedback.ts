@@ -16,7 +16,6 @@ import {
 } from "../zod-schemas/classification_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
 
-
 export const createClassificationFeedback = async (
   token: string,
   data: CreateClassificationFeedbackInput,
@@ -56,7 +55,7 @@ export const getFeedbackById = async (
   data: GetFeedbackByIdInput,
 ): Promise<ClassificationFeedbackDTO> => {
   const { id } = GetFeedbackByIdSchema.parse(data);
-  
+
   const [feedback] = await db
     .select()
     .from(ClassificationFeedbackTable)

@@ -1,13 +1,25 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { ClassificationsTable } from "../db/schemas";
+import { ClassificationsTable, PredictionRequestsTable } from "../db/schemas";
 import {
   CreateClassificationSchema,
   type CreateClassificationInput,
   type ClassificationDTO,
 } from "../zod-schemas/classification";
 import { z } from "zod";
+import {
+  type EnrichedClassificationWithExtras,
+  type PredictionRequestWithRelations,
+  type EnrichedClassification,
+} from "../zod-schemas/prediction_workflow";
+import { getCurrentUser, verifyOwnership } from "../auth";
+import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import {
+  GetPredictionRequestByIdSchema,
+  type GetPredictionRequestByIdInput,
+} from "../zod-schemas/prediction_request";
 
 export const createClassifications = async (
   inputs: CreateClassificationInput[],
@@ -21,5 +33,250 @@ export const createClassifications = async (
     .values(payload)
     .returning();
 
+  return classifications;
+};
+
+/**
+ * Internal Helper: Flattens the hierarchical prediction structure into a single list of findings.
+ * Useful for list views or tables where grouping by request is not needed.
+ */
+const flattenPredictionsWithExtras = async (
+  request: PredictionRequestWithRelations,
+  includeFeedbacks: boolean = false,
+): Promise<
+  Array<
+    EnrichedClassification & {
+      model_id: string;
+      prediction_id: string;
+      request_id: string;
+      patient_id: string;
+      patient_name?: string;
+      patient_birth_date?: string;
+      created_at: Date;
+    }
+  >
+> => {
+  const allClassifications: Array<
+    EnrichedClassification & {
+      model_id: string;
+      prediction_id: string;
+      request_id: string;
+      patient_id: string;
+      patient_name?: string;
+      patient_birth_date?: string;
+      created_at: Date;
+    }
+  > = [];
+
+  for (const prediction of request.predictions) {
+    const { modelId, id: predictionId, createdAt } = prediction;
+
+    // Process Classifications
+    if (
+      prediction.classifications &&
+      Array.isArray(prediction.classifications)
+    ) {
+      for (const classification of prediction.classifications) {
+        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
+          classId: classification.classId,
+          modelId,
+        });
+
+        if (!classInfo) {
+          throw new Error(
+            `Disease mapping not found for class_id ${classification.classId} and model ${modelId}`,
+          );
+        }
+
+        allClassifications.push({
+          id: classification.id,
+          class_id: classification.classId,
+          confidence: classification.confidence,
+          disease_id: classInfo.diseaseId,
+          disease_name: classInfo.diseaseName,
+          stage_idx: classInfo.stageIdx,
+          stage_content: classInfo.diseaseStages[classInfo.stageIdx],
+          feedbacks:
+            includeFeedbacks && classification.feedbacks
+              ? classification.feedbacks.map((f) => ({
+                  id: f.id,
+                  classificationId: f.classificationId,
+                  userProfileId: f.userProfileId,
+                  isMainUser: f.isMainUser,
+                  isMainData: f.isMainData,
+                  classId: f.classId,
+                  confidence: f.confidence,
+                  createdAt: f.createdAt,
+                  updatedAt: f.updatedAt,
+                }))
+              : undefined,
+          model_id: modelId,
+          prediction_id: predictionId,
+          request_id: request.id,
+          patient_id: request.patientId,
+          patient_name: request.patient.name,
+          patient_birth_date: request.patient.dateOfBirth,
+          created_at: createdAt,
+        });
+      }
+    }
+  }
+
+  return allClassifications;
+};
+
+/**
+ * Retrieves a flattened list of all classifications for a user.
+ * Usage (FE): Used by general 'Predictions' stats or list views that don't group by request.
+ */
+export const getAllClassificationsWithExtrasByUserId = async (
+  token: string,
+  userId: string,
+): Promise<EnrichedClassificationWithExtras[]> => {
+  const user = await getCurrentUser(token);
+  verifyOwnership(user, userId);
+
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    where: eq(PredictionRequestsTable.userId, userId),
+    with: {
+      predictions: {
+        with: {
+          classifications: true,
+          detections: true,
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
+
+  const allClassifications: EnrichedClassificationWithExtras[] = [];
+
+  for (const request of predictionRequests) {
+    const classifications = await flattenPredictionsWithExtras(request, false);
+    allClassifications.push(...classifications);
+  }
+
+  return allClassifications;
+};
+
+/**
+ * Retrieves a flattened list of all classifications with their feedback data.
+ * Usage (FE): Used by 'usePredictionsWithFeedback' hook to show predictions that might have been reviewed.
+ */
+export const getAllClassificationsWithFeedbacksAndExtrasByUserId = async (
+  token: string,
+  userId: string,
+): Promise<EnrichedClassificationWithExtras[]> => {
+  const user = await getCurrentUser(token);
+  verifyOwnership(user, userId);
+
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    where: eq(PredictionRequestsTable.userId, userId),
+    with: {
+      predictions: {
+        with: {
+          classifications: {
+            with: {
+              feedbacks: true,
+            },
+          },
+          detections: {
+            with: {
+              feedbacks: true,
+            },
+          },
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
+
+  const allClassifications: EnrichedClassificationWithExtras[] = [];
+
+  for (const request of predictionRequests) {
+    const classifications = await flattenPredictionsWithExtras(request, true);
+    allClassifications.push(...classifications);
+  }
+
+  return allClassifications;
+};
+
+/**
+ * Retrieves all classifications across the system with feedback.
+ * Usage (FE): Used by DashboardContext (likely for Admin/Supervisor dashboard view).
+ */
+export const getAllSystemClassificationsWithFeedbacksAndExtras = async (
+  token: string,
+): Promise<EnrichedClassificationWithExtras[]> => {
+  await getCurrentUser(token); // Verify authentication only
+
+  const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    with: {
+      predictions: {
+        with: {
+          classifications: {
+            with: {
+              feedbacks: true,
+            },
+          },
+          detections: {
+            with: {
+              feedbacks: true,
+            },
+          },
+        },
+      },
+      patient: true,
+    },
+    orderBy: (predictionRequests, { desc }) => [
+      desc(predictionRequests.createdAt),
+    ],
+  });
+
+  const allClassifications: EnrichedClassificationWithExtras[] = [];
+
+  for (const request of predictionRequests) {
+    const classifications = await flattenPredictionsWithExtras(request, true);
+    allClassifications.push(...classifications);
+  }
+
+  return allClassifications;
+};
+
+/**
+ * Retrieves classifications for a specific request, flattened with extras.
+ * Usage (FE): Used by the Prediction Detail Page to display a simple list of diagnoses found in that request.
+ */
+export const getClassificationsWithExtrasByRequestId = async (
+  token: string,
+  data: GetPredictionRequestByIdInput,
+): Promise<EnrichedClassificationWithExtras[]> => {
+  await getCurrentUser(token); // Verify authentication only
+  const { id } = GetPredictionRequestByIdSchema.parse(data);
+
+  const request = await db.query.PredictionRequestsTable.findFirst({
+    where: eq(PredictionRequestsTable.id, id),
+    with: {
+      predictions: {
+        with: {
+          classifications: true,
+          detections: true,
+        },
+      },
+      patient: true,
+    },
+  });
+
+  if (!request) {
+    return [];
+  }
+
+  const classifications = await flattenPredictionsWithExtras(request, false);
   return classifications;
 };
