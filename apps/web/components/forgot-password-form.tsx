@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Clipboard } from "@/components/common/clipboard";
 import {
   Card,
   CardContent,
@@ -51,22 +52,25 @@ export function ForgotPasswordForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       {success ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Revisa tu correo</CardTitle>
-            <CardDescription>
-              Instrucciones para restablecer contraseña enviadas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Si te registraste con tu correo y contraseña, recibirás un correo
-              con las instrucciones para restablecer tu contraseña.
-            </p>
-          </CardContent>
-        </Card>
+        <Clipboard>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Revisa tu correo</CardTitle>
+              <CardDescription>
+                Instrucciones para restablecer contraseña enviadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Si te registraste con tu correo y contraseña, recibirás un correo
+                con las instrucciones para restablecer tu contraseña.
+              </p>
+            </CardContent>
+          </Card>
+        </Clipboard>
       ) : (
-        <Card>
+        <Clipboard>
+          <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Restablecer contraseña</CardTitle>
             <CardDescription>
@@ -105,8 +109,9 @@ export function ForgotPasswordForm({
                 </Link>
               </div>
             </form>
-          </CardContent>
+        </CardContent>
         </Card>
+      </Clipboard>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import SupabaseImage from "@/components/ui/supabase-image";
+import SupabaseImage from "@/components/common/supabase-image";
 import type { PredictionGroup } from "./types";
 import { useMedicalStats } from "@/hooks/use-medical-stats";
 

@@ -21,10 +21,10 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/augen-full.svg"
+              src="/augen 2.svg"
               alt="Logo"
-              width={120}
-              height={120}
+              width={140}
+              height={140}
               className="mx-1"
             />
           </Link>
@@ -39,8 +39,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Panel</span>
+              <LayoutDashboard className="w-6 h-6" />
+              <span className="text-lg">Panel</span>
             </Link>
             <Link
               href="/patients"
@@ -50,8 +50,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <Users className="w-5 h-5" />
-              <span>Pacientes</span>
+              <Users className="w-6 h-6" />
+              <span className="text-lg">Pacientes</span>
             </Link>
             <Link
               href="/diagnosis"
@@ -61,8 +61,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <PieChart className="w-5 h-5" />
-              <span>Predicciones</span>
+              <PieChart className="w-6 h-6" />
+              <span className="text-lg">Predicciones</span>
             </Link>
           </nav>
         </div>

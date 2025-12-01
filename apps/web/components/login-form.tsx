@@ -5,6 +5,7 @@ import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { createUserProfile } from "@/server/services/user_profile";
 import { Button } from "@/components/ui/button";
+import { Clipboard } from "@/components/common/clipboard";
 import {
   Card,
   CardContent,
@@ -80,13 +81,14 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
-          <CardDescription>
-            Ingresa tu correo electrónico para acceder a tu cuenta
-          </CardDescription>
-        </CardHeader>
+      <Clipboard>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
+            <CardDescription>
+              Ingresa tu correo electrónico para acceder a tu cuenta
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
@@ -135,7 +137,8 @@ export function LoginForm({
             </div>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </Clipboard>
     </div>
   );
 }

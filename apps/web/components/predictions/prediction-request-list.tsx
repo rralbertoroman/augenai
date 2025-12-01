@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import type { EnrichedPredictionRequest } from "@/hooks/use-prediction-requests";
+import { formatDate, formatTime, getTaskLabel, type EnrichedPredictionRequest } from "@/hooks/use-prediction-requests";
 
 interface PredictionRequestListProps {
   requests: EnrichedPredictionRequest[];
@@ -15,32 +15,6 @@ export function PredictionRequestList({
   onShare,
 }: PredictionRequestListProps) {
   const router = useRouter();
-
-  const formatDate = (date: string | Date) => {
-    const d = typeof date === "string" ? new Date(date) : date;
-    return d.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
-  const formatTime = (date: string | Date) => {
-    const d = typeof date === "string" ? new Date(date) : date;
-    return d.toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getTaskLabel = (task: string) => {
-    const taskMap: Record<string, string> = {
-      classification: "Clasificación",
-      detection: "Detección",
-      segmentation: "Segmentación",
-    };
-    return taskMap[task] || task;
-  };
 
   return (
     <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
@@ -89,6 +63,10 @@ export function PredictionRequestList({
                 scope="row"
               >
                 <div className="flex flex-col">
+                  <span>{formatDate(request.createdAt)}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatTime(request.createdAt)}
+                  </span>
                   <span>{formatDate(request.createdAt)}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {formatTime(request.createdAt)}
