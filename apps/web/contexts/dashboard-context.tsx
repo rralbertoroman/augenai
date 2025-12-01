@@ -8,17 +8,24 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllSystemPredictionRequests } from "@/server/services/prediction_request";
-import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
+import { getAllSystemClassificationsWithFeedbacksAndExtras } from "@/server/services/classification";
+import type { EnrichedClassificationWithExtras } from "@/server/zod-schemas";
+
+// Use the Zod type directly with additional processing fields
+export interface DashboardPrediction extends EnrichedClassificationWithExtras {
+  predicted_class_id?: number;
+  original_confidence?: number;
+  isReviewed?: boolean;
+}
 
 type DashboardContextType = {
-  predictions: EnrichedPredictionDTO[];
-  selectedPrediction: EnrichedPredictionDTO | null;
-  setSelectedPrediction: (prediction: EnrichedPredictionDTO | null) => void;
+  predictions: DashboardPrediction[];
+  selectedPrediction: DashboardPrediction | null;
+  setSelectedPrediction: (prediction: DashboardPrediction | null) => void;
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
-  getFilteredPredictions: (query: string) => EnrichedPredictionDTO[];
+  getFilteredPredictions: (query: string) => DashboardPrediction[];
 };
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -31,35 +38,37 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const { accessToken } = useAuth();
-  const [predictions, setPredictions] = useState<EnrichedPredictionDTO[]>([]);
+  const [predictions, setPredictions] = useState<DashboardPrediction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPrediction, setSelectedPrediction] =
-    useState<EnrichedPredictionDTO | null>(null);
+    useState<DashboardPrediction | null>(null);
 
-  const processPredictions = useCallback((data: EnrichedPredictionDTO[]) => {
-    return data.map((prediction) => {
-      // Find the main feedback (where isMainData is true)
-      const mainFeedback = prediction.feedbacks?.find((fb) => fb.isMainData);
+  const processPredictions = useCallback(
+    (data: EnrichedClassificationWithExtras[]) => {
+      return data.map((classification) => {
+        // Find the main feedback (where isMainData is true)
+        const mainFeedback = classification.feedbacks?.find(
+          (fb) => fb.isMainData,
+        );
 
-      if (!mainFeedback) return prediction;
+        const processed: DashboardPrediction = {
+          ...classification,
+        };
 
-      // For now, we can only update the class_id from feedback
-      // since that's the only feedback data we have
-      return {
-        ...prediction,
-        // Update class_id from feedback
-        class_id: mainFeedback.classId,
-        // Update confidence from feedback
-        confidence: mainFeedback.confidence,
-        // Store original values
-        predicted_class_id: prediction.class_id,
-        original_confidence: prediction.confidence,
-        // Mark as reviewed if there's a main feedback
-        isReviewed: true,
-      };
-    });
-  }, []);
+        if (mainFeedback) {
+          processed.class_id = mainFeedback.classId;
+          processed.confidence = mainFeedback.confidence;
+          processed.predicted_class_id = classification.class_id;
+          processed.original_confidence = classification.confidence;
+          processed.isReviewed = true;
+        }
+
+        return processed;
+      });
+    },
+    [],
+  );
 
   const fetchPredictions = useCallback(async () => {
     if (!accessToken) return;
@@ -68,7 +77,8 @@ export const DashboardProvider = ({
     setError(null);
 
     try {
-      const data = await getAllSystemPredictionRequests(accessToken);
+      const data =
+        await getAllSystemClassificationsWithFeedbacksAndExtras(accessToken);
       const processedData = processPredictions(data);
       setPredictions(processedData);
       console.log(`Fetched ${processedData.length} predictions`);
@@ -86,7 +96,7 @@ export const DashboardProvider = ({
 
   // Filter predictions based on search query
   const getFilteredPredictions = useCallback(
-    (query: string): EnrichedPredictionDTO[] => {
+    (query: string): DashboardPrediction[] => {
       if (!query.trim()) return predictions;
 
       const lowerQuery = query.toLowerCase();
