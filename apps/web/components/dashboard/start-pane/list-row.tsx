@@ -52,25 +52,41 @@ export function ListRow({ group }: ListRowProps) {
   const mainPrediction = group.predictions[0];
   const feedbackVariant = getFeedbackVariant(mainPrediction.feedback_status);
 
-  // Calculate average confidence
-  const avgConfidence =
-    group.predictions.reduce((acc, p) => acc + p.confidence, 0) /
-    group.predictions.length;
+  // Group lesions by class and calculate average confidence for each
+  const lesionStats = group.predictions.reduce(
+    (acc, prediction) => {
+      const className = prediction.bbox.label || "Lesión";
+      if (!acc[className]) {
+        acc[className] = { count: 0, totalConfidence: 0 };
+      }
+      acc[className].count += 1;
+      acc[className].totalConfidence += prediction.confidence;
+      return acc;
+    },
+    {} as Record<string, { count: number; totalConfidence: number }>,
+  );
+
+  // Sort by count in descending order and calculate average confidence
+  const sortedLesions = Object.entries(lesionStats)
+    .sort(([, a], [, b]) => b.count - a.count)
+    .map(([className, stats]) => ({
+      className,
+      count: stats.count,
+      avgConfidence: Math.round((stats.totalConfidence / stats.count) * 100),
+    }));
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-colors">
       <div className="flex">
-        {group.bucket_name && group.storage_path && (
-          <div className="bg-muted w-fit h-fit">
-            <SupabaseImage
-              bucketName={group.bucket_name}
-              path={group.storage_path}
-              width={200}
-              height={200}
-              alt={`Imagen de ${group.patientName}`}
-            />
-          </div>
-        )}
+        <div className="bg-muted w-fit h-fit">
+          <SupabaseImage
+            bucketName={group.bucket_name}
+            path={group.storage_path}
+            width={200}
+            height={200}
+            alt={`Imagen de ${group.patientName}`}
+          />
+        </div>
         <div className="p-4 grow">
           <div className="grid grid-cols-2 gap-4">
             {/* First Column: Patient Info */}
@@ -97,15 +113,37 @@ export function ListRow({ group }: ListRowProps) {
             <div className="flex flex-col justify-between">
               <div>
                 <h4 className="text-sm font-medium text-foreground/90">
-                  <div className="flex flex-col">
-                    <div>{mainPrediction.disease_name}</div>
-                    <div className="flex flex-row justify-between">
-                      {mainPrediction.stage_content}
-                      <Badge variant="secondary" className="h-fit">
-                        {Math.round(mainPrediction.confidence * 100)}% confianza
-                      </Badge>
+                  {mainPrediction.type == "classification" ? (
+                    <div className="flex flex-col">
+                      <div>{mainPrediction.disease_name}</div>
+
+                      <div className="flex flex-row justify-between">
+                        {mainPrediction.stage_content}
+                        <Badge variant="secondary" className="h-fit">
+                          {Math.round(mainPrediction.confidence * 100)}%
+                          confianza
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-row justify-between">
+                        <span>
+                          {group.predictions.length} lesiones detectadas
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {sortedLesions.map(
+                          ({ className, count, avgConfidence }) => (
+                            <div key={className}>
+                              - {className}: {count} ({avgConfidence}%
+                              confianza)
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </h4>
               </div>
             </div>

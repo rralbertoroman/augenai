@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
 import { getPredictionRequestById } from "@/server/services/prediction_request";
-import { getClassificationsWithExtrasByRequestId } from "@/server/services/classification";
 import { getAllDiseases } from "@/server/services/disease";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
-import type {
-  EnrichedPredictionDTO,
-  EnrichedClassificationWithExtras,
-} from "@/server/zod-schemas";
+import { EnrichedPredictionDTO } from "@/server/zod-schemas";
 
 export interface EnrichedPredictionRequestDetail {
   id: string;
@@ -22,7 +18,6 @@ export interface EnrichedPredictionRequestDetail {
   diseaseNames: string[];
   totalPredictions: number;
   predictions: EnrichedPredictionDTO[];
-  classifications: EnrichedClassificationWithExtras[];
 }
 
 export function usePredictionRequestDetail(requestId: string) {
@@ -42,12 +37,10 @@ export function usePredictionRequestDetail(requestId: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const [result, classificationsWithExtras, diseasesData] =
-        await Promise.all([
-          getPredictionRequestById(token, { id }),
-          getClassificationsWithExtrasByRequestId(token, { id }),
-          getAllDiseases(token),
-        ]);
+      const [result, diseasesData] = await Promise.all([
+        getPredictionRequestById(token, { id }),
+        getAllDiseases(token),
+      ]);
 
       if (!result) {
         setRequest(null);
@@ -59,35 +52,25 @@ export function usePredictionRequestDetail(requestId: string) {
         diseasesData.map((disease) => [disease.id, disease.name]),
       );
 
-      // Collect unique disease IDs from classifications with extras
-      const diseaseIds = new Set<string>();
-      classificationsWithExtras.forEach((c) => diseaseIds.add(c.disease_id));
-
-      const diseaseIdsArray = Array.from(diseaseIds);
-      const diseaseNames = diseaseIdsArray
+      const diseaseIds = result.enrichedPredictions
+        .map((p) => p.disease_id ?? "")
+        .filter(Boolean);
+      const diseaseNames = diseaseIds
         .map((diseaseId) => diseaseMap.get(diseaseId) || diseaseId)
         .filter(Boolean);
 
-      // Count total classifications + detections
-      const totalPredictions = result.predictions.reduce(
-        (sum, pred) =>
-          sum + pred.classifications.length + pred.detections.length,
-        0,
-      );
-
       setRequest({
-        id: result.id,
-        createdAt: result.created_at,
+        id: result.request.id,
+        createdAt: result.request.createdAt,
         patient: {
-          name: result.patient_name || "Patient",
+          name: result.patient.name,
         },
-        task: result.task,
-        imageType: result.image_type,
-        diseases: diseaseIdsArray,
+        task: result.request.task,
+        imageType: result.request.imageType,
+        diseases: diseaseIds,
         diseaseNames,
-        totalPredictions,
-        predictions: result.predictions,
-        classifications: classificationsWithExtras,
+        totalPredictions: result.enrichedPredictions.length,
+        predictions: result.enrichedPredictions,
       });
     } catch (err) {
       const errorMessage = translateErrorMessage(

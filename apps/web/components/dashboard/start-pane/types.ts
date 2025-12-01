@@ -7,22 +7,22 @@ export type Prediction = {
   stage_content: string;
   confidence: number;
   createdAt: string | Date;
-  bucket_name?: string;
-  storage_path?: string;
+  bucket_name: string;
+  storage_path: string;
   patient_birthdate: string;
   feedback_status: string;
   feedbacks?: Array<{ isMainData: boolean }>;
   isMainData: boolean;
   class_id: number;
   model_id: string;
-  bbox?: {
+  bbox: {
     label?: string;
     x_left: number;
     y_top: number;
     width: number;
     height: number;
   };
-  type?: string;
+  type: string;
 };
 
 export type PredictionGroup = {
@@ -31,8 +31,8 @@ export type PredictionGroup = {
   requestDate: Date;
   patientName: string;
   predictions: Prediction[];
-  bucket_name?: string;
-  storage_path?: string;
+  bucket_name: string;
+  storage_path: string;
 };
 
 export type PatientInfo = {
