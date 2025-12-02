@@ -88,24 +88,6 @@ const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
 const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
   const currentData = data;
 
-  // Calculate total for each row to show percentages
-  const getCellColor = (value: number, rowIndex: number, colIndex: number) => {
-    const rowSum = currentData.matrix[rowIndex].reduce((a, b) => a + b, 0);
-    const percentage = rowSum > 0 ? (value / rowSum) * 100 : 0;
-
-    // Diagonal elements (correct classifications)
-    if (rowIndex === colIndex) {
-      if (percentage > 80) return "#4CAF50";
-      if (percentage > 50) return "#8BC34A";
-      return "#FFC107";
-    }
-
-    // Off-diagonal elements (misclassifications)
-    if (percentage > 20) return "#F44336";
-    if (percentage > 5) return "#FF9800";
-    return "#FFC107";
-  };
-
   return (
     <Card className="w-full bg-background">
       <CardHeader>
@@ -157,24 +139,15 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
                         rowSum > 0 ? Math.round((cell / rowSum) * 100) : 0;
                       const isDiagonal = rowIndex === colIndex;
 
-                      const cellColor = getCellColor(cell, rowIndex, colIndex);
-                      let hoverColor = "";
-
-                      if (cellColor === "#4CAF50")
-                        hoverColor = "group-hover:bg-green-500";
-                      else if (cellColor === "#F44336")
-                        hoverColor = "group-hover:bg-red-500";
-                      else hoverColor = "group-hover:bg-black-500";
-
                       return (
                         <td
                           key={`${rowIndex}-${colIndex}`}
                           className={`
-                            border p-2 text-center text-sm relative group
+                            border p-2 text-center text-sm relative
                             ${
                               isDiagonal
                                 ? "bg-green-50 dark:bg-green-900/20"
-                                : "bg-background hover:bg-muted/20 dark:bg-card dark:hover:bg-muted/30"
+                                : "bg-background dark:bg-card"
                             }
                             ${cell > 0 ? "font-medium" : "text-muted-foreground/30 dark:text-muted-foreground/40"}
                           `}
@@ -210,16 +183,6 @@ Percentage: ${percentage}%`}
                               ({percentage}%)
                             </div>
                           </div>
-
-                          <div
-                            className={`
-                            absolute inset-0 rounded-sm transition-all duration-200
-                            ${isDiagonal ? "ring-1 ring-green-200 dark:ring-green-800/50" : ""}
-                            group-hover:bg-opacity-20 dark:group-hover:bg-opacity-30
-                            ${hoverColor}
-                            pointer-events-none
-                          `}
-                          />
                         </td>
                       );
                     })}

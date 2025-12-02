@@ -1,9 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import SupabaseImage from "@/components/common/supabase-image";
 import type { PredictionGroup } from "./types";
 import { useMedicalStats } from "@/hooks/use-medical-stats";
+import Image from "next/image";
 
 function getFeedbackVariant(status: string) {
   switch (status) {
@@ -63,14 +63,15 @@ export function GridCard({ group }: GridCardProps) {
       key={`${group.requestId}-${group.patientId}`}
       className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-row hover:shadow-md transition-shadow"
     >
-      <div className="flex flex-col bg-muted w-fit h-10">
-        <SupabaseImage
-          bucketName={group.bucket_name}
-          path={group.storage_path}
-          width={200}
-          height={200}
-          alt={`Imagen de ${group.patientName}`}
-        />
+      <div className="flex flex-col bg-muted w-32 min-h-[8rem] items-center justify-center shrink-0">
+        <div className="relative w-12 h-12 opacity-50">
+          <Image
+            src="/file.svg"
+            alt="File icon"
+            fill
+            className="object-contain"
+          />
+        </div>
       </div>
       <div className="p-4 flex flex-col grow w-1/2">
         <div className="grow">

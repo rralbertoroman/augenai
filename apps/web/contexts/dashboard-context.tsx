@@ -13,11 +13,14 @@ import type {
   TaskWithExtras,
   ClassificationWithExtras,
   DetectionWithExtras,
-  PredictionWithExtras,
 } from "@/server/zod-schemas/prediction_workflow";
+
+import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
+import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
 
 type DashboardContextType = {
   predictions: TaskWithExtras[];
+  predictionClasses: PredictionClassDiseaseWithDisease[];
   selectedPrediction: TaskWithExtras | null;
   setSelectedPrediction: (prediction: TaskWithExtras | null) => void;
   isLoading: boolean;
@@ -37,42 +40,13 @@ export const DashboardProvider = ({
 }) => {
   const { accessToken } = useAuth();
   const [predictions, setPredictions] = useState<TaskWithExtras[]>([]);
+  const [predictionClasses, setPredictionClasses] = useState<
+    PredictionClassDiseaseWithDisease[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPrediction, setSelectedPrediction] =
     useState<TaskWithExtras | null>(null);
-
-  const processPredictions = useCallback((data: PredictionWithExtras[]) => {
-    return data.flatMap((pred) => {
-      const results: TaskWithExtras[] = [];
-
-      // Process Classifications
-      pred.classifications.forEach((c: ClassificationWithExtras) => {
-        results.push({
-          ...c,
-          created_at: pred.created_at,
-          request_id: pred.id ?? "",
-          patient_id: pred.patient_id ?? "",
-          bucket_name: pred.bucket_name,
-          storage_path: pred.storage_path,
-        });
-      });
-
-      // Process Detections
-      pred.detections.forEach((d: DetectionWithExtras) => {
-        results.push({
-          ...d,
-          created_at: pred.created_at,
-          request_id: pred.id ?? "",
-          patient_id: pred.patient_id ?? "",
-          bucket_name: pred.bucket_name,
-          storage_path: pred.storage_path,
-        });
-      });
-
-      return results;
-    });
-  }, []);
 
   const fetchPredictions = useCallback(async () => {
     if (!accessToken) return;
@@ -81,18 +55,56 @@ export const DashboardProvider = ({
     setError(null);
 
     try {
-      const data =
-        await getAllSystemPredictionsWithFeedbacksAndExtras(accessToken);
-      const processedData = processPredictions(data);
+      const [predictionsData, classesData] = await Promise.all([
+        getAllSystemPredictionsWithFeedbacksAndExtras(accessToken),
+        getAllPredictionClasses(accessToken),
+      ]);
+
+      // Process predictions inline to avoid dependency issues
+      const processedData = predictionsData.flatMap((pred) => {
+        const results: TaskWithExtras[] = [];
+
+        // Process Classifications
+        pred.classifications.forEach((c: ClassificationWithExtras) => {
+          results.push({
+            ...c,
+            created_at: pred.created_at,
+            request_id: pred.id ?? "",
+            patient_id: pred.patient_id ?? "",
+            bucket_name: pred.bucket_name,
+            storage_path: pred.storage_path,
+          });
+        });
+
+        // Process Detections
+        pred.detections.forEach((d: DetectionWithExtras) => {
+          results.push({
+            ...d,
+            created_at: pred.created_at,
+            request_id: pred.id ?? "",
+            patient_id: pred.patient_id ?? "",
+            bucket_name: pred.bucket_name,
+            storage_path: pred.storage_path,
+          });
+        });
+
+        return results;
+      });
+
       setPredictions(processedData);
-      console.log(`Fetched ${processedData.length} predictions`);
+      setPredictionClasses(classesData);
+      console.log(
+        `Fetched ${processedData.length} predictions and ${classesData.length} classes`,
+      );
     } catch (err) {
-      console.error("Failed to fetch predictions with feedback:", err);
-      setError("Error al cargar predicciones. Por favor intenta de nuevo.");
+      console.error("Failed to fetch dashboard data:", err);
+      setError(
+        "Error al cargar datos del dashboard. Por favor intenta de nuevo.",
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, processPredictions]);
+  }, [accessToken]);
 
   useEffect(() => {
     fetchPredictions();
@@ -135,6 +147,7 @@ export const DashboardProvider = ({
     <DashboardContext.Provider
       value={{
         predictions,
+        predictionClasses,
         selectedPrediction,
         setSelectedPrediction,
         isLoading,

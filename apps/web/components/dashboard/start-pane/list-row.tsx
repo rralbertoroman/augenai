@@ -1,9 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import SupabaseImage from "@/components/common/supabase-image";
 import type { PredictionGroup } from "./types";
 import { useMedicalStats } from "@/hooks/use-medical-stats";
+import Image from "next/image";
 
 function getFeedbackVariant(status: string) {
   switch (status) {
@@ -78,14 +78,15 @@ export function ListRow({ group }: ListRowProps) {
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-colors">
       <div className="flex">
-        <div className="bg-muted w-fit h-fit">
-          <SupabaseImage
-            bucketName={group.bucket_name}
-            path={group.storage_path}
-            width={200}
-            height={200}
-            alt={`Imagen de ${group.patientName}`}
-          />
+        <div className="bg-muted w-32 shrink-0 flex items-center justify-center">
+          <div className="relative w-12 h-12 opacity-50">
+            <Image
+              src="/file.svg"
+              alt="File icon"
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
         <div className="p-4 grow">
           <div className="grid grid-cols-2 gap-4">

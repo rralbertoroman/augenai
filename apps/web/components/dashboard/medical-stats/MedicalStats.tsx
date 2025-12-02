@@ -2,12 +2,17 @@ import React from "react";
 import { useMedicalStats } from "../../../hooks/use-medical-stats";
 import { StageTotalChart } from "./components/StageTotalChart";
 import { DiseaseCohortChart } from "./components/DiseaseCohortChart";
+import { Loader2 } from "lucide-react";
 
 export const MedicalStats: React.FC = () => {
   const { stageTotalData, cohortData, isLoading, error } = useMedicalStats();
 
   if (isLoading) {
-    return <div className="p-8 text-center">Cargando estadísticas...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (error) {
@@ -46,7 +51,7 @@ export const MedicalStats: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div>
         <h2 className="text-2xl font-bold mb-6">
           Panel de Estadísticas Médicas
