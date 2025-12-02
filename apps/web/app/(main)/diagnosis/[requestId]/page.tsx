@@ -1,16 +1,20 @@
 "use client";
 
+import * as React from "react";
 import { usePredictionRequestDetail } from "@/hooks/use-prediction-request-detail";
 import { formatDate } from "@/hooks/use-prediction-requests";
 import { SkeletonLoader } from "@/components/common/skeleton-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PredictionCard } from "@/components/predictions/prediction-card";
+import { PredictionFeedbacksModal } from "@/components/predictions/prediction-feedbacks-modal";
+import { usePredictionFeedbacks } from "@/hooks/use-prediction-feedbacks";
 import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
+import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 
 export default function PredictionDetailPage({
   params,
@@ -18,10 +22,34 @@ export default function PredictionDetailPage({
   params: Promise<{ requestId: string }>;
 }) {
   const { requestId } = use(params);
-  const { request, isLoading, error } = usePredictionRequestDetail(requestId);
+  const { request, isLoading, error, refreshRequest } =
+    usePredictionRequestDetail(requestId);
 
   // Feedback hook
   const feedback = useClassificationFeedback();
+
+  // Feedbacks modal hook
+  const feedbacksModal = usePredictionFeedbacks();
+
+  // State to store disease/stage info for the modal
+  const [currentPredictionInfo, setCurrentPredictionInfo] = React.useState<{
+    diseaseName?: string;
+    stageContent?: string;
+  }>({});
+
+  const handleViewFeedbacks = (
+    feedbacks: ClassificationFeedbackWithExtras[],
+    diseaseName?: string,
+    stageContent?: string,
+    classificationId?: string,
+  ) => {
+    setCurrentPredictionInfo({ diseaseName, stageContent });
+    feedbacksModal.openFeedbacksModal(
+      feedbacks,
+      request?.user_id,
+      classificationId,
+    );
+  };
 
   // Convert detection predictions to bounding boxes
   const detectionBoxes =
@@ -40,6 +68,17 @@ export default function PredictionDetailPage({
   // Get image storage info from the request
   const bucketName = request?.bucket_name;
   const storagePath = request?.storage_path;
+
+  // DEBUG: Log del request completo
+  React.useEffect(() => {
+    if (request) {
+      console.log("📦 DEBUG - Full request data:", request);
+      console.log(
+        "📦 DEBUG - Predictions with extras:",
+        request.predictionsWithExtras,
+      );
+    }
+  }, [request]);
 
   if (isLoading) {
     return (
@@ -185,6 +224,22 @@ export default function PredictionDetailPage({
                       const allTasks = request.predictionsWithExtras.flatMap(
                         (pred) => [...pred.classifications, ...pred.detections],
                       );
+
+                      // DEBUG: Log para ver qué datos tenemos
+                      console.log("🔍 DEBUG - All tasks:", allTasks);
+                      console.log(
+                        "🔍 DEBUG - Classifications with feedbacks:",
+                        allTasks
+                          .filter((t) => "disease_name" in t)
+                          .map((t) => ({
+                            id: t.id,
+                            disease: t.disease_name,
+                            feedbacks: t.feedbacks,
+                            hasFeedbacks:
+                              !!t.feedbacks && t.feedbacks.length > 0,
+                          })),
+                      );
+
                       return (
                         <>
                           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -192,22 +247,51 @@ export default function PredictionDetailPage({
                           </p>
                           {allTasks.map((task) => {
                             // Adapt task for PredictionCard
+                            const isClassification = "disease_name" in task;
                             const cardProps = {
                               id: task.id ?? "",
-                              disease_name:
-                                "disease_name" in task
-                                  ? task.disease_name
-                                  : "Detección",
-                              stage_content:
-                                "stage_content" in task
-                                  ? task.stage_content
-                                  : task.lesion_name,
+                              disease_name: isClassification
+                                ? task.disease_name
+                                : "Detección",
+                              stage_content: isClassification
+                                ? task.stage_content
+                                : task.lesion_name,
                               confidence: task.confidence,
+                              feedbacks: isClassification
+                                ? (task.feedbacks as
+                                    | ClassificationFeedbackWithExtras[]
+                                    | undefined)
+                                : undefined,
                             };
+
+                            // DEBUG: Log para cada card
+                            if (isClassification) {
+                              console.log(`🎯 Card ${task.id}:`, {
+                                disease: cardProps.disease_name,
+                                feedbacks: cardProps.feedbacks,
+                                feedbackCount: cardProps.feedbacks?.length || 0,
+                                willShowButton:
+                                  isClassification &&
+                                  cardProps.feedbacks &&
+                                  cardProps.feedbacks.length > 0,
+                              });
+                            }
+
                             return (
                               <PredictionCard
                                 key={task.id}
                                 diagnosis={cardProps}
+                                onViewFeedbacks={
+                                  isClassification && cardProps.feedbacks
+                                    ? (feedbacks) =>
+                                        handleViewFeedbacks(
+                                          feedbacks,
+                                          cardProps.disease_name,
+                                          cardProps.stage_content,
+                                          task.id,
+                                        )
+                                    : undefined
+                                }
                               />
                             );
                           })}
@@ -236,6 +320,20 @@ export default function PredictionDetailPage({
             />
           </div>
         </div>
+
+        {/* Feedbacks Modal */}
+        <PredictionFeedbacksModal
+          open={feedbacksModal.isOpen}
+          onClose={(onUpdate) =>
+            feedbacksModal.closeFeedbacksModal(refreshRequest)
+          }
+          feedbacks={feedbacksModal.localFeedbacks}
+          isRequestOwner={feedbacksModal.isRequestOwner}
+          updatingFeedbackId={feedbacksModal.updatingFeedbackId}
+          onSetMainFeedback={feedbacksModal.handleSetMainFeedback}
+          diseaseName={currentPredictionInfo.diseaseName}
+          stageContent={currentPredictionInfo.stageContent}
+        />
       </div>
     </main>
   );

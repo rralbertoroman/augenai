@@ -23,8 +23,8 @@ export function Navbar() {
             <Image
               src="/augen 2.svg"
               alt="Logo"
-              width={140}
-              height={140}
+              width={110}
+              height={110}
               className="mx-1"
             />
           </Link>
@@ -39,8 +39,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <LayoutDashboard className="w-6 h-6" />
-              <span className="text-lg">Panel</span>
+              <LayoutDashboard className="w-5 h-5" />
+              <span className="text-md">Panel</span>
             </Link>
             <Link
               href="/patients"
@@ -50,8 +50,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <Users className="w-6 h-6" />
-              <span className="text-lg">Pacientes</span>
+              <Users className="w-5 h-5" />
+              <span className="text-md">Pacientes</span>
             </Link>
             <Link
               href="/diagnosis"
@@ -61,8 +61,8 @@ export function Navbar() {
                   : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               }`}
             >
-              <PieChart className="w-6 h-6" />
-              <span className="text-lg">Predicciones</span>
+              <PieChart className="w-5 h-5" />
+              <span className="text-md">Predicciones</span>
             </Link>
           </nav>
         </div>

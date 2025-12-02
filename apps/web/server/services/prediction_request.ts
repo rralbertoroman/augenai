@@ -1,8 +1,16 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and, getTableColumns } from "drizzle-orm";
 import { db } from "../db/client";
-import { PredictionRequestsTable } from "../db/schemas";
+import {
+  PredictionRequestsTable,
+  UserProfilesTable,
+  PredictionClassesTable,
+  PredictionClassLesionsTable,
+  LesionsTable,
+  ClassificationFeedbackTable,
+  DetectionFeedbackTable,
+} from "../db/schemas";
 import {
   CreatePredictionRequestSchema,
   type CreatePredictionRequestInput,
@@ -18,15 +26,122 @@ import {
   type ClassificationWithExtras,
   type DetectionWithExtras,
 } from "../zod-schemas/prediction_workflow";
+import {
+  type ClassificationFeedbackDTO,
+  type ClassificationFeedbackWithExtras,
+} from "../zod-schemas/classification_feedback";
+import {
+  type DetectionFeedbackDTO,
+  type DetectionFeedbackWithExtras,
+} from "../zod-schemas/detection_feedback";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { getCurrentUser, verifyOwnership } from "../auth";
 import { DiseasesTable } from "../db/schemas";
 import { inArray } from "drizzle-orm";
+import ClassificationsTable from "../db/schemas/classification";
+import DetectionsTable from "../db/schemas/detection";
+import PredictionsTable from "../db/schemas/prediction";
 
 // ============================================================================
 // HELPERS
 // ============================================================================
+
+/**
+ * Internal Helper: Enriches classification feedbacks with user_name and stage_content
+ */
+const enrichClassificationFeedbacks = async (
+  feedbacks: ClassificationFeedbackDTO[],
+  classificationId: string,
+): Promise<ClassificationFeedbackWithExtras[]> => {
+  if (!feedbacks || feedbacks.length === 0) {
+    return [];
+  }
+
+  const results = await db
+    .select({
+      ...getTableColumns(ClassificationFeedbackTable),
+      user_name: UserProfilesTable.name,
+      stages: DiseasesTable.stages,
+      stageIdx: PredictionClassesTable.stageIdx,
+    })
+    .from(ClassificationFeedbackTable)
+    .innerJoin(
+      UserProfilesTable,
+      eq(ClassificationFeedbackTable.userProfileId, UserProfilesTable.id),
+    )
+    .innerJoin(
+      ClassificationsTable,
+      eq(ClassificationFeedbackTable.classificationId, ClassificationsTable.id),
+    )
+    .innerJoin(
+      PredictionsTable,
+      eq(ClassificationsTable.predictionId, PredictionsTable.id),
+    )
+    .innerJoin(
+      PredictionClassesTable,
+      and(
+        eq(ClassificationFeedbackTable.classId, PredictionClassesTable.classId),
+        eq(PredictionsTable.modelId, PredictionClassesTable.modelId),
+      ),
+    )
+    .innerJoin(
+      DiseasesTable,
+      eq(PredictionClassesTable.diseaseId, DiseasesTable.id),
+    )
+    .where(eq(ClassificationFeedbackTable.classificationId, classificationId));
+
+  return results.map((r) => ({
+    ...r,
+    stage_content: r.stages[r.stageIdx],
+  }));
+};
+
+/**
+ * Internal Helper: Enriches detection feedbacks with user_name and lesion_name
+ */
+const enrichDetectionFeedbacks = async (
+  feedbacks: DetectionFeedbackDTO[],
+  detectionId: string,
+): Promise<DetectionFeedbackWithExtras[]> => {
+  if (!feedbacks || feedbacks.length === 0) {
+    return [];
+  }
+
+  const results = await db
+    .select({
+      ...getTableColumns(DetectionFeedbackTable),
+      user_name: UserProfilesTable.name,
+      lesion_name: LesionsTable.name,
+    })
+    .from(DetectionFeedbackTable)
+    .innerJoin(
+      UserProfilesTable,
+      eq(DetectionFeedbackTable.userProfileId, UserProfilesTable.id),
+    )
+    .innerJoin(
+      DetectionsTable,
+      eq(DetectionFeedbackTable.detectionId, DetectionsTable.id),
+    )
+    .innerJoin(
+      PredictionsTable,
+      eq(DetectionsTable.predictionId, PredictionsTable.id),
+    )
+    .innerJoin(
+      PredictionClassLesionsTable,
+      and(
+        eq(DetectionFeedbackTable.classId, PredictionClassLesionsTable.classId),
+        eq(PredictionsTable.modelId, PredictionClassLesionsTable.modelId),
+      ),
+    )
+    .innerJoin(
+      LesionsTable,
+      eq(PredictionClassLesionsTable.lesionId, LesionsTable.id),
+    )
+    .where(eq(DetectionFeedbackTable.detectionId, detectionId));
+
+  return results;
+};
 
 /**
  * Internal Helper: Processes raw DB predictions into the enriched DTO format.
@@ -76,6 +191,18 @@ const buildEnrichedPredictionRequest = async (
           );
         }
 
+        // Enrich feedbacks if needed
+        let enrichedFeedbacks:
+          | ClassificationFeedbackWithExtras[]
+          | ClassificationFeedbackDTO[]
+          | undefined;
+        if (includeFeedbacks && classification.feedbacks) {
+          enrichedFeedbacks = await enrichClassificationFeedbacks(
+            classification.feedbacks,
+            classification.id,
+          );
+        }
+
         const baseClassification = {
           id: classification.id,
           class_id: classification.classId,
@@ -84,20 +211,7 @@ const buildEnrichedPredictionRequest = async (
           disease_name: classInfo.diseaseName,
           stage_idx: classInfo.stageIdx,
           stage_content: classInfo.diseaseStages[classInfo.stageIdx],
-          feedbacks:
-            includeFeedbacks && classification.feedbacks
-              ? classification.feedbacks.map((f) => ({
-                  id: f.id,
-                  classificationId: f.classificationId,
-                  userProfileId: f.userProfileId,
-                  isMainUser: f.isMainUser,
-                  isMainData: f.isMainData,
-                  classId: f.classId,
-                  confidence: f.confidence,
-                  createdAt: f.createdAt,
-                  updatedAt: f.updatedAt,
-                }))
-              : undefined,
+          feedbacks: enrichedFeedbacks,
         };
 
         classifications.push(baseClassification);
@@ -132,6 +246,18 @@ const buildEnrichedPredictionRequest = async (
           );
         }
 
+        // Enrich feedbacks if needed
+        let enrichedDetectionFeedbacks:
+          | DetectionFeedbackWithExtras[]
+          | DetectionFeedbackDTO[]
+          | undefined;
+        if (includeFeedbacks && detection.feedbacks) {
+          enrichedDetectionFeedbacks = await enrichDetectionFeedbacks(
+            detection.feedbacks,
+            detection.id,
+          );
+        }
+
         const baseDetection = {
           id: detection.id,
           class_id: detection.classId,
@@ -143,24 +269,7 @@ const buildEnrichedPredictionRequest = async (
             width: detection.width,
             height: detection.height,
           },
-          feedbacks:
-            includeFeedbacks && detection.feedbacks
-              ? detection.feedbacks.map((f) => ({
-                  id: f.id,
-                  detectionId: f.detectionId,
-                  userProfileId: f.userProfileId,
-                  isMainUser: f.isMainUser,
-                  isMainData: f.isMainData,
-                  classId: f.classId,
-                  confidence: f.confidence,
-                  createdAt: f.createdAt,
-                  updatedAt: f.updatedAt,
-                  xLeft: f.xLeft,
-                  yTop: f.yTop,
-                  width: f.width,
-                  height: f.height,
-                }))
-              : undefined,
+          feedbacks: enrichedDetectionFeedbacks,
         };
 
         detections.push(baseDetection);

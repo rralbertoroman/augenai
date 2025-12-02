@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { ClassificationFeedbackDTOSchema } from "./classification_feedback";
-import { DetectionFeedbackDTOSchema } from "./detection_feedback";
+import {
+  ClassificationFeedbackDTOSchema,
+  ClassificationFeedbackWithExtrasSchema,
+} from "./classification_feedback";
+import {
+  DetectionFeedbackDTOSchema,
+  DetectionFeedbackWithExtrasSchema,
+} from "./detection_feedback";
 
 // ============================================================================
 // INPUT SCHEMAS - Used for API requests
@@ -88,7 +94,12 @@ export const ClassificationSchema = z.object({
   disease_name: z.string(),
   stage_idx: z.number(),
   stage_content: z.string(),
-  feedbacks: z.array(ClassificationFeedbackDTOSchema).optional(),
+  feedbacks: z
+    .union([
+      z.array(ClassificationFeedbackDTOSchema),
+      z.array(ClassificationFeedbackWithExtrasSchema),
+    ])
+    .optional(),
 });
 
 // Enriched classification with extras for frontend consumption
@@ -117,7 +128,12 @@ export const DetectionSchema = z.object({
     height: z.number(),
   }),
   lesion_name: z.string(),
-  feedbacks: z.array(DetectionFeedbackDTOSchema).optional(),
+  feedbacks: z
+    .union([
+      z.array(DetectionFeedbackDTOSchema),
+      z.array(DetectionFeedbackWithExtrasSchema),
+    ])
+    .optional(),
 });
 
 // Enriched detection with extras for frontend consumption
