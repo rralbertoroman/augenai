@@ -37,9 +37,6 @@ const DashboardContent: React.FC = () => {
           value={TabsValue.MEDICAL_STATS}
           className="p-4 border rounded-lg"
         >
-          <h2 className="text-xl font-semibold mb-4">
-            Estadísticas de Pacientes y Enfermedades
-          </h2>
           <MedicalStats />
         </TabsContent>
         <TabsContent

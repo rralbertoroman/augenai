@@ -11,47 +11,6 @@ import { GridCard } from "./start-pane/grid-card";
 import { ListRow } from "./start-pane/list-row";
 import type { PredictionGroup, PatientInfo } from "./start-pane/types";
 
-// Formatting functions using native Date methods
-function formatDate(date: Date) {
-  return date.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatTime(date: Date) {
-  return date.toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-// Color logic will be added later
-
-function getFeedbackVariant(status: string) {
-  switch (status) {
-    case "reviewed":
-      return {
-        variant: "default" as const,
-        text: "Revisado",
-        icon: "check-circle",
-      };
-    case "pending":
-      return {
-        variant: "secondary" as const,
-        text: "Pendiente",
-        icon: "clock",
-      };
-    default:
-      return {
-        variant: "outline" as const,
-        text: "No enviado",
-        icon: "alert-circle",
-      };
-  }
-}
-
 function isToday(date: Date) {
   const today = new Date();
   return (
@@ -159,7 +118,7 @@ export default function Start() {
 
   // Convert to array and sort by date (newest first)
   const predictionGroups = Object.entries(groupedPredictions)
-    .map(([_, preds]) => {
+    .map(([, preds]) => {
       // Process predictions to ensure all required fields are present
       const processedPreds = preds.map((pred) => {
         // Create a new object with all required fields
@@ -263,7 +222,7 @@ export default function Start() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Predicciones de hoy</h2>
         <div className="flex items-center space-x-4">
