@@ -62,8 +62,8 @@ export function ForgotPasswordForm({
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Si te registraste con tu correo y contraseña, recibirás un correo
-                con las instrucciones para restablecer tu contraseña.
+                Si te registraste con tu correo y contraseña, recibirás un
+                correo con las instrucciones para restablecer tu contraseña.
               </p>
             </CardContent>
           </Card>
@@ -71,47 +71,47 @@ export function ForgotPasswordForm({
       ) : (
         <Clipboard>
           <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Restablecer contraseña</CardTitle>
-            <CardDescription>
-              Ingresa tu correo electrónico y te enviaremos un enlace para
-              restablecer tu contraseña
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleForgotPassword}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Correo electrónico</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+            <CardHeader>
+              <CardTitle className="text-2xl">Restablecer contraseña</CardTitle>
+              <CardDescription>
+                Ingresa tu correo electrónico y te enviaremos un enlace para
+                restablecer tu contraseña
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword}>
+                <div className="flex flex-col gap-6">
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Correo electrónico</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading
+                      ? "Enviando..."
+                      : "Enviar enlace de restablecimiento"}
+                  </Button>
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading
-                    ? "Enviando..."
-                    : "Enviar enlace de restablecimiento"}
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
-                ¿Ya tienes cuenta?{" "}
-                <Link
-                  href="/auth/login"
-                  className="underline underline-offset-4"
-                >
-                  Inicia sesión
-                </Link>
-              </div>
-            </form>
-        </CardContent>
-        </Card>
-      </Clipboard>
+                <div className="mt-4 text-center text-sm">
+                  ¿Ya tienes cuenta?{" "}
+                  <Link
+                    href="/auth/login"
+                    className="underline underline-offset-4"
+                  >
+                    Inicia sesión
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </Clipboard>
       )}
     </div>
   );

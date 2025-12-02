@@ -3,10 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import { formatDate, formatTime, getTaskLabel, type EnrichedPredictionRequest } from "@/hooks/use-prediction-requests";
+import {
+  formatDate,
+  formatTime,
+  getTaskLabel,
+} from "@/hooks/use-prediction-requests";
+import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 
 interface PredictionRequestListProps {
-  requests: EnrichedPredictionRequest[];
+  requests: PredictionRequest[];
   onShare?: (requestId: string) => void;
 }
 
@@ -63,23 +68,20 @@ export function PredictionRequestList({
                 scope="row"
               >
                 <div className="flex flex-col">
-                  <span>{formatDate(request.createdAt)}</span>
+                  <span>{formatDate(request.created_at)}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatTime(request.createdAt)}
+                    {formatTime(request.created_at)}
                   </span>
-                  <span>{formatDate(request.createdAt)}</span>
+                  <span>{formatDate(request.created_at)}</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatTime(request.createdAt)}
+                    {formatTime(request.created_at)}
                   </span>
                 </div>
               </th>
               <td className="px-6 py-4">
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {request.patient?.name || "N/A"}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {request.patient?.email || ""}
+                    {request.patient_name || "N/A"}
                   </span>
                 </div>
               </td>

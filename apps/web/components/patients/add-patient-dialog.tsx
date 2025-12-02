@@ -111,9 +111,7 @@ export function AddPatientDialog({
             id="name"
             placeholder="Introduzca el nombre completo"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
         </div>
@@ -176,16 +174,8 @@ export function AddPatientDialog({
           >
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            className="w-1/2"
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? "Guardando..."
-              : patient
-                ? "Actualizar"
-                : "Guardar"}
+          <Button type="submit" className="w-1/2" disabled={isSubmitting}>
+            {isSubmitting ? "Guardando..." : patient ? "Actualizar" : "Guardar"}
           </Button>
         </div>
       </form>

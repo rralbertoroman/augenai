@@ -14,10 +14,15 @@ import {
   type Classification,
   type Detection,
   type PredictionRequestWithRelations,
+  type PredictionWithExtras,
+  type ClassificationWithExtras,
+  type DetectionWithExtras,
 } from "../zod-schemas/prediction_workflow";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import { DiseasesTable } from "../db/schemas";
+import { inArray } from "drizzle-orm";
 
 // ============================================================================
 // HELPERS
@@ -32,11 +37,27 @@ const buildEnrichedPredictionRequest = async (
   includeFeedbacks: boolean = false,
 ): Promise<PredictionRequest> => {
   const enrichedPredictions: Prediction[] = [];
+  const predictionsWithExtras: PredictionWithExtras[] = [];
+
+  // Fetch disease names if there are any diseases
+  let diseaseNames: string[] = [];
+  if (request.diseases && request.diseases.length > 0) {
+    const diseases = await db
+      .select()
+      .from(DiseasesTable)
+      .where(inArray(DiseasesTable.id, request.diseases));
+
+    // Create a map to preserve order if needed, or just map the results
+    // Mapping directly from results for now
+    diseaseNames = diseases.map((d) => d.name);
+  }
 
   for (const prediction of request.predictions) {
     const { modelId, id: predictionId, createdAt } = prediction;
     const classifications: Classification[] = [];
     const detections: Detection[] = [];
+    const classificationsWithExtras: ClassificationWithExtras[] = [];
+    const detectionsWithExtras: DetectionWithExtras[] = [];
 
     // Process Classifications
     if (
@@ -55,7 +76,7 @@ const buildEnrichedPredictionRequest = async (
           );
         }
 
-        classifications.push({
+        const baseClassification = {
           id: classification.id,
           class_id: classification.classId,
           confidence: classification.confidence,
@@ -77,6 +98,22 @@ const buildEnrichedPredictionRequest = async (
                   updatedAt: f.updatedAt,
                 }))
               : undefined,
+        };
+
+        classifications.push(baseClassification);
+
+        // Add extras
+        classificationsWithExtras.push({
+          ...baseClassification,
+          model_id: modelId,
+          prediction_id: predictionId,
+          request_id: request.id,
+          patient_id: request.patientId,
+          patient_name: request.patient.name,
+          patient_birth_date: request.patient.dateOfBirth,
+          created_at: createdAt,
+          bucket_name: request.bucketName,
+          storage_path: request.storagePath,
         });
       }
     }
@@ -95,7 +132,7 @@ const buildEnrichedPredictionRequest = async (
           );
         }
 
-        detections.push({
+        const baseDetection = {
           id: detection.id,
           class_id: detection.classId,
           confidence: detection.confidence,
@@ -124,6 +161,22 @@ const buildEnrichedPredictionRequest = async (
                   height: f.height,
                 }))
               : undefined,
+        };
+
+        detections.push(baseDetection);
+
+        // Add extras
+        detectionsWithExtras.push({
+          ...baseDetection,
+          model_id: modelId,
+          prediction_id: predictionId,
+          request_id: request.id,
+          patient_id: request.patientId,
+          patient_name: request.patient.name,
+          patient_birth_date: request.patient.dateOfBirth,
+          created_at: createdAt,
+          bucket_name: request.bucketName,
+          storage_path: request.storagePath,
         });
       }
     }
@@ -135,7 +188,24 @@ const buildEnrichedPredictionRequest = async (
       classifications,
       detections,
     });
+
+    predictionsWithExtras.push({
+      prediction_id: predictionId,
+      model_id: modelId,
+      created_at: createdAt,
+      bucket_name: request.bucketName,
+      storage_path: request.storagePath,
+      patient_id: request.patientId,
+      classifications: classificationsWithExtras,
+      detections: detectionsWithExtras,
+    });
   }
+
+  // Calculate total predictions
+  const totalPredictions = predictionsWithExtras.reduce(
+    (sum, pred) => sum + pred.classifications.length + pred.detections.length,
+    0,
+  );
 
   return {
     id: request.id,
@@ -154,6 +224,9 @@ const buildEnrichedPredictionRequest = async (
     image_bucket: request.bucketName,
     image_path: request.storagePath,
     predictions: enrichedPredictions,
+    diseaseNames,
+    predictionsWithExtras,
+    totalPredictions,
   };
 };
 

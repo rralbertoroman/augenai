@@ -18,9 +18,7 @@ export default function DiagnosisPage() {
 
   const filteredRequests = requests.filter(
     (request) =>
-      request.patient?.name
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      request.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.diseaseNames?.some((diseaseName: string) =>
         diseaseName.toLowerCase().includes(searchQuery.toLowerCase()),
       ),

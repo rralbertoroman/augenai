@@ -3,7 +3,10 @@ import { createClassificationFeedback } from "@/server/services/classification_f
 import { getAllDiseases } from "@/server/services/disease";
 import { getClassIdByStageDiseaseAndModel } from "@/server/services/prediction_class_disease";
 import { useAuth } from "@/contexts/auth-context";
-import { EnrichedPredictionDTO } from "@/server/zod-schemas";
+import type {
+  ClassificationWithExtras,
+  TaskWithExtras,
+} from "@/server/zod-schemas/prediction_workflow";
 
 interface FeedbackFormData {
   diagnosisId: string;
@@ -16,14 +19,16 @@ export function useClassificationFeedback() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-  const [predictions, setPredictions] = useState<
+  const [predictions, setPredictions] = useState<ClassificationWithExtras[]>(
+    [],
+  );
+  const [transformedPredictions, setTransformedPredictions] = useState<
     Array<{
       id: string;
       disease_id: string;
       disease_name: string;
       confidence: number;
       stage_idx?: number;
-      model_id?: string;
     }>
   >([]);
   const [feedbackForms, setFeedbackForms] = useState<
@@ -39,23 +44,32 @@ export function useClassificationFeedback() {
     }
   }, [accessToken]);
 
-  const handleOpenFeedback = (allPredictions: EnrichedPredictionDTO[]) => {
-    setPredictions(
-      allPredictions.map((pred) => ({
-        id: pred.id,
-        disease_id: pred.disease_id ?? "",
-        disease_name: pred.disease_name ?? "",
-        confidence: pred.confidence,
-        stage_idx: pred.stage_idx,
-        model_id: pred.model_id,
-      })),
+  const handleOpenFeedback = (allPredictions: TaskWithExtras[]) => {
+    // Filter only classifications for this feedback workflow
+    const classifications = allPredictions.filter(
+      (p): p is ClassificationWithExtras => "disease_id" in p && !!p.id,
     );
+
+    // Transform to the format expected by BatchFeedbackModal
+    const transformed = classifications.map((pred) => ({
+      id: pred.id!, // We know it exists because we filtered for it
+      disease_id: pred.disease_id,
+      disease_name: pred.disease_name,
+      confidence: pred.confidence,
+      stage_idx: pred.stage_idx,
+    }));
+
+    setPredictions(classifications);
+    setTransformedPredictions(transformed);
+
     const initialForms: Record<string, FeedbackFormData> = {};
-    allPredictions.forEach((pred) => {
-      initialForms[pred.id] = {
-        diagnosisId: pred.id,
-        stageIdx: pred.stage_idx ?? 0,
-      };
+    classifications.forEach((pred) => {
+      if (pred.id) {
+        initialForms[pred.id] = {
+          diagnosisId: pred.id,
+          stageIdx: pred.stage_idx ?? 0,
+        };
+      }
     });
     setFeedbackForms(initialForms);
     setOpenFeedbackModal(true);
@@ -78,6 +92,7 @@ export function useClassificationFeedback() {
   const handleCloseFeedback = () => {
     setOpenFeedbackModal(false);
     setPredictions([]);
+    setTransformedPredictions([]);
     setFeedbackForms({});
   };
 
@@ -93,10 +108,12 @@ export function useClassificationFeedback() {
       );
 
       for (const prediction of predictions) {
-        const formData = feedbackForms[prediction.id];
+        // Ensure prediction.id is a string before using it as a key
+        const predictionId = prediction.id ?? "";
+        const formData = feedbackForms[predictionId];
         if (!formData) continue;
 
-        console.log("[Feedback] Processing prediction:", prediction.id);
+        console.log("[Feedback] Processing prediction:", predictionId);
         console.log("[Feedback] Form data:", formData);
 
         const modelId = prediction.model_id;
@@ -121,7 +138,7 @@ export function useClassificationFeedback() {
         }
 
         const feedbackData = {
-          classificationId: prediction.id,
+          classificationId: prediction.id ?? "",
           classId,
           confidence: 1,
         };
@@ -148,7 +165,7 @@ export function useClassificationFeedback() {
     success,
     openFeedbackModal,
     setOpenFeedbackModal,
-    predictions,
+    predictions: transformedPredictions,
     feedbackForms,
     diseases,
     updateFeedbackForm,

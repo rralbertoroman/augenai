@@ -190,41 +190,41 @@ export function UpdatePasswordForm({
               Por favor, ingresa tu nueva contraseña a continuación.
             </CardDescription>
           </CardHeader>
-        <CardContent>
-          <form onSubmit={handleForgotPassword}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="password">Nueva contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Nueva contraseña"
-                  required
-                  value={password}
-                  onChange={handlePasswordChange}
-                />
-                {passwordError && (
-                  <p className="text-sm text-red-500">{passwordError}</p>
-                )}
+          <CardContent>
+            <form onSubmit={handleForgotPassword}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Nueva contraseña</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Nueva contraseña"
+                    required
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                  {passwordError && (
+                    <p className="text-sm text-red-500">{passwordError}</p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Confirmar contraseña"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Guardando..." : "Guardar nueva contraseña"}
+                </Button>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password">Confirmar contraseña</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirmar contraseña"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Guardando..." : "Guardar nueva contraseña"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
+            </form>
+          </CardContent>
         </Card>
       </Clipboard>
     </div>
