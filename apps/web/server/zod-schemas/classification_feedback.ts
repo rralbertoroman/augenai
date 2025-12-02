@@ -42,3 +42,13 @@ export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 export type ClassificationFeedbackDTO = z.output<
   typeof ClassificationFeedbackDTOSchema
 >;
+
+export const ClassificationFeedbackWithExtrasSchema =
+  ClassificationFeedbackDTOSchema.extend({
+    user_name: z.string(),
+    stage_content: z.string(),
+  });
+
+export type ClassificationFeedbackWithExtras = z.output<
+  typeof ClassificationFeedbackWithExtrasSchema
+>;

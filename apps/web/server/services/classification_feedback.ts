@@ -11,8 +11,17 @@ import {
   type GetFeedbackByClassificationInput,
   type UpdateIsMainUserInput,
   type ClassificationFeedbackDTO,
+  type ClassificationFeedbackWithExtras,
 } from "../zod-schemas/classification_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import {
+  UserProfilesTable,
+  PredictionClassesTable,
+  DiseasesTable,
+} from "../db/schemas";
+import ClassificationsTable from "../db/schemas/classification";
+import PredictionsTable from "../db/schemas/prediction";
+import { and, getTableColumns } from "drizzle-orm";
 
 export const createClassificationFeedback = async (
   token: string,
@@ -47,6 +56,52 @@ export const getFeedbackByClassification = async (
     .from(ClassificationFeedbackTable)
     .where(eq(ClassificationFeedbackTable.classificationId, classificationId));
   return feedback;
+};
+
+export const getClassificationFeedbackWithExtras = async (
+  token: string,
+  data: GetFeedbackByClassificationInput,
+): Promise<ClassificationFeedbackWithExtras[]> => {
+  await getCurrentUser(token);
+  const { classificationId } = GetFeedbackByClassificationSchema.parse(data);
+
+  const results = await db
+    .select({
+      ...getTableColumns(ClassificationFeedbackTable),
+      user_name: UserProfilesTable.name,
+      stages: DiseasesTable.stages,
+      stageIdx: PredictionClassesTable.stageIdx,
+    })
+    .from(ClassificationFeedbackTable)
+    .innerJoin(
+      UserProfilesTable,
+      eq(ClassificationFeedbackTable.userProfileId, UserProfilesTable.id),
+    )
+    .innerJoin(
+      ClassificationsTable,
+      eq(ClassificationFeedbackTable.classificationId, ClassificationsTable.id),
+    )
+    .innerJoin(
+      PredictionsTable,
+      eq(ClassificationsTable.predictionId, PredictionsTable.id),
+    )
+    .innerJoin(
+      PredictionClassesTable,
+      and(
+        eq(ClassificationFeedbackTable.classId, PredictionClassesTable.classId),
+        eq(PredictionsTable.modelId, PredictionClassesTable.modelId),
+      ),
+    )
+    .innerJoin(
+      DiseasesTable,
+      eq(PredictionClassesTable.diseaseId, DiseasesTable.id),
+    )
+    .where(eq(ClassificationFeedbackTable.classificationId, classificationId));
+
+  return results.map((r) => ({
+    ...r,
+    stage_content: r.stages[r.stageIdx],
+  }));
 };
 
 export const getFeedbackById = async (
