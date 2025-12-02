@@ -4,10 +4,10 @@ import { uuid, timestamp } from "drizzle-orm/pg-core";
  * Base schema with common timestamp fields
  */
 export const baseSchema = {
-  createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' })
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'date' })
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),

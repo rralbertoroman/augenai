@@ -8,12 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import {
   getUserProfileById,
   updateUserProfile,
@@ -29,6 +24,7 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const { user } = useAuth();
@@ -69,7 +65,7 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError(null);
     setSuccess(null);
 
@@ -216,82 +212,88 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
         setError(errorMessage);
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Editar Perfil</DialogTitle>
-        </DialogHeader>
+    <ClipboardDialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      title="Editar Perfil"
+    >
+      <div className="flex flex-col gap-6">
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        {success && <p className="text-sm text-green-500">{success}</p>}
 
-        <div className="flex flex-col gap-6">
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {success && <p className="text-sm text-green-500">{success}</p>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-6">
-              {/* Email Field (Read-only) */}
-              <div className="grid gap-2">
-                <Label htmlFor="email">Correo Electrónico</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={user?.email || ""}
-                  disabled
-                />
-              </div>
-
-              {/* Name Field */}
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nombre</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Tu nombre"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              {/* Password Fields */}
-              <div className="grid gap-2">
-                <Label htmlFor="new-password">Nueva contraseña</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  placeholder="Nueva contraseña (dejar vacío para no cambiar)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password">Confirmar contraseña</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirmar contraseña"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Guardando..." : "Guardar"}
-                </Button>
-              </div>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-6">
+            {/* Email Field (Read-only) */}
+            <div className="grid gap-2">
+              <Label htmlFor="email">Correo Electrónico</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="tu@email.com"
+                value={user?.email || ""}
+                disabled
+              />
             </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+            {/* Name Field */}
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Tu nombre"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoading || isSubmitting}
+              />
+            </div>
+
+            {/* Password Fields */}
+            <div className="grid gap-2">
+              <Label htmlFor="new-password">Nueva contraseña</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Nueva contraseña (dejar vacío para no cambiar)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading || isSubmitting}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-password">Confirmar contraseña</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading || isSubmitting}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClose}
+                disabled={isLoading || isSubmitting}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading || isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar"}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </ClipboardDialog>
   );
 }

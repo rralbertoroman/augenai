@@ -1,10 +1,5 @@
-"use client";
-
-import { useState, useEffect, useMemo } from "react";
-import { usePredictionsWithFeedback } from "@/hooks/use-predictions-with-feedback";
-import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
-import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
-import { useAuth } from "@/contexts/auth-context";
+import { useMemo } from "react";
+import { useDashboard } from "@/contexts/dashboard-context";
 
 export interface F1ScoreData {
   confidence: number;
@@ -18,37 +13,11 @@ export interface ConfusionMatrixData {
 }
 
 export function useModelStats() {
-  const { accessToken } = useAuth();
-  const { predictions, isLoading: isPredictionsLoading } =
-    usePredictionsWithFeedback();
-  const [predictionClasses, setPredictionClasses] = useState<
-    PredictionClassDiseaseWithDisease[]
-  >([]);
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState(true);
-
-  useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        const classesData = await getAllPredictionClasses(accessToken!);
-        setPredictionClasses(classesData);
-      } catch (error) {
-        console.error("Failed to fetch metadata:", error);
-      } finally {
-        setIsLoadingMetadata(false);
-      }
-    };
-
-    fetchMetadata();
-  }, [accessToken]);
+  const { predictions, predictionClasses, isLoading } = useDashboard();
 
   // Process data
   const stats = useMemo(() => {
-    if (
-      isPredictionsLoading ||
-      isLoadingMetadata ||
-      !predictions.length ||
-      !predictionClasses.length
-    ) {
+    if (isLoading || !predictions.length || !predictionClasses.length) {
       return {
         f1ScoreData: [],
         confusionMatrixData: [],
@@ -210,10 +179,10 @@ export function useModelStats() {
       f1ScoreData,
       confusionMatrixData,
     };
-  }, [predictions, predictionClasses, isPredictionsLoading, isLoadingMetadata]);
+  }, [predictions, predictionClasses, isLoading]);
 
   return {
     ...stats,
-    isLoading: isPredictionsLoading || isLoadingMetadata,
+    isLoading,
   };
 }
