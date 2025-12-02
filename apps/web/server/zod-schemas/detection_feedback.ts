@@ -48,3 +48,13 @@ export type UpdateIsMainUserInput = z.input<typeof UpdateIsMainUserSchema>;
 
 // OUTPUT TYPES
 export type DetectionFeedbackDTO = z.output<typeof DetectionFeedbackDTOSchema>;
+
+export const DetectionFeedbackWithExtrasSchema =
+  DetectionFeedbackDTOSchema.extend({
+    user_name: z.string(),
+    lesion_name: z.string(),
+  });
+
+export type DetectionFeedbackWithExtras = z.output<
+  typeof DetectionFeedbackWithExtrasSchema
+>;
