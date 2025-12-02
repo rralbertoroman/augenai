@@ -400,6 +400,7 @@ export const getAllSystemPredictionRequests = async (
 export const getPredictionRequestById = async (
   token: string,
   id: string,
+  withFeedbacks: boolean = false,
 ): Promise<PredictionRequest | null> => {
   await getCurrentUser(token); // Verify authentication only
 
@@ -408,8 +409,20 @@ export const getPredictionRequestById = async (
     with: {
       predictions: {
         with: {
-          classifications: true,
-          detections: true,
+          classifications: {
+            with: withFeedbacks
+              ? {
+                  feedbacks: true,
+                }
+              : undefined,
+          },
+          detections: {
+            with: withFeedbacks
+              ? {
+                  feedbacks: true,
+                }
+              : undefined,
+          },
         },
       },
       patient: true,
@@ -420,5 +433,5 @@ export const getPredictionRequestById = async (
     return null;
   }
 
-  return await buildEnrichedPredictionRequest(request, false);
+  return await buildEnrichedPredictionRequest(request, withFeedbacks);
 };

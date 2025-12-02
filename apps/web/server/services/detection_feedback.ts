@@ -11,8 +11,17 @@ import {
   type GetFeedbackByDetectionInput,
   type UpdateIsMainUserInput,
   type DetectionFeedbackDTO,
+  type DetectionFeedbackWithExtras,
 } from "../zod-schemas/detection_feedback";
 import { getCurrentUser, verifyOwnership } from "../auth";
+import {
+  UserProfilesTable,
+  PredictionClassLesionsTable,
+  LesionsTable,
+} from "../db/schemas";
+import DetectionsTable from "../db/schemas/detection";
+import PredictionsTable from "../db/schemas/prediction";
+import { and, getTableColumns } from "drizzle-orm";
 
 export const createDetectionFeedback = async (
   token: string,
@@ -47,6 +56,48 @@ export const getFeedbackByDetection = async (
     .from(DetectionFeedbackTable)
     .where(eq(DetectionFeedbackTable.detectionId, detectionId));
   return feedback;
+};
+
+export const getDetectionFeedbackWithExtras = async (
+  token: string,
+  data: GetFeedbackByDetectionInput,
+): Promise<DetectionFeedbackWithExtras[]> => {
+  await getCurrentUser(token);
+  const { detectionId } = GetFeedbackByDetectionSchema.parse(data);
+
+  const results = await db
+    .select({
+      ...getTableColumns(DetectionFeedbackTable),
+      user_name: UserProfilesTable.name,
+      lesion_name: LesionsTable.name,
+    })
+    .from(DetectionFeedbackTable)
+    .innerJoin(
+      UserProfilesTable,
+      eq(DetectionFeedbackTable.userProfileId, UserProfilesTable.id),
+    )
+    .innerJoin(
+      DetectionsTable,
+      eq(DetectionFeedbackTable.detectionId, DetectionsTable.id),
+    )
+    .innerJoin(
+      PredictionsTable,
+      eq(DetectionsTable.predictionId, PredictionsTable.id),
+    )
+    .innerJoin(
+      PredictionClassLesionsTable,
+      and(
+        eq(DetectionFeedbackTable.classId, PredictionClassLesionsTable.classId),
+        eq(PredictionsTable.modelId, PredictionClassLesionsTable.modelId),
+      ),
+    )
+    .innerJoin(
+      LesionsTable,
+      eq(PredictionClassLesionsTable.lesionId, LesionsTable.id),
+    )
+    .where(eq(DetectionFeedbackTable.detectionId, detectionId));
+
+  return results;
 };
 
 export const getFeedbackById = async (
