@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { useAuth } from "@/contexts/auth-context";
@@ -10,11 +9,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { GridCard } from "./start-pane/grid-card";
 import { ListRow } from "./start-pane/list-row";
-import type {
-  Prediction,
-  PredictionGroup,
-  PatientInfo,
-} from "./start-pane/types";
+import type { PredictionGroup, PatientInfo } from "./start-pane/types";
 
 // Formatting functions using native Date methods
 function formatDate(date: Date) {
@@ -102,11 +97,12 @@ export default function Start() {
   // Filter and process today's predictions with patient info
   const todayPredictions = predictions
     .filter((prediction) => {
-      const predDate = new Date(prediction.createdAt);
+      const predDate = new Date(prediction.created_at);
 
       if (!user) return false;
 
-      const userId = prediction.user_id;
+      // Use a fallback user ID if user_id is missing (though it should be there)
+      const userId = "user_id" in prediction ? prediction.user_id : user.id;
       return isToday(predDate) && userId === user.id;
     })
     .map((prediction) => {
@@ -114,17 +110,34 @@ export default function Start() {
       const patientName = patient?.name || `Paciente`;
       const patientAge = patient?.age || 0;
 
+      const disease_name =
+        "disease_name" in prediction
+          ? prediction.disease_name
+          : "Enfermedad no especificada";
+      const stage_content =
+        "stage_content" in prediction
+          ? prediction.stage_content
+          : "No especificada";
+
+      const type =
+        "disease_name" in prediction ? "classification" : "detection";
+
+      const mainFeedback = prediction.feedbacks?.find((f) => f.isMainData);
+
       return {
         ...prediction,
-        disease_name: prediction.disease_name || "Enfermedad no especificada",
-        stage_content: prediction.stage_content || "No especificada",
+        disease_name,
+        stage_content,
         bucket_name: prediction.bucket_name,
         storage_path: prediction.storage_path,
         patient_name: patientName,
         patient_age: patientAge,
-        feedback_status: prediction.feedbacks?.[0]?.isMainData
-          ? "reviewed"
-          : "pending",
+        type,
+        feedback_status: mainFeedback ? "reviewed" : "pending",
+        confidence: mainFeedback
+          ? mainFeedback.confidence
+          : prediction.confidence,
+        class_id: mainFeedback ? mainFeedback.classId : prediction.class_id,
       };
     });
 
@@ -132,7 +145,11 @@ export default function Start() {
   const groupedPredictions = todayPredictions.reduce<
     Record<string, typeof todayPredictions>
   >((groups, prediction) => {
-    const groupKey = `${prediction.request_id}-${prediction.patient_id}`;
+    // Ensure request_id and patient_id are strings to be used as keys
+    const reqId = prediction.request_id || "unknown-req";
+    const patId = prediction.patient_id || "unknown-pat";
+    const groupKey = `${reqId}-${patId}`;
+
     if (!groups[groupKey]) {
       groups[groupKey] = [];
     }
@@ -156,9 +173,9 @@ export default function Start() {
           confidence: pred.confidence,
           patient_birthdate: pred.patient_birth_date!,
           createdAt:
-            typeof pred.createdAt === "string"
-              ? new Date(pred.createdAt)
-              : pred.createdAt,
+            typeof pred.created_at === "string"
+              ? new Date(pred.created_at)
+              : pred.created_at,
           bucket_name: pred.bucket_name,
           storage_path: pred.storage_path,
           patient_age: pred.patient_age,
@@ -167,8 +184,8 @@ export default function Start() {
           class_id: pred.class_id,
           model_id: pred.model_id,
           bbox: {
-            ...pred.bbox,
-            label: pred.lesion_name,
+            ...("bbox" in pred ? pred.bbox : {}),
+            label: "lesion_name" in pred ? pred.lesion_name : undefined,
           },
           type: pred.type,
           // Handle isMainData safely

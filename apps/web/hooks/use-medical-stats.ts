@@ -97,6 +97,7 @@ export function useMedicalStats() {
 
     // Process predictions
     predictions.forEach((p) => {
+      if (!("disease_name" in p)) return;
       const diseaseKey = p.disease_name || "";
       if (!diseaseKey) return;
 

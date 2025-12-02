@@ -83,68 +83,71 @@ export function SignUpForm({
             <CardTitle className="text-2xl">Registrarse</CardTitle>
             <CardDescription>Crea una nueva cuenta</CardDescription>
           </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nombre completo</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Juan Pérez"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Correo electrónico</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Contraseña</Label>
+          <CardContent>
+            <form onSubmit={handleSignUp}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nombre completo</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Juan Pérez"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repetir contraseña</Label>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                />
+                <div className="grid gap-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Contraseña</Label>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="repeat-password">Repetir contraseña</Label>
+                  </div>
+                  <Input
+                    id="repeat-password"
+                    type="password"
+                    required
+                    value={repeatPassword}
+                    onChange={(e) => setRepeatPassword(e.target.value)}
+                  />
+                </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creando cuenta..." : "Registrarse"}
+                </Button>
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creando cuenta..." : "Registrarse"}
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              ¿Ya tienes cuenta?{" "}
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Inicia sesión
-              </Link>
-            </div>
-          </form>
-        </CardContent>
+              <div className="mt-4 text-center text-sm">
+                ¿Ya tienes cuenta?{" "}
+                <Link
+                  href="/auth/login"
+                  className="underline underline-offset-4"
+                >
+                  Inicia sesión
+                </Link>
+              </div>
+            </form>
+          </CardContent>
         </Card>
       </Clipboard>
     </div>

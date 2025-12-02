@@ -2,55 +2,39 @@
 
 import { useState, useEffect } from "react";
 import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/services/prediction_request";
-import { getAllDiseases } from "@/server/services/disease";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
-import { EnrichedPredictionDTO } from "@/server/zod-schemas";
-
-export interface EnrichedPredictionRequest {
-  id: string;
-  createdAt: Date;
-  patient: {
-    name: string;
-    email?: string;
-  };
-  task: string;
-  imageType: string;
-  diseases: string[];
-  diseaseNames: string[];
-  totalPredictions: number;
-  predictions: EnrichedPredictionDTO[];
-}
+import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 
 export const formatDate = (date: string | Date) => {
-    const d = typeof date === "string" ? new Date(date) : date;
-    return d.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
 
 export const formatTime = (date: string | Date) => {
-    const d = typeof date === "string" ? new Date(date) : date;
-    return d.toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 export const getTaskLabel = (task: string) => {
-    const taskMap: Record<string, string> = {
-      classification: "Clasificación",
-      detection: "Detección",
-      segmentation: "Segmentación",
-    };
-    return taskMap[task] || task;
+  const taskMap: Record<string, string> = {
+    classification: "Clasificación",
+    detection: "Detección",
+    segmentation: "Segmentación",
   };
+  return taskMap[task] || task;
+};
 
 export function usePredictionRequests() {
   const { user, accessToken } = useAuth();
-  const [requests, setRequests] = useState<EnrichedPredictionRequest[]>([]);
+  const [requests, setRequests] = useState<PredictionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,71 +48,9 @@ export function usePredictionRequests() {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch both enriched predictions and diseases in parallel
-      const [enrichedPredictions, diseasesData] = await Promise.all([
-        getAllPredictionRequestsWithPredictionsByUserId(token, userId),
-        getAllDiseases(token),
-      ]);
-
-      // Create a map of disease ID to disease name
-      const diseaseMap = new Map(
-        diseasesData.map((disease) => [disease.id, disease.name]),
-      );
-
-      const requestsMap = new Map();
-
-      for (const enrichedDiagnosis of enrichedPredictions) {
-        const requestId = enrichedDiagnosis.request_id;
-        if (!requestsMap.has(requestId)) {
-          requestsMap.set(requestId, {
-            id: requestId,
-            diagnoses: [],
-            patient_id: enrichedDiagnosis.patient_id,
-            createdAt: enrichedDiagnosis.createdAt,
-            diseases: new Set<string>(),
-          });
-        }
-        const request = requestsMap.get(requestId);
-        request.diseases.add(enrichedDiagnosis.disease_id);
-        request.diagnoses.push({
-          id: enrichedDiagnosis.id,
-          classId: enrichedDiagnosis.class_id,
-          model_id: enrichedDiagnosis.model_id,
-          confidence: enrichedDiagnosis.confidence,
-          disease_id: enrichedDiagnosis.disease_id,
-          disease_name: enrichedDiagnosis.disease_name,
-          stage_idx: enrichedDiagnosis.stage_idx,
-          stage_content: enrichedDiagnosis.stage_content,
-          type: enrichedDiagnosis.type,
-          bbox: enrichedDiagnosis.bbox,
-        });
-      }
-
-      const enrichedRequests: EnrichedPredictionRequest[] = Array.from(
-        requestsMap.values(),
-      ).map((group) => {
-        const diseaseIds = Array.from(group.diseases) as string[];
-        const diseaseNames = diseaseIds
-          .map((diseaseId: string) => diseaseMap.get(diseaseId) || diseaseId)
-          .filter(Boolean) as string[];
-
-        return {
-          id: group.id,
-          createdAt: group.createdAt,
-          patient: {
-            name: "Patient",
-            email: "",
-          },
-          task: "classification",
-          imageType: "fundus",
-          diseases: diseaseIds,
-          diseaseNames,
-          totalPredictions: group.diagnoses.length,
-          predictions: group.diagnoses,
-        };
-      });
-
-      setRequests(enrichedRequests);
+      const predictionRequests =
+        await getAllPredictionRequestsWithPredictionsByUserId(token, userId);
+      setRequests(predictionRequests);
     } catch (err) {
       const errorMessage = translateErrorMessage(
         err instanceof Error ? err : new Error(String(err)),

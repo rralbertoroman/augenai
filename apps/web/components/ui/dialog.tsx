@@ -5,7 +5,6 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Clipboard } from "./clipboard";
 
 function Dialog({
   ...props
@@ -116,7 +115,10 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-2xl font-bold text-slate-900 dark:text-white leading-tight", className)}
+      className={cn(
+        "text-2xl font-bold text-slate-900 dark:text-white leading-tight",
+        className,
+      )}
       {...props}
     />
   );
@@ -129,7 +131,10 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-slate-600 dark:text-slate-400 text-base leading-relaxed", className)}
+      className={cn(
+        "text-slate-600 dark:text-slate-400 text-base leading-relaxed",
+        className,
+      )}
       {...props}
     />
   );
