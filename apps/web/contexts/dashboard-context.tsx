@@ -8,17 +8,22 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllSystemPredictionRequests } from "@/server/services/prediction_request";
-import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
+import { getAllSystemPredictionsWithFeedbacksAndExtras } from "@/server/services/prediction";
+import type {
+  TaskWithExtras,
+  ClassificationWithExtras,
+  DetectionWithExtras,
+  PredictionWithExtras,
+} from "@/server/zod-schemas/prediction_workflow";
 
 type DashboardContextType = {
-  predictions: EnrichedPredictionDTO[];
-  selectedPrediction: EnrichedPredictionDTO | null;
-  setSelectedPrediction: (prediction: EnrichedPredictionDTO | null) => void;
+  predictions: TaskWithExtras[];
+  selectedPrediction: TaskWithExtras | null;
+  setSelectedPrediction: (prediction: TaskWithExtras | null) => void;
   isLoading: boolean;
   error: string | null;
   refreshData: () => Promise<void>;
-  getFilteredPredictions: (query: string) => EnrichedPredictionDTO[];
+  getFilteredPredictions: (query: string) => TaskWithExtras[];
 };
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -31,33 +36,41 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const { accessToken } = useAuth();
-  const [predictions, setPredictions] = useState<EnrichedPredictionDTO[]>([]);
+  const [predictions, setPredictions] = useState<TaskWithExtras[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPrediction, setSelectedPrediction] =
-    useState<EnrichedPredictionDTO | null>(null);
+    useState<TaskWithExtras | null>(null);
 
-  const processPredictions = useCallback((data: EnrichedPredictionDTO[]) => {
-    return data.map((prediction) => {
-      // Find the main feedback (where isMainData is true)
-      const mainFeedback = prediction.feedbacks?.find((fb) => fb.isMainData);
+  const processPredictions = useCallback((data: PredictionWithExtras[]) => {
+    return data.flatMap((pred) => {
+      const results: TaskWithExtras[] = [];
 
-      if (!mainFeedback) return prediction;
+      // Process Classifications
+      pred.classifications.forEach((c: ClassificationWithExtras) => {
+        results.push({
+          ...c,
+          created_at: pred.created_at,
+          request_id: pred.id ?? "",
+          patient_id: pred.patient_id ?? "",
+          bucket_name: pred.bucket_name,
+          storage_path: pred.storage_path,
+        });
+      });
 
-      // For now, we can only update the class_id from feedback
-      // since that's the only feedback data we have
-      return {
-        ...prediction,
-        // Update class_id from feedback
-        class_id: mainFeedback.classId,
-        // Update confidence from feedback
-        confidence: mainFeedback.confidence,
-        // Store original values
-        predicted_class_id: prediction.class_id,
-        original_confidence: prediction.confidence,
-        // Mark as reviewed if there's a main feedback
-        isReviewed: true,
-      };
+      // Process Detections
+      pred.detections.forEach((d: DetectionWithExtras) => {
+        results.push({
+          ...d,
+          created_at: pred.created_at,
+          request_id: pred.id ?? "",
+          patient_id: pred.patient_id ?? "",
+          bucket_name: pred.bucket_name,
+          storage_path: pred.storage_path,
+        });
+      });
+
+      return results;
     });
   }, []);
 
@@ -68,7 +81,8 @@ export const DashboardProvider = ({
     setError(null);
 
     try {
-      const data = await getAllSystemPredictionRequests(accessToken);
+      const data =
+        await getAllSystemPredictionsWithFeedbacksAndExtras(accessToken);
       const processedData = processPredictions(data);
       setPredictions(processedData);
       console.log(`Fetched ${processedData.length} predictions`);
@@ -86,16 +100,29 @@ export const DashboardProvider = ({
 
   // Filter predictions based on search query
   const getFilteredPredictions = useCallback(
-    (query: string): EnrichedPredictionDTO[] => {
+    (query: string): TaskWithExtras[] => {
       if (!query.trim()) return predictions;
 
       const lowerQuery = query.toLowerCase();
-      return predictions.filter(
-        (prediction) =>
-          prediction.patient_id?.toLowerCase().includes(lowerQuery) ||
-          prediction.disease_name?.toLowerCase().includes(lowerQuery) ||
-          prediction.stage_content?.toLowerCase().includes(lowerQuery),
-      );
+      return predictions.filter((prediction) => {
+        const idMatch = prediction.id?.toLowerCase().includes(lowerQuery);
+        const patientMatch = prediction.patient_name
+          ?.toLowerCase()
+          .includes(lowerQuery);
+
+        let specificMatch = false;
+        if ("disease_name" in prediction) {
+          specificMatch = prediction.disease_name
+            .toLowerCase()
+            .includes(lowerQuery);
+        } else if ("lesion_name" in prediction) {
+          specificMatch = prediction.lesion_name
+            .toLowerCase()
+            .includes(lowerQuery);
+        }
+
+        return idMatch || patientMatch || specificMatch;
+      });
     },
     [predictions],
   );

@@ -146,11 +146,13 @@ export const PredictionSchema = z.object({
 // Enriched prediction with extras - contains enriched classifications and detections
 // Used when grouping predictions with full context information
 export const PredictionWithExtrasSchema = z.object({
+  id: z.uuid().optional(),
   prediction_id: z.uuid(),
   model_id: z.uuid(),
   created_at: z.date(),
   bucket_name: z.string().optional(),
   storage_path: z.string().optional(),
+  patient_id: z.string().optional(),
   classifications: z.array(ClassificationWithExtrasSchema).default([]),
   detections: z.array(DetectionWithExtrasSchema).default([]),
 });
@@ -174,6 +176,9 @@ export const PredictionRequestSchema = z.object({
   image_bucket: z.string().optional(),
   image_path: z.string().optional(),
   predictions: z.array(PredictionSchema),
+  diseaseNames: z.array(z.string()).optional(),
+  predictionsWithExtras: z.array(PredictionWithExtrasSchema).optional(),
+  totalPredictions: z.number().optional(),
 });
 
 // ============================================================================

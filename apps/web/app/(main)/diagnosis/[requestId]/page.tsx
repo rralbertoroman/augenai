@@ -25,24 +25,21 @@ export default function PredictionDetailPage({
 
   // Convert detection predictions to bounding boxes
   const detectionBoxes =
-    request?.predictions
-      ?.filter((pred) => pred.type === "detection" && pred.bbox)
-      .map((pred) => {
-        return {
-          id: pred.id,
-          x: pred.bbox!.x_left,
-          y: pred.bbox!.y_top,
-          width: pred.bbox!.width,
-          height: pred.bbox!.height,
-          label: pred.lesion_name,
-          confidence: pred.confidence,
-        };
-      }) || [];
+    request?.predictionsWithExtras
+      ?.flatMap((pred) => pred.detections)
+      .map((detection) => ({
+        id: detection.id ?? "",
+        x: detection.bbox.x_left,
+        y: detection.bbox.y_top,
+        width: detection.bbox.width,
+        height: detection.bbox.height,
+        label: detection.lesion_name,
+        confidence: detection.confidence,
+      })) || [];
 
-  // Get image storage info from the first prediction
-  const imageInfo = request?.predictions?.[0];
-  const bucketName = imageInfo?.bucket_name;
-  const storagePath = imageInfo?.storage_path;
+  // Get image storage info from the request
+  const bucketName = request?.bucket_name;
+  const storagePath = request?.storage_path;
 
   if (isLoading) {
     return (
@@ -94,7 +91,7 @@ export default function PredictionDetailPage({
                 Fecha
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {request ? formatDate(request.createdAt) : ""}
+                {request ? formatDate(request.created_at) : ""}
               </p>
             </div>
             <div>
@@ -102,7 +99,7 @@ export default function PredictionDetailPage({
                 Paciente
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {request?.patient?.name || "N/A"}
+                {request?.patient_name || "N/A"}
               </p>
             </div>
             <div>
@@ -118,7 +115,7 @@ export default function PredictionDetailPage({
                 Tipo de Imagen
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white">
-                {request?.imageType}
+                {request?.image_type}
               </p>
             </div>
             <div className="sm:col-span-2">
@@ -158,32 +155,65 @@ export default function PredictionDetailPage({
               <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
                 Resultados de Diagnóstico
               </h2>
-              {request?.predictions && request.predictions.length > 0 && (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() =>
-                    feedback.handleOpenFeedback(request.predictions)
-                  }
-                  className="text-md"
-                >
-                  Brindar retroalimentación
-                </Button>
-              )}
+              {request?.predictionsWithExtras &&
+                request.predictionsWithExtras.length > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      // Flatten all tasks from predictionsWithExtras
+                      const allTasks =
+                        request.predictionsWithExtras?.flatMap((pred) => [
+                          ...pred.classifications,
+                          ...pred.detections,
+                        ]) || [];
+                      feedback.handleOpenFeedback(allTasks);
+                    }}
+                    className="text-md"
+                  >
+                    Brindar retroalimentación
+                  </Button>
+                )}
             </div>
             <div className="p-6 space-y-6">
               <div className="flex flex-row gap-4 w-full">
-                {request?.predictions && request.predictions.length > 0 ? (
+                {request?.predictionsWithExtras &&
+                request.predictionsWithExtras.length > 0 ? (
                   <div className="w-full space-y-4">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Predicciones ({request.predictions.length})
-                    </p>
-                    {request.predictions.map((diagnosis) => (
-                      <PredictionCard
-                        key={diagnosis.id}
-                        diagnosis={diagnosis}
-                      />
-                    ))}
+                    {(() => {
+                      // Flatten all classifications and detections
+                      const allTasks = request.predictionsWithExtras.flatMap(
+                        (pred) => [...pred.classifications, ...pred.detections],
+                      );
+                      return (
+                        <>
+                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                            Predicciones ({allTasks.length})
+                          </p>
+                          {allTasks.map((task) => {
+                            // Adapt task for PredictionCard
+                            const cardProps = {
+                              id: task.id ?? "",
+                              disease_name:
+                                "disease_name" in task
+                                  ? task.disease_name
+                                  : "Detección",
+                              stage_content:
+                                "stage_content" in task
+                                  ? task.stage_content
+                                  : task.lesion_name,
+                              confidence: task.confidence,
+                            };
+                            return (
+                              <PredictionCard
+                                key={task.id}
+                                diagnosis={cardProps}
+                              />
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">

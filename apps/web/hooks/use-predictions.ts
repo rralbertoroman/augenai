@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/services/prediction_request";
+import { getAllPredictionsWithExtrasByUserId } from "@/server/services/prediction";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
-import type { EnrichedPredictionDTO } from "@/server/zod-schemas/prediction";
-
-export type Prediction = EnrichedPredictionDTO;
+import type {
+  TaskWithExtras,
+  ClassificationWithExtras,
+  DetectionWithExtras,
+  PredictionWithExtras,
+} from "@/server/zod-schemas/prediction_workflow";
 
 // Confidence badge constants
 const CONFIDENCE_THRESHOLDS = {
@@ -53,15 +56,17 @@ export function formatKey(key: string): string {
     .join(" ");
 }
 
-export function getSortedPredictions(predictions: Prediction[]): Prediction[] {
+export function getSortedPredictions(
+  predictions: TaskWithExtras[],
+): TaskWithExtras[] {
   return [...predictions].sort((a, b) => b.confidence - a.confidence);
 }
 
 export function usePredictions() {
   const { user, accessToken } = useAuth();
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictions, setPredictions] = useState<TaskWithExtras[]>([]);
   const [selectedPrediction, setSelectedPrediction] =
-    useState<Prediction | null>(null);
+    useState<TaskWithExtras | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,11 +80,29 @@ export function usePredictions() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getAllPredictionRequestsWithPredictionsByUserId(
-        token,
-        userId,
+      // Fetch hierarchical data
+      const data = await getAllPredictionsWithExtrasByUserId(token, userId);
+
+      // Flatten to match UI expectations (TaskWithExtras[])
+      const flattenedPredictions: TaskWithExtras[] = data.flatMap(
+        (pred: PredictionWithExtras) => {
+          const results: TaskWithExtras[] = [];
+
+          // Process Classifications
+          pred.classifications.forEach((c: ClassificationWithExtras) => {
+            results.push(c);
+          });
+
+          // Process Detections
+          pred.detections.forEach((d: DetectionWithExtras) => {
+            results.push(d);
+          });
+
+          return results;
+        },
       );
-      setPredictions(data);
+
+      setPredictions(flattenedPredictions);
     } catch (err) {
       const errorMessage = translateErrorMessage(
         err instanceof Error ? err : new Error(String(err)),
@@ -92,10 +115,31 @@ export function usePredictions() {
   };
 
   // Filtering function for predictions
-  function getFilteredPredictions(query: string): Prediction[] {
-    return predictions.filter((prediction) =>
-      prediction.id.toLowerCase().includes(query.toLowerCase()),
-    );
+  function getFilteredPredictions(query: string): TaskWithExtras[] {
+    return predictions.filter((prediction) => {
+      // Access properties safely based on type guard or common properties
+      // Both have id, patient_id, etc.
+      const idMatch = prediction.id
+        ?.toLowerCase()
+        .includes(query.toLowerCase());
+      const patientMatch = prediction.patient_name
+        ?.toLowerCase()
+        .includes(query.toLowerCase());
+
+      // Specific checks
+      let specificMatch = false;
+      if ("disease_name" in prediction) {
+        specificMatch = prediction.disease_name
+          .toLowerCase()
+          .includes(query.toLowerCase());
+      } else if ("lesion_name" in prediction) {
+        specificMatch = prediction.lesion_name
+          .toLowerCase()
+          .includes(query.toLowerCase());
+      }
+
+      return idMatch || patientMatch || specificMatch;
+    });
   }
 
   return {

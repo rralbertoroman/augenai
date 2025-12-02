@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { usePredictionsWithFeedback } from "@/hooks/use-predictions-with-feedback";
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
-import { EnrichedPredictionDTO } from "@/server/zod-schemas";
 import { useAuth } from "@/contexts/auth-context";
 
 export interface F1ScoreData {
@@ -17,17 +16,6 @@ export interface ConfusionMatrixData {
   stages: string[];
   matrix: number[][];
 }
-
-export type ProcessedEnrichedPrediction = EnrichedPredictionDTO & {
-  class_id: number;
-  // Update confidence from feedback
-  confidence: number;
-  // Store original values
-  predicted_class_id: number;
-  original_confidence: number;
-  // Mark as reviewed if there's a main feedback
-  isReviewed: boolean;
-};
 
 export function useModelStats() {
   const { accessToken } = useAuth();
@@ -106,21 +94,8 @@ export function useModelStats() {
     });
 
     predictions.forEach((p) => {
-      // Get disease info from the prediction's class (either original or current if original missing)
-      // We should use the ACTUAL class to determine the disease category for grouping?
-      // Or the PREDICTED class?
-      // Usually we group by the target disease model.
-      // Let's assume model_id or disease_id on the prediction tells us the disease.
-      // But prediction.disease_id might be updated by feedback?
-      // Let's use the predicted_class_id to find the intended disease context if possible,
-      // or just use the current one.
-      // Actually, the model is specific to a disease usually?
-      // Let's look at the prediction object. It has model_id.
-      // We can group by model_id -> disease.
-
       // Let's use the classMap to find the disease for the PREDICTED class (original).
-      const predictedClassId =
-        (p as ProcessedEnrichedPrediction).predicted_class_id ?? p.class_id;
+      const predictedClassId = p.class_id;
       const classInfo = classMap.get(predictedClassId);
 
       if (classInfo) {
@@ -142,9 +117,9 @@ export function useModelStats() {
         .map(() => Array(stages.length).fill(0));
 
       diseasePredictions.forEach((p) => {
-        const predictedClassId =
-          (p as ProcessedEnrichedPrediction).predicted_class_id ?? p.class_id;
-        const actualClassId = p.class_id; // This is the feedback class if reviewed, else same as predicted
+        const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
+        const predictedClassId = p.class_id;
+        const actualClassId = mainFeedback ? mainFeedback.classId : p.class_id;
 
         const predictedInfo = classMap.get(predictedClassId);
         const actualInfo = classMap.get(actualClassId);
@@ -181,12 +156,10 @@ export function useModelStats() {
       let fn = 0;
 
       predictions.forEach((p) => {
-        const predictedClassId =
-          (p as ProcessedEnrichedPrediction).predicted_class_id ?? p.class_id;
-        const actualClassId = p.class_id;
-        const confidence =
-          (p as ProcessedEnrichedPrediction).original_confidence ??
-          p.confidence;
+        const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
+        const predictedClassId = p.class_id;
+        const actualClassId = mainFeedback ? mainFeedback.classId : p.class_id;
+        const confidence = p.confidence;
 
         // If confidence < threshold, we treat it as "Negative" (or "None" if applicable)?
         // Or we just exclude it?

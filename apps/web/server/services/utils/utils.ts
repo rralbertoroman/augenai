@@ -22,6 +22,8 @@ export const groupByPredictionId = (
   for (const classification of classifications) {
     if (!predictionMap.has(classification.prediction_id)) {
       predictionMap.set(classification.prediction_id, {
+        id: classification.request_id,
+        patient_id: classification.patient_id,
         prediction_id: classification.prediction_id,
         model_id: classification.model_id,
         created_at: classification.created_at,
@@ -40,6 +42,8 @@ export const groupByPredictionId = (
   for (const detection of detections) {
     if (!predictionMap.has(detection.prediction_id)) {
       predictionMap.set(detection.prediction_id, {
+        id: detection.request_id,
+        patient_id: detection.patient_id,
         prediction_id: detection.prediction_id,
         model_id: detection.model_id,
         created_at: detection.created_at,

@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { createClient } from "@/lib/supabase/client";
 import { SupabaseWeakPasswordError } from "@/lib/supabase/errors";
