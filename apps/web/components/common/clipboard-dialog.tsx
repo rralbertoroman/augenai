@@ -29,15 +29,20 @@ export function ClipboardDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
 
-      <DialogContent className="max-w-2xl p-0 bg-transparent shadow-none [&>div]:bg-transparent [&>div]:shadow-none [&>div]:p-0">
-        <Clipboard>
-          <div className="px-6 pt-8 pb-0">
+      <DialogContent
+        customContent
+        className="min-w-[50vw] max-w-4xl max-h-[90vh] p-0 bg-transparent shadow-none flex items-center justify-center"
+      >
+        <Clipboard className="flex flex-col w-full h-full">
+          <div className="px-6 pt-8 pb-0 shrink-0">
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
           </div>
 
-          <div className="px-6 py-4">{children}</div>
+          <div className="px-6 py-4 overflow-y-auto scrollbar-hide max-h-[60vh] min-h-0">
+            {children}
+          </div>
         </Clipboard>
       </DialogContent>
     </Dialog>

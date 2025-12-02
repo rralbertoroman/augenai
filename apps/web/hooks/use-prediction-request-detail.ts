@@ -20,7 +20,8 @@ export function usePredictionRequestDetail(requestId: string) {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await getPredictionRequestById(token, id);
+      // Cargar request con feedbacks incluidos
+      const result = await getPredictionRequestById(token, id, true);
 
       if (!result) {
         setRequest(null);
