@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { 
+import {
   ClassificationFeedbackDTOSchema,
-  ClassificationFeedbackWithExtrasSchema 
+  ClassificationFeedbackWithExtrasSchema,
 } from "./classification_feedback";
-import { 
+import {
   DetectionFeedbackDTOSchema,
-  DetectionFeedbackWithExtrasSchema 
+  DetectionFeedbackWithExtrasSchema,
 } from "./detection_feedback";
 
 // ============================================================================
@@ -94,10 +94,12 @@ export const ClassificationSchema = z.object({
   disease_name: z.string(),
   stage_idx: z.number(),
   stage_content: z.string(),
-  feedbacks: z.union([
-    z.array(ClassificationFeedbackDTOSchema),
-    z.array(ClassificationFeedbackWithExtrasSchema)
-  ]).optional(),
+  feedbacks: z
+    .union([
+      z.array(ClassificationFeedbackDTOSchema),
+      z.array(ClassificationFeedbackWithExtrasSchema),
+    ])
+    .optional(),
 });
 
 // Enriched classification with extras for frontend consumption
@@ -126,10 +128,12 @@ export const DetectionSchema = z.object({
     height: z.number(),
   }),
   lesion_name: z.string(),
-  feedbacks: z.union([
-    z.array(DetectionFeedbackDTOSchema),
-    z.array(DetectionFeedbackWithExtrasSchema)
-  ]).optional(),
+  feedbacks: z
+    .union([
+      z.array(DetectionFeedbackDTOSchema),
+      z.array(DetectionFeedbackWithExtrasSchema),
+    ])
+    .optional(),
 });
 
 // Enriched detection with extras for frontend consumption

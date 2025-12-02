@@ -53,7 +53,7 @@ export function DiagnosisContainer() {
       const result = await response.json();
       console.log("Prediction response:", result);
 
-      const requestId = result.request_id || result.requestId;
+      const requestId = result.id;
 
       if (!requestId) {
         throw new Error("No se recibió el ID de la solicitud");

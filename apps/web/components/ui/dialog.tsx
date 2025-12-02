@@ -50,9 +50,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = false,
+  customContent = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  customContent?: boolean;
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -61,14 +63,18 @@ function DialogContent({
         <DialogPrimitive.Content
           data-slot="dialog-content"
           className={cn(
-            "relative w-full max-w-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "relative w-full duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
             className,
           )}
           {...props}
         >
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-6">{children}</div>
-          </div>
+          {customContent ? (
+            children
+          ) : (
+            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-6">{children}</div>
+            </div>
+          )}
 
           {showCloseButton && (
             <DialogPrimitive.Close

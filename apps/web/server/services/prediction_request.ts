@@ -2,7 +2,7 @@
 
 import { eq, and, getTableColumns } from "drizzle-orm";
 import { db } from "../db/client";
-import { 
+import {
   PredictionRequestsTable,
   UserProfilesTable,
   PredictionClassesTable,
@@ -143,7 +143,6 @@ const enrichDetectionFeedbacks = async (
   return results;
 };
 
-
 /**
  * Internal Helper: Processes raw DB predictions into the enriched DTO format.
  * Maps disease/lesion IDs to names and structures the hierarchy (Request -> Predictions -> Classifications/Detections).
@@ -193,7 +192,10 @@ const buildEnrichedPredictionRequest = async (
         }
 
         // Enrich feedbacks if needed
-        let enrichedFeedbacks: ClassificationFeedbackWithExtras[] | ClassificationFeedbackDTO[] | undefined;
+        let enrichedFeedbacks:
+          | ClassificationFeedbackWithExtras[]
+          | ClassificationFeedbackDTO[]
+          | undefined;
         if (includeFeedbacks && classification.feedbacks) {
           enrichedFeedbacks = await enrichClassificationFeedbacks(
             classification.feedbacks,
@@ -245,7 +247,10 @@ const buildEnrichedPredictionRequest = async (
         }
 
         // Enrich feedbacks if needed
-        let enrichedDetectionFeedbacks: DetectionFeedbackWithExtras[] | DetectionFeedbackDTO[] | undefined;
+        let enrichedDetectionFeedbacks:
+          | DetectionFeedbackWithExtras[]
+          | DetectionFeedbackDTO[]
+          | undefined;
         if (includeFeedbacks && detection.feedbacks) {
           enrichedDetectionFeedbacks = await enrichDetectionFeedbacks(
             detection.feedbacks,
