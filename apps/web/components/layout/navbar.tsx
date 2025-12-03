@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ContactUsDialog } from "./contact-us-dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { LayoutDashboard, Users, PieChart } from "lucide-react";
@@ -69,6 +70,7 @@ export function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
+          <ContactUsDialog />
           <ThemeToggle />
           <UserMenu />
         </div>
