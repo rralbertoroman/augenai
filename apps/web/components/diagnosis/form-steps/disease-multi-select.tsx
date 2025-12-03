@@ -75,7 +75,8 @@ export function DiseaseMultiSelect({
                       e.stopPropagation();
                       handleRemove(diseaseId);
                     }}
-                    className="ml-1 hover:text-destructive"
+                    className="ml-1 hover:text-destructive inline-flex items-center justify-center"
+                    aria-label="Eliminar enfermedad"
                   >
                     <X className="w-3 h-3" />
                   </button>

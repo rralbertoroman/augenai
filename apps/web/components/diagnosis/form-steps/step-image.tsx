@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -125,7 +126,7 @@ export function StepImage({
             {selectedFile ? selectedFile.name : "Ningún archivo seleccionado"}
           </p>
         </div>
-        <input
+        <Input
           ref={fileInputRef}
           type="file"
           accept="image/*"

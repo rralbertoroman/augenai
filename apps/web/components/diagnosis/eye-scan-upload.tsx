@@ -1,7 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clipboard } from "@/components/common/clipboard";
 import { Button } from "@/components/ui/button";
 import { useDiagnosisForm } from "@/hooks/use-diagnosis-form";
 import { StepIndicator } from "./form-steps/step-indicator";
@@ -57,91 +55,84 @@ export function EyeScanUpload({
   } = useDiagnosisForm(onSubmit);
 
   return (
-    <Clipboard>
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-2xl">Diagnóstico ocular</CardTitle>
-          <div className="mt-4">
-            <StepIndicator steps={STEPS} currentStep={currentStep} />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {currentStep === 1 && (
-              <StepPatient
-                patientId={formData.patientId}
-                error={errors.patientId}
-                onChange={(value) => handleSelectChange("patientId", value)}
-              />
-            )}
+    <div className="space-y-6">
+      <div>
+        <StepIndicator steps={STEPS} currentStep={currentStep} />
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {currentStep === 1 && (
+          <StepPatient
+            patientId={formData.patientId}
+            error={errors.patientId}
+            onChange={(value) => handleSelectChange("patientId", value)}
+          />
+        )}
 
-            {currentStep === 2 && (
-              <StepTask
-                imageType={formData.imageType}
-                task={formData.task}
-                includeDetection={formData.includeDetection}
-                errors={errors}
-                onSelectChange={handleSelectChange}
-                onCheckboxChange={handleCheckboxChange}
-              />
-            )}
+        {currentStep === 2 && (
+          <StepTask
+            imageType={formData.imageType}
+            task={formData.task}
+            includeDetection={formData.includeDetection}
+            errors={errors}
+            onSelectChange={handleSelectChange}
+            onCheckboxChange={handleCheckboxChange}
+          />
+        )}
 
-            {currentStep === 3 && (
-              <StepUpload
-                eyeSelection={formData.eyeSelection}
-                selectedFile={selectedFile}
-                isUploading={isUploading}
-                storagePath={storagePath}
-                imagePreview={imagePreview}
-                selectedDiseases={formData.diseases}
-                errors={errors}
-                fileInputRef={fileInputRef}
-                onEyeSelection={handleEyeSelection}
-                onFileChange={handleFileChange}
-                onFileAreaClick={handleFileAreaClick}
-                onDiseasesChange={handleDiseasesChange}
-              />
-            )}
+        {currentStep === 3 && (
+          <StepUpload
+            eyeSelection={formData.eyeSelection}
+            selectedFile={selectedFile}
+            isUploading={isUploading}
+            storagePath={storagePath}
+            imagePreview={imagePreview}
+            selectedDiseases={formData.diseases}
+            errors={errors}
+            fileInputRef={fileInputRef}
+            onEyeSelection={handleEyeSelection}
+            onFileChange={handleFileChange}
+            onFileAreaClick={handleFileAreaClick}
+            onDiseasesChange={handleDiseasesChange}
+          />
+        )}
 
-            <div className="flex gap-3">
-              {currentStep > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  className="flex-1"
-                  disabled={isLoading}
-                >
-                  Atrás
-                </Button>
-              )}
-              {currentStep < 3 ? (
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  className="flex-1"
-                  disabled={isUploading}
-                >
-                  Siguiente
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  disabled={
-                    isLoading ||
-                    isUploading ||
-                    !storagePath ||
-                    formData.diseases.length === 0
-                  }
-                >
-                  {isLoading ? "Enviando..." : "Enviar diagnóstico"}
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </Clipboard>
+        <div className="flex gap-3">
+          {currentStep > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              className="flex-1"
+              disabled={isLoading}
+            >
+              Atrás
+            </Button>
+          )}
+          {currentStep < 3 ? (
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="flex-1"
+              disabled={isUploading}
+            >
+              Siguiente
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={
+                isLoading ||
+                isUploading ||
+                !storagePath ||
+                formData.diseases.length === 0
+              }
+            >
+              {isLoading ? "Enviando..." : "Enviar diagnóstico"}
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }
