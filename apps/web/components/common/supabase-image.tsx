@@ -5,6 +5,7 @@ import Image from "next/image";
 import { createClient } from "../../lib/supabase/client";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
+import { Button } from "@/components/ui/button";
 
 const urlCache = new Map<string, { url: string; expiresAt: number }>();
 
@@ -239,16 +240,12 @@ export default function SupabaseImage({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <div ref={containerRef} className="relative inline-block">
-          <button
+          <Button
             ref={buttonRef}
             type="button"
+            variant="ghost"
             className={className}
-            style={{
-              padding: 0,
-              border: "none",
-              background: "transparent",
-              cursor: "zoom-in",
-            }}
+            style={{ padding: 0 }}
             aria-label={alt}
             onClick={handleOpenLightbox}
           >
@@ -269,7 +266,7 @@ export default function SupabaseImage({
                 });
               }}
             />
-          </button>
+          </Button>
           {boundingBoxes.length > 0 && (
             <canvas
               ref={canvasRef}
@@ -282,21 +279,17 @@ export default function SupabaseImage({
       <DialogTitle />
       <DialogContent
         showCloseButton={false}
-        className="p-0 bg-black/95 backdrop-blur-sm border-0 overflow-hidden max-w-[98vw] max-h-[98vh]"
+        className="p-0 m-0 bg-black backdrop-blur-sm border overflow-hidden max-w-[68vw] max-h-[98vh] border-muted rounded-lg"
       >
         <div
-          className="relative flex items-center justify-center w-full h-full overflow-hidden"
-          style={{
-            width: "88vw",
-            height: "95vh",
-          }}
+          className="relative flex items-center justify-center overflow-hidden bg-black "
           onWheel={handleWheel}
         >
           <img
             ref={lightboxImageRef}
             src={compositeImage || src}
             alt={alt}
-            className="object-contain transition-transform"
+            className="object-contain transition-transform bg-black/95 "
             style={{
               width: "95%",
               height: "95%",

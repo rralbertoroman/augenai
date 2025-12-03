@@ -17,6 +17,12 @@ import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import type { ClassificationWithExtras } from "@/server/zod-schemas/prediction_workflow";
+import {
+  translateImageType,
+  translateTaskType,
+  translateStageContent,
+  translateLesionName,
+} from "@/lib/translations";
 
 export default function PredictionDetailPage({
   params,
@@ -125,7 +131,7 @@ export default function PredictionDetailPage({
           <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] mb-4">
             Información de la Solicitud
           </h2>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-5 gap-x-6 gap-y-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Fecha</p>
               <p className="mt-1 text-base text-foreground font-semibold">
@@ -145,7 +151,9 @@ export default function PredictionDetailPage({
                 Tipo de Tarea
               </p>
               <p className="mt-1">
-                <Badge variant="outline">{request?.task}</Badge>
+                <Badge variant="outline">
+                  {request?.task ? translateTaskType(request.task) : ""}
+                </Badge>
               </p>
             </div>
             <div>
@@ -153,10 +161,12 @@ export default function PredictionDetailPage({
                 Tipo de Imagen
               </p>
               <p className="mt-1 text-base text-foreground">
-                {request?.image_type}
+                {request?.image_type
+                  ? translateImageType(request.image_type)
+                  : ""}
               </p>
             </div>
-            <div className="sm:col-span-2">
+            <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">
                 Enfermedades Sospechadas
               </p>
@@ -193,7 +203,8 @@ export default function PredictionDetailPage({
               <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">
                 Resultados de Diagnóstico
               </h2>
-              {request?.predictionsWithExtras &&
+              {request?.task !== "detection" &&
+                request?.predictionsWithExtras &&
                 request.predictionsWithExtras.length > 0 && (
                   <Button
                     type="button"
@@ -248,14 +259,19 @@ export default function PredictionDetailPage({
                           {allTasks.map((task) => {
                             // Adapt task for PredictionCard
                             const isClassification = "disease_name" in task;
+
+                            // For detections, use the disease names from the request
+                            const diseaseName = isClassification
+                              ? task.disease_name
+                              : request?.diseaseNames?.join(", ") ||
+                                "Detección";
+
                             const cardProps = {
                               id: task.id!,
-                              disease_name: isClassification
-                                ? task.disease_name
-                                : "Detección",
+                              disease_name: diseaseName,
                               stage_content: isClassification
-                                ? task.stage_content
-                                : task.lesion_name,
+                                ? translateStageContent(task.stage_content)
+                                : translateLesionName(task.lesion_name),
                               confidence: task.confidence,
                               feedbacks: isClassification
                                 ? (task.feedbacks as
@@ -282,7 +298,9 @@ export default function PredictionDetailPage({
                                 key={task.id}
                                 diagnosis={cardProps}
                                 onViewFeedbacks={
-                                  isClassification && cardProps.feedbacks
+                                  request?.task !== "detection" &&
+                                  isClassification &&
+                                  cardProps.feedbacks
                                     ? (feedbacks) =>
                                         handleViewFeedbacks(
                                           feedbacks,

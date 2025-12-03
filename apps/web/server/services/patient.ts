@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { db } from "../db/client";
 import { PatientsTable } from "../db/schemas";
 import {
@@ -83,15 +83,21 @@ export const getPatientsByUserId = async (
   token: string,
   limit?: number,
   offset?: number,
-): Promise<PatientDTO[]> => {
+): Promise<{ patients: PatientDTO[]; count: number }> => {
   const user = await getCurrentUser(token);
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(PatientsTable)
+    .where(eq(PatientsTable.doctorId, user.userId));
 
   const patients = await db.query.PatientsTable.findMany({
     where: eq(PatientsTable.doctorId, user.userId),
     limit,
     offset,
   });
-  return patients;
+
+  return { patients, count: total as number };
 };
 
 export const getPatientById = async (

@@ -6,7 +6,10 @@ import { PatientDetail } from "@/components/patients/patient-detail";
 import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/common/pagination-controls";
 import { useState } from "react";
+import type { ChangeEvent } from "react";
 
 export default function PatientsPage() {
   const {
@@ -16,6 +19,7 @@ export default function PatientsPage() {
     isLoading,
     error,
     createPatient,
+    pagination,
   } = usePatients();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -23,7 +27,7 @@ export default function PatientsPage() {
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  if (isLoading) {
+  if (isLoading && patients.length === 0) {
     return (
       <main className="flex-1 flex-col p-6">
         <Skeleton className="w-full h-[60px] mb-6" />
@@ -34,6 +38,7 @@ export default function PatientsPage() {
       </main>
     );
   }
+
   return (
     <main className="flex-1 flex-col animate-fadein">
       <div className="border-b border-border bg-card px-6 py-4">
@@ -42,22 +47,22 @@ export default function PatientsPage() {
             <h1 className="text-foreground text-xl font-bold leading-tight tracking-[-0.015em]">
               Pacientes
             </h1>
-            <div className="relative">
-              <input
-                className="w-64 rounded-lg border border-border bg-background py-2 pl-3 pr-4 text-sm text-foreground focus:border-primary focus:ring-primary"
-                placeholder="Buscar pacientes..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <Input
+              className="w-64"
+              placeholder="Buscar pacientes..."
+              type="text"
+              value={searchQuery}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(e.target.value)
+              }
+            />
           </div>
           <AddPatientDialog onAddPatient={createPatient} />
         </div>
       </div>
       <div className="flex-1 p-6">
         <div className="flex gap-6">
-          <div className="flex-1 rounded-lg border border-border bg-card animate-fadein overflow-hidden">
+          <div className="flex-1 rounded-lg border border-border bg-card animate-fadein overflow-hidden flex flex-col">
             {error && (
               <Alert
                 variant="destructive"
@@ -75,13 +80,31 @@ export default function PatientsPage() {
                 No se encontraron pacientes
               </p>
             ) : (
-              <div className="overflow-x-auto h-full">
-                <PatientList
-                  patients={filteredPatients}
-                  selectedPatient={selectedPatient}
-                  onSelectPatient={setSelectedPatient}
-                />
-              </div>
+              <>
+                <div className="overflow-x-auto flex-1">
+                  <PatientList
+                    patients={filteredPatients}
+                    selectedPatient={selectedPatient}
+                    onSelectPatient={setSelectedPatient}
+                  />
+                </div>
+                {!searchQuery && (
+                  <div className="border-t border-border px-6 bg-muted/30">
+                    <PaginationControls
+                      currentPage={pagination.currentPage}
+                      totalPages={pagination.totalPages}
+                      pageSize={pagination.pageSize}
+                      totalItems={pagination.totalItems}
+                      canGoNext={pagination.canGoNext}
+                      canGoPrevious={pagination.canGoPrevious}
+                      onNextPage={pagination.nextPage}
+                      onPreviousPage={pagination.previousPage}
+                      onGoToPage={pagination.goToPage}
+                      onPageSizeChange={pagination.setPageSize}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div
