@@ -55,3 +55,45 @@ class Swinv2TinyForGlaucomaClassification(BaseModelAdapter):
             "parameters": num_params,
             "latest_training": last_modified,
         }
+
+
+@register_adapter("Diabetic_RetinoPathy_detection")
+class DiabeticRetinopathyDetection(BaseModelAdapter):
+    def extract_info(self) -> dict:
+        config_path = self.model_path / "config.json"
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        # This model uses safetensors format
+        from safetensors import safe_open
+
+        safetensors_path = self.model_path / "model.safetensors"
+        num_params = 0
+        with safe_open(safetensors_path, framework="pt", device="cpu") as f:
+            for key in f.keys():
+                tensor = f.get_tensor(key)
+                num_params += tensor.numel()
+
+        last_modified = safetensors_path.stat().st_mtime
+
+        task = get_model_task(config["problem_type"])
+
+        # Diabetic Retinopathy has 5 severity levels: 0-4
+        # 0: No DR, 1: Mild, 2: Moderate, 3: Severe, 4: Proliferative DR
+        return {
+            "id": "Diabetic_RetinoPathy_detection",
+            "task": task,
+            "classes": {
+                "Diabetic_Retinopathy": [
+                    (0, 0),  # No DR
+                    (1, 1),  # Mild
+                    (2, 2),  # Moderate
+                    (3, 3),  # Severe
+                    (4, 4),  # Proliferative DR
+                ]
+            },
+            "image_types": ["Fundus"],
+            "size": safetensors_path.stat().st_size,  # bytes
+            "parameters": num_params,
+            "latest_training": last_modified,
+        }
