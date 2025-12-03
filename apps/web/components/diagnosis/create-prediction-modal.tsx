@@ -2,12 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { EyeScanUpload } from "./eye-scan-upload";
+import { ClipboardDialog } from "@/components/common/clipboard-dialog";
+import { Button } from "@/components/ui/button";
+import { EyeScanUpload, ScanData } from "./eye-scan-upload";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ScanData } from "./eye-scan-upload";
-export function DiagnosisContainer() {
+
+interface CreatePredictionModalProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+}
+
+export function CreatePredictionModal({
+  isOpen: externalOpen,
+  onOpenChange: externalOnOpenChange,
+  trigger,
+}: CreatePredictionModalProps) {
   const router = useRouter();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +76,8 @@ export function DiagnosisContainer() {
         throw new Error("No se recibió el ID de la solicitud");
       }
 
-      // Redirect to the request detail page after prediction completes
+      // Close modal and redirect to request detail page
+      setOpen(false);
       router.push(`/diagnosis/${requestId}`);
     } catch (err) {
       const errorMessage =
@@ -74,31 +91,25 @@ export function DiagnosisContainer() {
   };
 
   return (
-    <>
-      <main className="flex-1 flex-col">
-        <div className="flex-1 p-6">
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <section
-            aria-labelledby="diagnosis-section"
-            className="grid grid-cols-1 gap-6 lg:grid-cols-5"
-          >
-            <h2 id="diagnosis-section" className="sr-only">
-              Formulario de Diagnóstico Ocular y Última Predicción
-            </h2>
-
-            <div className="lg:col-span-5 rounded-lg border border-border bg-card animate-fadein">
-              <EyeScanUpload
-                onSubmit={handleFormSubmit}
-                isLoading={isSubmitting}
-              />
-            </div>
-          </section>
-        </div>
-      </main>
-    </>
+    <ClipboardDialog
+      open={isOpen}
+      onOpenChange={setOpen}
+      title="Nueva Predicción"
+      trigger={
+        trigger || (
+          <Button variant="default" size="lg" className="w-full">
+            <span className="text-lg">+</span>
+            <span className="truncate">Nueva Predicción</span>
+          </Button>
+        )
+      }
+    >
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <EyeScanUpload onSubmit={handleFormSubmit} isLoading={isSubmitting} />
+    </ClipboardDialog>
   );
 }
