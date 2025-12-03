@@ -111,8 +111,7 @@ export default function SupabaseImage({
 
     (async () => {
       if (!path) {
-        if (mounted) setSrc(fallback);
-        return;
+        throw new Error("No se proporcionó path de imagen");
       }
 
       const cacheKey = `${bucketName}/${path}`;
@@ -140,7 +139,7 @@ export default function SupabaseImage({
         if (mounted) setSrc(signedUrl);
       } catch (e) {
         console.error("[SupabaseImage]", e);
-        if (mounted) setSrc(fallback);
+        throw new Error(`Error al cargar imagen: ${e instanceof Error ? e.message : 'Error desconocido'}`);
       }
     })();
 

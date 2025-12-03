@@ -60,23 +60,26 @@ export default function Start() {
 
       if (!user) return false;
 
-      // Use a fallback user ID if user_id is missing (though it should be there)
-      const userId = "user_id" in prediction ? prediction.user_id : user.id;
+      // Validate that user_id exists in prediction
+      if (!("user_id" in prediction)) {
+        throw new Error("La predicción no tiene user_id");
+      }
+      const userId = prediction.user_id;
       return isToday(predDate) && userId === user.id;
     })
     .map((prediction) => {
-      const patient = patients[prediction.patient_id || ""];
-      const patientName = patient?.name || `Paciente`;
-      const patientAge = patient?.age || 0;
+      const patient = patients[prediction.patient_id];
+      const patientName = patient?.name;
+      const patientAge = patient?.age;
 
       const disease_name =
         "disease_name" in prediction
           ? prediction.disease_name
-          : "Enfermedad no especificada";
+          : undefined;
       const stage_content =
         "stage_content" in prediction
           ? prediction.stage_content
-          : "No especificada";
+          : undefined;
 
       const type =
         "disease_name" in prediction ? "classification" : "detection";
@@ -105,8 +108,8 @@ export default function Start() {
     Record<string, typeof todayPredictions>
   >((groups, prediction) => {
     // Ensure request_id and patient_id are strings to be used as keys
-    const reqId = prediction.request_id || "unknown-req";
-    const patId = prediction.patient_id || "unknown-pat";
+    const reqId = prediction.request_id;
+    const patId = prediction.patient_id;
     const groupKey = `${reqId}-${patId}`;
 
     if (!groups[groupKey]) {
@@ -139,7 +142,7 @@ export default function Start() {
           storage_path: pred.storage_path,
           patient_age: pred.patient_age,
           feedback_status: pred.feedback_status,
-          feedbacks: pred.feedbacks || [],
+          feedbacks: pred.feedbacks,
           class_id: pred.class_id,
           model_id: pred.model_id,
           bbox: {

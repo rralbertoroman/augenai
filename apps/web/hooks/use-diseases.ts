@@ -22,9 +22,9 @@ export function useDiseases() {
     try {
       const data = await getAllDiseases(token);
       setDiseases(data);
-    } catch {
-      // Error fetching diseases - keep diseases empty
-      setDiseases([]);
+    } catch (error) {
+      // Error fetching diseases - throw error instead of hiding it
+      throw new Error(`Error al cargar enfermedades: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setIsLoading(false);
     }

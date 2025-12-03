@@ -61,8 +61,12 @@ export function useMedicalStats() {
   const { predictions, isLoading, error, refreshData } = useDashboard();
 
   const { stageTotalData, cohortData } = useMemo(() => {
-    if (isLoading || !predictions) {
+    if (isLoading) {
       return { stageTotalData: [], cohortData: [] };
+    }
+    
+    if (!predictions || predictions.length === 0) {
+      throw new Error("No se pudieron cargar las predicciones del backend");
     }
 
     // Initialize data structures
@@ -98,10 +102,10 @@ export function useMedicalStats() {
     // Process predictions
     predictions.forEach((p) => {
       if (!("disease_name" in p)) return;
-      const diseaseKey = p.disease_name || "";
+      const diseaseKey = p.disease_name;
       if (!diseaseKey) return;
 
-      const stageName = p.stage_content || "";
+      const stageName = p.stage_content;
 
       if (
         stageTotals[diseaseKey] &&
@@ -148,7 +152,7 @@ export function useMedicalStats() {
           Object.entries(counts).forEach(([stageName, count]) => {
             const simpleName = stageName.split(" ")[0];
             simplifiedCounts[simpleName] =
-              (simplifiedCounts[simpleName] || 0) + count;
+              (simplifiedCounts[simpleName] ?? 0) + count;
           });
 
           return {

@@ -52,7 +52,7 @@ export function useClassificationFeedback() {
 
     // Transform to the format expected by BatchFeedbackModal
     const transformed = classifications.map((pred) => ({
-      id: pred.id!, // We know it exists because we filtered for it
+      id: pred.id!,
       disease_id: pred.disease_id,
       disease_name: pred.disease_name,
       confidence: pred.confidence,
@@ -108,8 +108,7 @@ export function useClassificationFeedback() {
       );
 
       for (const prediction of predictions) {
-        // Ensure prediction.id is a string before using it as a key
-        const predictionId = prediction.id ?? "";
+        const predictionId = prediction.id!;
         const formData = feedbackForms[predictionId];
         if (!formData) continue;
 
@@ -138,7 +137,7 @@ export function useClassificationFeedback() {
         }
 
         const feedbackData = {
-          classificationId: prediction.id ?? "",
+          classificationId: prediction.id!,
           classId,
           confidence: 1,
         };

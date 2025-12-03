@@ -24,9 +24,7 @@ export function usePredictionRequestDetail(requestId: string) {
       const result = await getPredictionRequestById(token, id, true);
 
       if (!result) {
-        setRequest(null);
-        setIsLoading(false);
-        return;
+        throw new Error("No se encontró la solicitud de predicción");
       }
 
       setRequest(result);

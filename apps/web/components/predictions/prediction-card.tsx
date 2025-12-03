@@ -20,7 +20,7 @@ export function PredictionCard({
   onViewFeedbacks,
 }: PredictionCardProps) {
   const badge = getConfidenceBadge(diagnosis.confidence);
-  const feedbackCount = diagnosis.feedbacks?.length || 0;
+  const feedbackCount = diagnosis.feedbacks?.length;
 
   // DEBUG: Log para ver qué está recibiendo el componente
   console.log(`🎴 PredictionCard ${diagnosis.id}:`, {
@@ -40,7 +40,7 @@ export function PredictionCard({
               Enfermedad
             </p>
             <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-              {diagnosis.disease_name ?? ""}
+              {diagnosis.disease_name}
             </p>
           </div>
           <div>
@@ -48,7 +48,7 @@ export function PredictionCard({
               Clasificación
             </p>
             <p className="mt-1 text-sm text-gray-900 dark:text-white">
-              {diagnosis.stage_content ?? ""}
+              {diagnosis.stage_content}
             </p>
           </div>
           <div>
@@ -64,11 +64,11 @@ export function PredictionCard({
           </div>
         </div>
 
-        {onViewFeedbacks && (
+        {onViewFeedbacks && diagnosis.feedbacks && (
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onViewFeedbacks(diagnosis.feedbacks || [])}
+            onClick={() => onViewFeedbacks(diagnosis.feedbacks!)}
             className="shrink-0 bg-emerald-100"
           >
             <MessageSquare className="h-4 w-4 mr-2" />

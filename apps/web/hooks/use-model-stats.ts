@@ -17,11 +17,15 @@ export function useModelStats() {
 
   // Process data
   const stats = useMemo(() => {
-    if (isLoading || !predictions.length || !predictionClasses.length) {
+    if (isLoading) {
       return {
         f1ScoreData: [],
         confusionMatrixData: [],
       };
+    }
+    
+    if (!predictions.length || !predictionClasses.length) {
+      throw new Error("No se pudieron cargar los datos del backend");
     }
 
     // Map classId to Disease and Stage
@@ -79,13 +83,13 @@ export function useModelStats() {
     const confusionMatrixData: ConfusionMatrixData[] = [];
 
     diseaseInfoMap.forEach((info, diseaseId) => {
-      const diseasePredictions = predictionsByDisease.get(diseaseId) || [];
+      const diseasePredictions = predictionsByDisease.get(diseaseId);
       const stages = info.stages;
       const matrix = Array(stages.length)
         .fill(0)
         .map(() => Array(stages.length).fill(0));
 
-      diseasePredictions.forEach((p) => {
+      diseasePredictions?.forEach((p) => {
         const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
         const predictedClassId = p.class_id;
         const actualClassId = mainFeedback ? mainFeedback.classId : p.class_id;
@@ -165,7 +169,7 @@ export function useModelStats() {
         }
       });
 
-      const precision = tp / (tp + fp) || 1; // If no predictions, precision is 1?
+      const precision = tp / (tp + fp) || 0;
       const recall = tp / (tp + fn) || 0;
       const f1 = (2 * (precision * recall)) / (precision + recall) || 0;
 

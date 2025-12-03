@@ -53,7 +53,10 @@ export function LoginForm({
         if (pendingProfileData) {
           try {
             const parsed = JSON.parse(pendingProfileData);
-            const name = parsed.name || "";
+            if (!parsed.name) {
+              throw new Error("No se encontró el nombre del perfil pendiente");
+            }
+            const name = parsed.name;
 
             if (name) {
               // Call server action directly to create profile

@@ -64,7 +64,7 @@ export function usePredictionRequests() {
 
   const getDiagnosesForRequest = (requestId: string) => {
     const request = requests.find((r) => r.id === requestId);
-    return request ? request.predictions : [];
+    return request?.predictions;
   };
 
   const getRequestInfo = (requestId: string) => {

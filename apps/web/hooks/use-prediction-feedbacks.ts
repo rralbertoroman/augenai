@@ -74,13 +74,11 @@ export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
 
   const handleSetMainFeedback = async (feedbackId: string) => {
     if (!classificationId) {
-      console.error("❌ No classificationId available");
-      return;
+      throw new Error("No classificationId available");
     }
 
     if (!accessToken) {
-      console.error("❌ No accessToken available");
-      return;
+      throw new Error("No accessToken available");
     }
 
     console.log("🔄 Setting main feedback:", {

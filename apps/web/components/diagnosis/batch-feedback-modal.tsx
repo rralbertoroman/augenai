@@ -59,11 +59,11 @@ export function BatchFeedbackModal({
             const diseaseObj = diseases.find(
               (d) => d.id === prediction.disease_id,
             );
-            const stages = diseaseObj?.stages ?? [];
-            const formData = feedbackForms[prediction.id] ?? {
-              stageIdx: 0,
-              observations: "",
-            };
+            const stages = diseaseObj?.stages;
+            const formData = feedbackForms[prediction.id];
+            if (!formData) {
+              throw new Error(`No se encontró formData para la predicción ${prediction.id}`);
+            }
 
             return (
               <div
@@ -108,7 +108,7 @@ export function BatchFeedbackModal({
                     required
                     className="w-full border border-border rounded p-2 bg-background mt-2"
                   >
-                    {stages.map((stage, idx) => (
+                    {stages!.map((stage, idx) => (
                       <option key={idx} value={idx}>
                         {stage}
                       </option>

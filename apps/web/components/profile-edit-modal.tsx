@@ -41,10 +41,8 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
           if (profile) {
             setName(profile.name);
           } else {
-            // If no profile exists, use user data from auth
-            setName(
-              user.user_metadata?.full_name || user.user_metadata?.name || "",
-            );
+            // If no profile exists, throw error instead of using fallback
+            throw new Error("No se pudo cargar el perfil del usuario");
           }
         } catch (err: unknown) {
           console.error("Error loading profile:", err);
