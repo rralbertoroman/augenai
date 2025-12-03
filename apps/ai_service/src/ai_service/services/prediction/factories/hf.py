@@ -266,9 +266,6 @@ def dinov2_clsf_model_factory(model_id: str):
     return HFDinov2Model(model_id)
 
 
-
-
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
