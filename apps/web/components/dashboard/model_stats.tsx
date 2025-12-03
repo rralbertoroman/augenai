@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   useModelStats,
   type F1ScoreData,
@@ -310,9 +311,7 @@ const ModelStats = () => {
           Rendimiento del Modelo
         </h2>
         <div className="w-64">
-          <label className="block text-sm font-medium mb-1">
-            Seleccionar Enfermedad:
-          </label>
+          <Label className="mb-1">Seleccionar Enfermedad:</Label>
           <Select
             value={selectedDisease.toString()}
             onValueChange={(value) => setSelectedDisease(Number(value))}

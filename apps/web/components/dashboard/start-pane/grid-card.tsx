@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import type { PredictionGroup } from "./types";
 import { calculateAge } from "@/lib/date-utils";
 import Image from "next/image";
+import { translateStageContent } from "@/lib/translations";
 
 function getFeedbackVariant(status: string) {
   switch (status) {
@@ -95,7 +96,9 @@ export function GridCard({ group }: GridCardProps) {
                   <div>{mainPrediction.disease_name}</div>
 
                   <div className="flex flex-row justify-between">
-                    {mainPrediction.stage_content}
+                    {mainPrediction.stage_content
+                      ? translateStageContent(mainPrediction.stage_content)
+                      : ""}
                     <Badge variant="secondary" className="h-fit">
                       {Math.round(mainPrediction.confidence * 100)}% confianza
                     </Badge>

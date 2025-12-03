@@ -177,11 +177,13 @@ describe("Prediction Request Service", () => {
         "user-123",
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].predictions[0].detections[0].lesion_name).toBe(
+      expect(result.requests).toHaveLength(1);
+      expect(result.requests[0].predictions[0].detections[0].lesion_name).toBe(
         "Lesion B",
       );
-      expect(result[0].predictions[0].detections[0].bbox).toBeDefined();
+      expect(
+        result.requests[0].predictions[0].detections[0].bbox,
+      ).toBeDefined();
     });
   });
 });

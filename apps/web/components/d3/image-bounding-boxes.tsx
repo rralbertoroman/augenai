@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import SupabaseImage from "@/components/common/supabase-image";
 
@@ -147,7 +147,10 @@ export function ImageBoundingBoxes({
     .filter((item) => item.label);
 
   return (
-    <div ref={containerRef} className={`relative inline-block ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative inline-block w-auto ${className}`}
+    >
       <SupabaseImage
         bucketName={bucketName!}
         path={path!}
