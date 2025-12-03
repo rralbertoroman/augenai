@@ -72,7 +72,7 @@ function DialogContent({
             children
           ) : (
             <div className="relative bg-card rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-6">{children}</div>
+              <div className="p-8 bg-white dark:bg-black">{children}</div>
             </div>
           )}
 

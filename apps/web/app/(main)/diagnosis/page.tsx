@@ -4,13 +4,15 @@ import { usePredictionRequests } from "@/hooks/use-prediction-requests";
 import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PaginationControls } from "@/components/common/pagination-controls";
 import { useState } from "react";
 import { SharePredictionModal } from "@/components/predictions/share-prediction-modal";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CreatePredictionModal } from "@/components/diagnosis/create-prediction-modal";
+import { Input } from "@/components/ui/input";
+import type { ChangeEvent } from "react";
 
 export default function DiagnosisPage() {
-  const { requests, isLoading, error } = usePredictionRequests();
+  const { requests, isLoading, error, pagination } = usePredictionRequests();
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
@@ -35,7 +37,7 @@ export default function DiagnosisPage() {
     setSelectedRequestId(null);
   };
 
-  if (isLoading) {
+  if (isLoading && requests.length === 0) {
     return (
       <main className="flex-1 flex-col p-6">
         <Skeleton className="w-full h-[60px] mb-6" />
@@ -43,6 +45,7 @@ export default function DiagnosisPage() {
       </main>
     );
   }
+
   return (
     <main className="flex-1 flex-col animate-fadein">
       <div className="border-b border-border bg-card px-6 py-4">
@@ -51,28 +54,23 @@ export default function DiagnosisPage() {
             <h1 className="text-foreground text-xl font-bold leading-tight tracking-[-0.015em]">
               Solicitudes de Predicción
             </h1>
-            <div className="relative">
-              <input
-                className="w-64 rounded-lg border border-border bg-background py-2 pl-3 pr-4 text-sm text-foreground focus:border-primary focus:ring-primary"
-                placeholder="Buscar por paciente o enfermedad..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <Input
+              className="w-64"
+              placeholder="Buscar por paciente o enfermedad..."
+              type="text"
+              value={searchQuery}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(e.target.value)
+              }
+            />
           </div>
           <div className="max-w-[480px] w-full ml-auto">
-            <Link href="/diagnosis/create" className="w-full">
-              <Button variant="default" size="lg" className="w-full">
-                <span className="text-lg">+</span>
-                <span className="truncate">Nueva Predicción</span>
-              </Button>
-            </Link>
+            <CreatePredictionModal />
           </div>
         </div>
       </div>
       <div className="flex-1 p-6">
-        <div className="rounded-lg border border-border bg-card w-full">
+        <div className="rounded-lg border border-border bg-card w-full flex flex-col">
           {error && (
             <Alert
               variant="destructive"
@@ -90,12 +88,30 @@ export default function DiagnosisPage() {
               No se encontraron solicitudes de predicción
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <PredictionRequestList
-                requests={filteredRequests}
-                onShare={handleOpenShareModal}
-              />
-            </div>
+            <>
+              <div className="overflow-x-auto flex-1">
+                <PredictionRequestList
+                  requests={filteredRequests}
+                  onShare={handleOpenShareModal}
+                />
+              </div>
+              {!searchQuery && (
+                <div className="border-t border-border px-6 bg-muted/30">
+                  <PaginationControls
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    pageSize={pagination.pageSize}
+                    totalItems={pagination.totalItems}
+                    canGoNext={pagination.canGoNext}
+                    canGoPrevious={pagination.canGoPrevious}
+                    onNextPage={pagination.nextPage}
+                    onPreviousPage={pagination.previousPage}
+                    onGoToPage={pagination.goToPage}
+                    onPageSizeChange={pagination.setPageSize}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
