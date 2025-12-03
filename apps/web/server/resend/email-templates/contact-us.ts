@@ -14,9 +14,9 @@ export function ContactUsTemplate({
   // 3D Logo with Side Shapes
   const logoHtml = `
     <div style="text-align: center;">
-      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 32px 3px 3px 32px; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
-      <div style="display: inline-block; vertical-align: middle; width: 64px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 50%; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
-      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 3px 32px 32px 3px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 32px 3px 3px 32px; margin-right: 12px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 64px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 50%; margin-right: 12px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 3px 32px 32px 3px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
     </div>
   `;
 
@@ -115,7 +115,7 @@ export function ContactUsTemplate({
           }
           .subject-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #e7f3ed 0%, #dcf0e6 100%);
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
             color: #111813;
             font-size: 12px;
             font-weight: 700;
