@@ -24,7 +24,9 @@ export function useDiseases() {
       setDiseases(data);
     } catch (error) {
       // Error fetching diseases - throw error instead of hiding it
-      throw new Error(`Error al cargar enfermedades: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      throw new Error(
+        `Error al cargar enfermedades: ${error instanceof Error ? error.message : "Error desconocido"}`,
+      );
     } finally {
       setIsLoading(false);
     }

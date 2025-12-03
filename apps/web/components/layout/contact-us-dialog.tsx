@@ -6,6 +6,7 @@ import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MessageSquare } from "lucide-react";
 import { sendContactUsEmail } from "@/server/resend/services";
 import { useAuth } from "@/contexts/auth-context";
@@ -61,7 +62,7 @@ export function ContactUsDialog() {
         <Button
           variant="ghost"
           size="icon"
-          className="text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+          className="text-foreground hover:bg-muted"
           title="Contáctanos"
         >
           <MessageSquare className="h-5 w-5" />
@@ -70,9 +71,9 @@ export function ContactUsDialog() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive rounded text-sm text-destructive">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         <div className="space-y-2">

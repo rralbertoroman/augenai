@@ -32,32 +32,32 @@ export function PredictionCard({
   });
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+    <div className="bg-muted rounded-lg p-4">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 flex-1">
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Enfermedad
             </p>
-            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+            <p className="mt-1 text-sm font-semibold text-foreground">
               {diagnosis.disease_name}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Clasificación
             </p>
-            <p className="mt-1 text-sm text-gray-900 dark:text-white">
+            <p className="mt-1 text-sm text-foreground">
               {diagnosis.stage_content}
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <p className="text-xs font-medium text-muted-foreground mb-1">
               Confianza
             </p>
             <div className="flex items-center gap-2">
               <Badge variant={badge.variant}>{badge.label}</Badge>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              <span className="text-sm font-semibold text-foreground">
                 {(diagnosis.confidence * 100).toFixed(1)}%
               </span>
             </div>
@@ -69,7 +69,7 @@ export function PredictionCard({
             size="sm"
             variant="outline"
             onClick={() => onViewFeedbacks(diagnosis.feedbacks!)}
-            className="shrink-0 bg-emerald-100"
+            className="shrink-0 bg-accent text-accent-foreground"
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Retroalimentaciones ({feedbackCount})

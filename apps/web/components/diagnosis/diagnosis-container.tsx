@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EyeScanUpload } from "./eye-scan-upload";
 import { translateErrorMessage } from "@/lib/error-translator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScanData } from "./eye-scan-upload";
 export function DiagnosisContainer() {
   const router = useRouter();
@@ -77,9 +78,9 @@ export function DiagnosisContainer() {
       <main className="flex-1 flex-col">
         <div className="flex-1 p-6">
           {error && (
-            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-900/20 dark:text-red-200">
-              {error}
-            </div>
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
           <section
             aria-labelledby="diagnosis-section"
@@ -89,7 +90,7 @@ export function DiagnosisContainer() {
               Formulario de Diagnóstico Ocular y Última Predicción
             </h2>
 
-            <div className="lg:col-span-5 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900 animate-fadein">
+            <div className="lg:col-span-5 rounded-lg border border-border bg-card animate-fadein">
               <EyeScanUpload
                 onSubmit={handleFormSubmit}
                 isLoading={isSubmitting}

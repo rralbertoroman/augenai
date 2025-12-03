@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { SkeletonLoader } from "@/components/common/skeleton-loader";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface StepPatientProps {
@@ -41,7 +41,7 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
                   <>
                     <div className="flex items-center gap-2">
                       <span className="sr-only">Cargando pacientes...</span>
-                      <SkeletonLoader width={120} height={20} />
+                      <Skeleton className="w-[120px] h-5" />
                     </div>
                   </>
                 ) : (
@@ -53,9 +53,9 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
           <SelectContent>
             {isLoading ? (
               <div className="p-2">
-                <SkeletonLoader width={180} height={20} />
-                <SkeletonLoader width={140} height={20} className="mt-2" />
-                <SkeletonLoader width={160} height={20} className="mt-2" />
+                <Skeleton className="w-[180px] h-5" />
+                <Skeleton className="w-[140px] h-5 mt-2" />
+                <Skeleton className="w-[160px] h-5 mt-2" />
               </div>
             ) : patients.length === 0 ? (
               <div className="p-2 text-sm text-muted-foreground text-center">

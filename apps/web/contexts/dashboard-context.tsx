@@ -9,11 +9,8 @@ import {
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getAllSystemPredictionsWithFeedbacksAndExtras } from "@/server/services/prediction";
-import type {
-  TaskWithExtras,
-  ClassificationWithExtras,
-  DetectionWithExtras,
-} from "@/server/zod-schemas/prediction_workflow";
+import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
+import { flattenPredictions } from "@/lib/prediction-transformer";
 
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
@@ -60,42 +57,11 @@ export const DashboardProvider = ({
         getAllPredictionClasses(accessToken),
       ]);
 
-      // Process predictions inline to avoid dependency issues
-      const processedData = predictionsData.flatMap((pred) => {
-        const results: TaskWithExtras[] = [];
-
-        // Process Classifications
-        pred.classifications.forEach((c: ClassificationWithExtras) => {
-          results.push({
-            ...c,
-            created_at: pred.created_at,
-            request_id: pred.id!,
-            patient_id: pred.patient_id!,
-            bucket_name: pred.bucket_name,
-            storage_path: pred.storage_path,
-          });
-        });
-
-        // Process Detections
-        pred.detections.forEach((d: DetectionWithExtras) => {
-          results.push({
-            ...d,
-            created_at: pred.created_at,
-            request_id: pred.id!,
-            patient_id: pred.patient_id!,
-            bucket_name: pred.bucket_name,
-            storage_path: pred.storage_path,
-          });
-        });
-
-        return results;
-      });
+      // Flatten predictions using utility function
+      const processedData = flattenPredictions(predictionsData);
 
       setPredictions(processedData);
       setPredictionClasses(classesData);
-      console.log(
-        `Fetched ${processedData.length} predictions and ${classesData.length} classes`,
-      );
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
       setError(

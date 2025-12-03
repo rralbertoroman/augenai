@@ -11,16 +11,16 @@ export function PatientDetail({ patient }: PatientDetailProps) {
     <div className="flex flex-col h-full min-w-[430px] w-full">
       <div>
         <div className="flex items-center gap-4">
-          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-foreground dark:text-white">
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-foreground">
             {patient.name}
           </h2>
         </div>
         <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4">
           <div className="col-span-2">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <p className="text-sm font-medium text-muted-foreground">
               Condiciones Clínicas
             </p>
-            <p className="mt-1 text-base text-gray-900 dark:text-white">
+            <p className="mt-1 text-base text-foreground">
               {patient.clinicalConditions.join(", ") || "Ninguna"}
             </p>
             <Link
