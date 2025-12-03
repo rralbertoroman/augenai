@@ -71,7 +71,7 @@ function DialogContent({
           {customContent ? (
             children
           ) : (
-            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden">
+            <div className="relative bg-card rounded-2xl shadow-lg overflow-hidden">
               <div className="p-6">{children}</div>
             </div>
           )}
@@ -79,7 +79,7 @@ function DialogContent({
           {showCloseButton && (
             <DialogPrimitive.Close
               data-slot="dialog-close"
-              className="absolute top-4 right-4 rounded-full p-2 opacity-70 transition-all hover:opacity-100 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-white disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 hover:bg-slate-100 bg-white/90 shadow-md z-20"
+              className="absolute top-4 right-4 rounded-full p-2 opacity-70 transition-all hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 hover:bg-muted bg-card/90 shadow-md z-20"
             >
               <XIcon />
               <span className="sr-only">Cerrar</span>
@@ -106,7 +106,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-6 mt-6 border-t border-slate-200 dark:border-slate-700",
+        "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-6 mt-6 border-t border-border",
         className,
       )}
       {...props}
@@ -122,7 +122,7 @@ function DialogTitle({
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "text-2xl font-bold text-slate-900 dark:text-white leading-tight",
+        "text-2xl font-bold text-foreground leading-tight",
         className,
       )}
       {...props}
@@ -138,7 +138,7 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        "text-slate-600 dark:text-slate-400 text-base leading-relaxed",
+        "text-muted-foreground text-base leading-relaxed",
         className,
       )}
       {...props}

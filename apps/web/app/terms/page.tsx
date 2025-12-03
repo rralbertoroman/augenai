@@ -33,7 +33,8 @@ export default function TermsPage() {
               Términos y Condiciones
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Nuestro compromiso con la comunidad médica y el avance de la tecnología en salud.
+              Nuestro compromiso con la comunidad médica y el avance de la
+              tecnología en salud.
             </p>
           </div>
 
@@ -44,7 +45,9 @@ export default function TermsPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Comunidad Médica</h3>
               <p className="text-muted-foreground">
-                Nuestra principal meta en Augen AI es ayudar a la comunidad médica, proporcionando herramientas avanzadas que faciliten el diagnóstico y mejoren la atención al paciente.
+                Nuestra principal meta en Augen AI es ayudar a la comunidad
+                médica, proporcionando herramientas avanzadas que faciliten el
+                diagnóstico y mejoren la atención al paciente.
               </p>
             </div>
 
@@ -54,7 +57,9 @@ export default function TermsPage() {
               </div>
               <h3 className="text-xl font-semibold mb-2">Mejora Continua</h3>
               <p className="text-muted-foreground">
-                Trabajamos constantemente para mejorar nuestros modelos actuales y desarrollar nuevas soluciones que beneficien a la comunidad global de salud.
+                Trabajamos constantemente para mejorar nuestros modelos actuales
+                y desarrollar nuevas soluciones que beneficien a la comunidad
+                global de salud.
               </p>
             </div>
           </div>
@@ -64,32 +69,63 @@ export default function TermsPage() {
               <div className="flex items-start gap-4">
                 <ShieldCheck className="h-8 w-8 text-primary mt-1 flex-shrink-0" />
                 <div className="space-y-4">
-                  <h2 className="text-2xl font-bold m-0">Uso de Datos y Privacidad</h2>
+                  <h2 className="text-2xl font-bold m-0">
+                    Uso de Datos y Privacidad
+                  </h2>
                   <p className="text-lg leading-relaxed">
-                    Para fomentar la mejora continua de la salud y perfeccionar nuestros algoritmos de inteligencia artificial, es importante que comprenda y acepte cómo manejamos la información:
+                    Para fomentar la mejora continua de la salud y perfeccionar
+                    nuestros algoritmos de inteligencia artificial, es
+                    importante que comprenda y acepte cómo manejamos la
+                    información:
                   </p>
                   <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
                     <li>
-                      <strong className="text-foreground">Datos de Predicciones:</strong> Nos reservamos el derecho de almacenar y utilizar los datos de las predicciones generadas por el sistema.
+                      <strong className="text-foreground">
+                        Datos de Predicciones:
+                      </strong>{" "}
+                      Nos reservamos el derecho de almacenar y utilizar los
+                      datos de las predicciones generadas por el sistema.
                     </li>
                     <li>
-                      <strong className="text-foreground">Feedback y Retroalimentación:</strong> Toda la información proporcionada a través de los mecanismos de feedback será utilizada para reentrenar y calibrar nuestros modelos.
+                      <strong className="text-foreground">
+                        Feedback y Retroalimentación:
+                      </strong>{" "}
+                      Toda la información proporcionada a través de los
+                      mecanismos de feedback será utilizada para reentrenar y
+                      calibrar nuestros modelos.
                     </li>
                     <li>
-                      <strong className="text-foreground">Información del Sistema:</strong> La información ingresada en el sistema está destinada a ser compartida y analizada con el único propósito de la mejora comunitaria y científica.
+                      <strong className="text-foreground">
+                        Información del Sistema:
+                      </strong>{" "}
+                      La información ingresada en el sistema está destinada a
+                      ser compartida y analizada con el único propósito de la
+                      mejora comunitaria y científica.
                     </li>
                   </ul>
                   <p className="text-sm text-muted-foreground mt-4 pt-4 border-t border-border">
-                    Todo este procesamiento se realiza <strong>sin comprometer la seguridad ni la privacidad individual de los usuarios</strong>. Implementamos estrictos protocolos de anonimización y seguridad para garantizar que los datos sensibles estén protegidos mientras contribuimos al conocimiento colectivo.
+                    Todo este procesamiento se realiza{" "}
+                    <strong>
+                      sin comprometer la seguridad ni la privacidad individual
+                      de los usuarios
+                    </strong>
+                    . Implementamos estrictos protocolos de anonimización y
+                    seguridad para garantizar que los datos sensibles estén
+                    protegidos mientras contribuimos al conocimiento colectivo.
                   </p>
                 </div>
               </div>
             </section>
 
             <section className="space-y-4 pt-8">
-              <h3 className="text-xl font-semibold">Aceptación de los Términos</h3>
+              <h3 className="text-xl font-semibold">
+                Aceptación de los Términos
+              </h3>
               <p className="text-muted-foreground">
-                Al iniciar sesión y utilizar los servicios de Augen AI, usted reconoce haber leído y aceptado estos términos. Su colaboración es fundamental para construir un futuro donde la tecnología y la medicina trabajen juntas para salvar vidas.
+                Al iniciar sesión y utilizar los servicios de Augen AI, usted
+                reconoce haber leído y aceptado estos términos. Su colaboración
+                es fundamental para construir un futuro donde la tecnología y la
+                medicina trabajen juntas para salvar vidas.
               </p>
             </section>
           </div>
@@ -98,7 +134,10 @@ export default function TermsPage() {
 
       <footer className="border-t border-border py-8 mt-12 bg-muted/20">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Augen AI. Todos los derechos reservados.</p>
+          <p>
+            &copy; {new Date().getFullYear()} Augen AI. Todos los derechos
+            reservados.
+          </p>
         </div>
       </footer>
     </div>

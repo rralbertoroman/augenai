@@ -1,4 +1,12 @@
 import { Patient } from "@/hooks/use-patients";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface PatientListProps {
   patients: Patient[];
@@ -26,60 +34,49 @@ export function PatientList({
   };
 
   return (
-    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-      <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-        <tr>
-          <th className="px-6 py-3" scope="col">
-            Nombre
-          </th>
-          <th className="px-6 py-3" scope="col">
-            Edad
-          </th>
-          <th className="px-6 py-3" scope="col">
-            Género
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {patients.map((patient, idx) => (
-          <tr
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nombre</TableHead>
+          <TableHead>Edad</TableHead>
+          <TableHead>Género</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {patients.map((patient) => (
+          <TableRow
             key={patient.id}
             onClick={() => onSelectPatient(patient)}
             className={`cursor-pointer ${
-              idx === patients.length - 1 ? "" : "border-b"
-            } ${
               selectedPatient?.id === patient.id
-                ? "bg-primary/20 hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
-                : "bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
+                ? "bg-primary/20 hover:bg-primary/30"
+                : ""
             }`}
           >
-            <th
-              className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
-              scope="row"
-            >
+            <TableCell className="font-medium text-foreground">
               {patient.name}
-            </th>
-            <td
-              className={`px-6 py-4 ${
+            </TableCell>
+            <TableCell
+              className={
                 selectedPatient?.id === patient.id
-                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  ? "font-medium text-foreground"
                   : ""
-              }`}
+              }
             >
               {calculateAge(patient.dateOfBirth)}
-            </td>
-            <td
-              className={`px-6 py-4 ${
+            </TableCell>
+            <TableCell
+              className={
                 selectedPatient?.id === patient.id
-                  ? "font-medium text-gray-800 dark:text-gray-200"
+                  ? "font-medium text-foreground"
                   : ""
-              }`}
+              }
             >
               {patient.gender === "male" ? "Masculino" : "Femenino"}
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }

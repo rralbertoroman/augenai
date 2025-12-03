@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { PredictionGroup } from "./types";
-import { useMedicalStats } from "@/hooks/use-medical-stats";
+import { calculateAge } from "@/lib/date-utils";
 import Image from "next/image";
 
 function getFeedbackVariant(status: string) {
@@ -48,7 +48,6 @@ interface GridCardProps {
 }
 
 export function GridCard({ group }: GridCardProps) {
-  const { calculateAge } = useMedicalStats();
   const mainPrediction = group.predictions[0];
   const feedbackVariant = getFeedbackVariant(mainPrediction.feedback_status);
 

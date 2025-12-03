@@ -221,8 +221,8 @@ export function ProfileEditModal({ isOpen, onClose }: ProfileEditModalProps) {
       title="Editar Perfil"
     >
       <div className="flex flex-col gap-6">
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {success && <p className="text-sm text-green-500">{success}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {success && <p className="text-sm text-primary">{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6">

@@ -139,7 +139,9 @@ export default function SupabaseImage({
         if (mounted) setSrc(signedUrl);
       } catch (e) {
         console.error("[SupabaseImage]", e);
-        throw new Error(`Error al cargar imagen: ${e instanceof Error ? e.message : 'Error desconocido'}`);
+        throw new Error(
+          `Error al cargar imagen: ${e instanceof Error ? e.message : "Error desconocido"}`,
+        );
       }
     })();
 

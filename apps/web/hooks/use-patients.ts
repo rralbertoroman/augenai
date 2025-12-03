@@ -5,18 +5,12 @@ import {
   getPatientsByUserId,
   createPatient as createPatientService,
 } from "@/server/services/patient";
+import type { PatientDTO } from "@/server/zod-schemas/patient";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
 
-export interface Patient {
-  id: string;
-  name: string;
-  dateOfBirth: string;
-  gender: string;
-  clinicalConditions: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Re-export the DTO type as Patient for convenience
+export type Patient = PatientDTO;
 
 export function calculateAge(dateOfBirth: string): number {
   const today = new Date();

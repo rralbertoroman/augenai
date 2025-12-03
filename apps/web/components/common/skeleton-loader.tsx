@@ -15,13 +15,11 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   radius = 8,
 }) => (
   <div
-    className={clsx("animate-pulse", className)}
+    className={clsx("animate-pulse bg-muted", className)}
     style={{
       width,
       height,
       borderRadius: typeof radius === "number" ? `${radius}px` : radius,
-      background:
-        "linear-gradient(90deg, rgba(46,238,108,0.10) 0%, rgba(220,220,220,0.18) 100%)",
     }}
   />
 );

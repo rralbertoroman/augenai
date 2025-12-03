@@ -2,181 +2,23 @@
 
 import { Button } from "@/components/ui/button";
 import { useDashboard } from "@/contexts/dashboard-context";
-import { useAuth } from "@/contexts/auth-context";
-import { getPatientsByUserId } from "@/server/services/patient";
-import { Loader2, Grid, List } from "lucide-react";
+import { useTodayPredictions } from "@/hooks/use-today-predictions";
+import { Spinner } from "@/components/ui/spinner";
+import { Grid, List } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GridCard } from "./start-pane/grid-card";
 import { ListRow } from "./start-pane/list-row";
-import type { PredictionGroup, PatientInfo } from "./start-pane/types";
-
-function isToday(date: Date) {
-  const today = new Date();
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  );
-}
 
 export default function Start() {
-  const { predictions, isLoading, error } = useDashboard();
+  const { isLoading, error } = useDashboard();
+  const predictionGroups = useTodayPredictions();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [patients, setPatients] = useState<Record<string, PatientInfo>>({});
-  const { user, accessToken } = useAuth();
-
-  // Fetch patient information
-  useEffect(() => {
-    const fetchPatientInfo = async () => {
-      if (!accessToken) return;
-
-      try {
-        const userPatients = await getPatientsByUserId(accessToken);
-        const patientMap = userPatients.reduce(
-          (acc, patient) => ({
-            ...acc,
-            [patient.id]: patient,
-          }),
-          {},
-        );
-
-        console.log(`Fetched patients: ${Object.keys(patientMap).length}`);
-        setPatients(patientMap);
-      } catch (error) {
-        console.error("Error fetching patients:", error);
-      }
-    };
-
-    if (predictions.length > 0) {
-      fetchPatientInfo();
-    }
-  }, [predictions, accessToken]);
-
-  // Filter and process today's predictions with patient info
-  const todayPredictions = predictions
-    .filter((prediction) => {
-      const predDate = new Date(prediction.created_at);
-
-      if (!user) return false;
-
-      // Validate that user_id exists in prediction
-      if (!("user_id" in prediction)) {
-        throw new Error("La predicción no tiene user_id");
-      }
-      const userId = prediction.user_id;
-      return isToday(predDate) && userId === user.id;
-    })
-    .map((prediction) => {
-      const patient = patients[prediction.patient_id];
-      const patientName = patient?.name;
-      const patientAge = patient?.age;
-
-      const disease_name =
-        "disease_name" in prediction
-          ? prediction.disease_name
-          : undefined;
-      const stage_content =
-        "stage_content" in prediction
-          ? prediction.stage_content
-          : undefined;
-
-      const type =
-        "disease_name" in prediction ? "classification" : "detection";
-
-      const mainFeedback = prediction.feedbacks?.find((f) => f.isMainData);
-
-      return {
-        ...prediction,
-        disease_name,
-        stage_content,
-        bucket_name: prediction.bucket_name,
-        storage_path: prediction.storage_path,
-        patient_name: patientName,
-        patient_age: patientAge,
-        type,
-        feedback_status: mainFeedback ? "reviewed" : "pending",
-        confidence: mainFeedback
-          ? mainFeedback.confidence
-          : prediction.confidence,
-        class_id: mainFeedback ? mainFeedback.classId : prediction.class_id,
-      };
-    });
-
-  // Group predictions by request and patient
-  const groupedPredictions = todayPredictions.reduce<
-    Record<string, typeof todayPredictions>
-  >((groups, prediction) => {
-    // Ensure request_id and patient_id are strings to be used as keys
-    const reqId = prediction.request_id;
-    const patId = prediction.patient_id;
-    const groupKey = `${reqId}-${patId}`;
-
-    if (!groups[groupKey]) {
-      groups[groupKey] = [];
-    }
-    groups[groupKey].push(prediction);
-    return groups;
-  }, {});
-
-  // Convert to array and sort by date (newest first)
-  const predictionGroups = Object.entries(groupedPredictions)
-    .map(([, preds]) => {
-      // Process predictions to ensure all required fields are present
-      const processedPreds = preds.map((pred) => {
-        // Create a new object with all required fields
-        const processedPred = {
-          id: pred.id,
-          request_id: pred.request_id,
-          patient_id: pred.patient_id,
-          patient_name: pred.patient_name,
-          disease_name: pred.disease_name,
-          stage_content: pred.stage_content,
-          confidence: pred.confidence,
-          patient_birthdate: pred.patient_birth_date!,
-          createdAt:
-            typeof pred.created_at === "string"
-              ? new Date(pred.created_at)
-              : pred.created_at,
-          bucket_name: pred.bucket_name,
-          storage_path: pred.storage_path,
-          patient_age: pred.patient_age,
-          feedback_status: pred.feedback_status,
-          feedbacks: pred.feedbacks,
-          class_id: pred.class_id,
-          model_id: pred.model_id,
-          bbox: {
-            ...("bbox" in pred ? pred.bbox : {}),
-            label: "lesion_name" in pred ? pred.lesion_name : undefined,
-          },
-          type: pred.type,
-          // Handle isMainData safely
-          isMainData: "isMainData" in pred ? Boolean(pred.isMainData) : false,
-        };
-        return processedPred;
-      });
-
-      const firstPred = processedPreds[0];
-      return {
-        requestId: firstPred.request_id,
-        patientId: firstPred.patient_id,
-        patientName: firstPred.patient_name,
-        requestDate: new Date(
-          Math.max(
-            ...processedPreds.map((p) => new Date(p.createdAt).getTime()),
-          ),
-        ),
-        predictions: processedPreds,
-        bucket_name: firstPred.bucket_name,
-        storage_path: firstPred.storage_path,
-      } as PredictionGroup;
-    })
-    .sort((a, b) => b.requestDate.getTime() - a.requestDate.getTime());
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="h-8 w-8 text-primary" />
       </div>
     );
   }
@@ -184,7 +26,7 @@ export default function Start() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500">{error}</p>
+        <p className="text-destructive">{error}</p>
         <Button
           variant="outline"
           className="mt-4"
@@ -196,7 +38,7 @@ export default function Start() {
     );
   }
 
-  if (todayPredictions.length === 0) {
+  if (predictionGroups.length === 0) {
     return (
       <div className="text-center py-12">
         <h3 className="text-lg font-medium">No hay predicciones para hoy</h3>
@@ -206,23 +48,6 @@ export default function Start() {
       </div>
     );
   }
-
-  // Render a request group (single item per request+patient)
-  const renderRequestGroup = (group: PredictionGroup) => {
-    return (
-      <Link
-        key={`${group.requestId}-${group.patientId}`}
-        href={`/diagnosis/${group.requestId}`}
-        className="block hover:opacity-90 transition-opacity"
-      >
-        {viewMode === "grid" ? (
-          <GridCard group={group} />
-        ) : (
-          <ListRow group={group} />
-        )}
-      </Link>
-    );
-  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -261,7 +86,19 @@ export default function Start() {
             : "space-y-4"
         }
       >
-        {predictionGroups.map(renderRequestGroup)}
+        {predictionGroups.map((group) => (
+          <Link
+            key={`${group.requestId}-${group.patientId}`}
+            href={`/diagnosis/${group.requestId}`}
+            className="block hover:opacity-90 transition-opacity"
+          >
+            {viewMode === "grid" ? (
+              <GridCard group={group} />
+            ) : (
+              <ListRow group={group} />
+            )}
+          </Link>
+        ))}
       </div>
     </div>
   );

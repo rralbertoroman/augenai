@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
       .reverse();
 
     return (
-      <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded shadow-lg text-sm">
+      <div className="bg-card p-3 border border-border rounded shadow-lg text-sm">
         <p className="font-semibold mb-2">{label}</p>
         <div className="space-y-1">
           {validEntries.map((entry, index) => (
@@ -75,7 +75,7 @@ export const BaseStackedBar: React.FC<BaseStackedBarProps> = ({
     console.groupEnd();
     return (
       <div className="w-full h-[400px] flex items-center justify-center">
-        <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="text-center text-muted-foreground">
           <p className="text-lg font-medium">No hay datos disponibles</p>
           <p className="text-sm mt-2">
             Los datos aparecerán aquí cuando estén disponibles

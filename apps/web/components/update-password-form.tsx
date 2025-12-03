@@ -204,7 +204,7 @@ export function UpdatePasswordForm({
                     onChange={handlePasswordChange}
                   />
                   {passwordError && (
-                    <p className="text-sm text-red-500">{passwordError}</p>
+                    <p className="text-sm text-destructive">{passwordError}</p>
                   )}
                 </div>
                 <div className="grid gap-2">
@@ -218,7 +218,7 @@ export function UpdatePasswordForm({
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Guardando..." : "Guardar nueva contraseña"}
                 </Button>

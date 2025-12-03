@@ -140,7 +140,7 @@ export function StepImage({
           </div>
         )}
         {storagePath && !isUploading && (
-          <p className="text-xs text-green-600">✓ Imagen subida exitosamente</p>
+          <p className="text-xs text-primary">✓ Imagen subida exitosamente</p>
         )}
         {errors.file && (
           <p className="text-sm text-destructive" role="alert">
