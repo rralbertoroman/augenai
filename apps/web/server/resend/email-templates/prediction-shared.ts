@@ -14,9 +14,9 @@ export function PredictionSharedTemplate({
   // 3D Logo with Side Shapes
   const logoHtml = `
     <div style="text-align: center;">
-      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 32px 3px 3px 32px; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
-      <div style="display: inline-block; vertical-align: middle; width: 64px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 50%; margin-right: 12px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
-      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #2bee6c 0%, #1fae52 100%); border-radius: 3px 32px 32px 3px; box-shadow: 0 8px 16px rgba(43, 238, 108, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 32px 3px 3px 32px; margin-right: 12px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 64px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 50%; margin-right: 12px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
+      <div style="display: inline-block; vertical-align: middle; width: 32px; height: 64px; background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); border-radius: 3px 32px 32px 3px; box-shadow: 0 8px 16px rgba(110, 231, 183, 0.3), inset 0 2px 4px rgba(255,255,255,0.3);"></div>
     </div>
   `;
 
@@ -114,19 +114,19 @@ export function PredictionSharedTemplate({
           .button {
             display: inline-block;
             padding: 18px 56px;
-            background: linear-gradient(180deg, #2bee6c 0%, #24d660 100%);
+            background: linear-gradient(180deg, #6ee7b7 0%, #34d399 100%);
             color: #ffffff !important;
             text-decoration: none;
             border-radius: 100px;
             font-weight: 700;
             font-size: 16px;
             transition: all 0.2s ease;
-            box-shadow: 0 8px 20px rgba(43, 238, 108, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+            box-shadow: 0 8px 20px rgba(110, 231, 183, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
           }
           .button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(43, 238, 108, 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+            box-shadow: 0 12px 24px rgba(110, 231, 183, 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
           }
           .footer {
             padding: 40px;

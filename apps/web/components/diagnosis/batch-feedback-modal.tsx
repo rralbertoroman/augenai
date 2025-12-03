@@ -8,6 +8,15 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
 interface BatchFeedbackModalProps {
@@ -59,22 +68,24 @@ export function BatchFeedbackModal({
             const diseaseObj = diseases.find(
               (d) => d.id === prediction.disease_id,
             );
-            const stages = diseaseObj?.stages ?? [];
-            const formData = feedbackForms[prediction.id] ?? {
-              stageIdx: 0,
-              observations: "",
-            };
+            const stages = diseaseObj?.stages;
+            const formData = feedbackForms[prediction.id];
+            if (!formData) {
+              throw new Error(
+                `No se encontró formData para la predicción ${prediction.id}`,
+              );
+            }
 
             return (
               <div
                 key={prediction.id}
-                className="border border-border rounded-lg p-4 space-y-4 bg-gray-50 dark:bg-gray-800"
+                className="border border-border rounded-lg p-4 space-y-4 bg-muted"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     Predicción {index + 1}
                   </h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     Confianza: {(prediction.confidence * 100).toFixed(1)}%
                   </span>
                 </div>
@@ -87,7 +98,7 @@ export function BatchFeedbackModal({
                     id={`disease-${prediction.id}`}
                     value={prediction.disease_name}
                     disabled
-                    className="bg-gray-100 dark:bg-gray-700 cursor-not-allowed mt-2"
+                    className="bg-muted/50 cursor-not-allowed mt-2"
                   />
                 </div>
 
@@ -95,32 +106,30 @@ export function BatchFeedbackModal({
                   <Label htmlFor={`stage-${prediction.id}`}>
                     Etapa que considera correcta
                   </Label>
-                  <select
-                    id={`stage-${prediction.id}`}
-                    value={formData.stageIdx}
-                    onChange={(e) =>
-                      onUpdateForm(
-                        prediction.id,
-                        "stageIdx",
-                        Number(e.target.value),
-                      )
+                  <Select
+                    value={formData.stageIdx.toString()}
+                    onValueChange={(value) =>
+                      onUpdateForm(prediction.id, "stageIdx", Number(value))
                     }
-                    required
-                    className="w-full border border-border rounded p-2 bg-background mt-2"
                   >
-                    {stages.map((stage, idx) => (
-                      <option key={idx} value={idx}>
-                        {stage}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full mt-2">
+                      <SelectValue placeholder="Seleccione una etapa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stages!.map((stage, idx) => (
+                        <SelectItem key={idx} value={idx.toString()}>
+                          {stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <Label htmlFor={`observations-${prediction.id}`}>
                     Observaciones (opcional)
                   </Label>
-                  <textarea
+                  <Textarea
                     id={`observations-${prediction.id}`}
                     value={localObservations[prediction.id] || ""}
                     onChange={(e) =>
@@ -131,7 +140,7 @@ export function BatchFeedbackModal({
                     }
                     placeholder="Agregue cualquier observación sobre esta predicción..."
                     rows={3}
-                    className="w-full border border-border rounded p-2 bg-background resize-none mt-2"
+                    className="mt-2"
                   />
                 </div>
               </div>
@@ -139,9 +148,9 @@ export function BatchFeedbackModal({
           })}
 
           {error && (
-            <div className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           <DialogFooter className="flex gap-2">

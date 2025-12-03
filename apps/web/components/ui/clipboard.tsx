@@ -64,7 +64,7 @@ export function Clipboard({ className, children, ...props }: ClipboardProps) {
         }}
       >
         {/* Paper/content area - white background */}
-        <div className="relative bg-white dark:bg-slate-50 rounded-2xl shadow-lg overflow-hidden">
+        <div className="relative bg-card rounded-2xl shadow-lg overflow-hidden">
           {children}
         </div>
       </div>

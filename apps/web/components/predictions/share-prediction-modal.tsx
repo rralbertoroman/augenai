@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SharePredictionModalProps {
   open: boolean;
@@ -90,11 +91,15 @@ export function SharePredictionModal({
             ))
           )}
         </div>
-        {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+        {error && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         {shared && (
-          <div style={{ color: "green", marginTop: 8 }}>
-            ¡Predicción compartida!
-          </div>
+          <Alert className="mt-2">
+            <AlertDescription>¡Predicción compartida!</AlertDescription>
+          </Alert>
         )}
         <DialogFooter>
           <Button onClick={onClose} variant="secondary">

@@ -81,13 +81,16 @@ export const deletePatient = async (
 
 export const getPatientsByUserId = async (
   token: string,
+  limit?: number,
+  offset?: number,
 ): Promise<PatientDTO[]> => {
   const user = await getCurrentUser(token);
 
-  const patients = await db
-    .select()
-    .from(PatientsTable)
-    .where(eq(PatientsTable.doctorId, user.userId));
+  const patients = await db.query.PatientsTable.findMany({
+    where: eq(PatientsTable.doctorId, user.userId),
+    limit,
+    offset,
+  });
   return patients;
 };
 

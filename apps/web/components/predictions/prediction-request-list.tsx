@@ -2,6 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import {
   formatDate,
@@ -22,73 +30,49 @@ export function PredictionRequestList({
   const router = useRouter();
 
   return (
-    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-      <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-        <tr>
-          <th className="px-6 py-3" scope="col">
-            Fecha
-          </th>
-          <th className="px-6 py-3" scope="col">
-            Paciente
-          </th>
-          <th className="px-6 py-3" scope="col">
-            Tipo de Tarea
-          </th>
-          <th className="px-6 py-3" scope="col">
-            Enfermedades Sospechadas
-          </th>
-          <th className="px-6 py-3 text-center" scope="col">
-            Predicciones
-          </th>
-          <th className="px-6 py-3 text-right" scope="col">
-            Acciones
-          </th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Fecha</TableHead>
+          <TableHead>Paciente</TableHead>
+          <TableHead>Tipo de Tarea</TableHead>
+          <TableHead>Enfermedades Sospechadas</TableHead>
+          <TableHead className="text-center">Predicciones</TableHead>
+          <TableHead className="text-right">Acciones</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {requests.length === 0 ? (
-          <tr>
-            <td
+          <TableRow>
+            <TableCell
               colSpan={6}
-              className="px-6 py-8 text-center text-muted-foreground"
+              className="h-24 text-center text-muted-foreground"
             >
               No se encontraron solicitudes de predicción
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         ) : (
-          requests.map((request, idx) => (
-            <tr
-              key={request.id}
-              className={`${
-                idx === requests.length - 1 ? "" : "border-b"
-              } bg-card hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800`}
-            >
-              <th
-                className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
-                scope="row"
-              >
+          requests.map((request) => (
+            <TableRow key={request.id}>
+              <TableCell className="font-medium text-foreground">
                 <div className="flex flex-col">
                   <span>{formatDate(request.created_at)}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatTime(request.created_at)}
-                  </span>
-                  <span>{formatDate(request.created_at)}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     {formatTime(request.created_at)}
                   </span>
                 </div>
-              </th>
-              <td className="px-6 py-4">
+              </TableCell>
+              <TableCell>
                 <div className="flex flex-col">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-foreground">
                     {request.patient_name || "N/A"}
                   </span>
                 </div>
-              </td>
-              <td className="px-6 py-4">
+              </TableCell>
+              <TableCell>
                 <Badge variant="outline">{getTaskLabel(request.task)}</Badge>
-              </td>
-              <td className="px-6 py-4">
+              </TableCell>
+              <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {request.diseaseNames?.map(
                     (diseaseName: string, i: number) => (
@@ -98,15 +82,13 @@ export function PredictionRequestList({
                     ),
                   )}
                 </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex items-center justify-center">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {request.totalPredictions}
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 text-right">
+              </TableCell>
+              <TableCell className="text-center">
+                <span className="font-semibold text-foreground">
+                  {request.totalPredictions}
+                </span>
+              </TableCell>
+              <TableCell className="text-right">
                 <div className="flex gap-2 justify-end">
                   <Button
                     type="button"
@@ -129,11 +111,11 @@ export function PredictionRequestList({
                     </Button>
                   )}
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))
         )}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }

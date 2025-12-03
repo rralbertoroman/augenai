@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ContactUsDialog } from "./contact-us-dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { LayoutDashboard, Users, PieChart } from "lucide-react";
@@ -15,7 +16,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-10 w-full border-b border-border bg-card px-4 py-3 dark:border-gray-700 dark:bg-gray-900 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-10 w-full border-b border-border bg-card px-4 py-3 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Logo */}
@@ -23,8 +24,8 @@ export function Navbar() {
             <Image
               src="/augen 2.svg"
               alt="Logo"
-              width={110}
-              height={110}
+              width={150}
+              height={150}
               className="mx-1"
             />
           </Link>
@@ -35,8 +36,8 @@ export function Navbar() {
               href="/"
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive("/") && pathname === "/"
-                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
-                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-secondary text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
               }`}
             >
               <LayoutDashboard className="w-5 h-5" />
@@ -46,8 +47,8 @@ export function Navbar() {
               href="/patients"
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive("/patients")
-                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
-                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-secondary text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
               }`}
             >
               <Users className="w-5 h-5" />
@@ -57,8 +58,8 @@ export function Navbar() {
               href="/diagnosis"
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive("/diagnosis")
-                  ? "bg-primary/20 text-foreground dark:bg-primary/30 dark:text-white"
-                  : "text-foreground hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                  ? "bg-secondary text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
               }`}
             >
               <PieChart className="w-5 h-5" />
@@ -69,6 +70,7 @@ export function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
+          <ContactUsDialog />
           <ThemeToggle />
           <UserMenu />
         </div>

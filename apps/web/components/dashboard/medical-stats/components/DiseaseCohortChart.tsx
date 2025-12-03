@@ -20,9 +20,9 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+        <div className="bg-card rounded-lg p-4 shadow">
           <div className="w-full h-[400px] flex items-center justify-center">
-            <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="text-center text-muted-foreground">
               <p className="text-lg font-medium">
                 No hay datos de cohortes disponibles
               </p>
@@ -69,12 +69,12 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{diseaseData.displayName}</h3>
         <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{totalPatients}</span> Total de
-            Pacientes
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{totalPatients}</span>{" "}
+            Total de Pacientes
           </div>
           {totalRequiringTreatment > 0 && (
-            <div className="flex items-center text-amber-600 dark:text-amber-400 text-sm">
+            <div className="flex items-center text-destructive text-sm">
               <AlertTriangle className="w-4 h-4 mr-1" />
               <span>{totalRequiringTreatment} requieren tratamiento</span>
             </div>
@@ -82,7 +82,7 @@ export const DiseaseCohortChart: React.FC<DiseaseCohortChartProps> = ({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+      <div className="bg-card rounded-lg p-4 shadow">
         <BaseStackedBar
           data={diseaseData.cohortData}
           keys={stageNames}
