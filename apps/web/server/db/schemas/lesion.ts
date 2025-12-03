@@ -1,10 +1,10 @@
-import { pgTable, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, bigint } from "drizzle-orm/pg-core";
 import { standardSchema } from "./base_schemas";
 
 const LesionsTable = pgTable("lesions", {
   ...standardSchema,
   name: text("name").notNull(),
-  classId: integer("class_id").notNull(),
+  classId: bigint("class_id", { mode: "number" }).notNull(),
 });
 
 export default LesionsTable;
