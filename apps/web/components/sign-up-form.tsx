@@ -136,6 +136,15 @@ export function SignUpForm({
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creando cuenta..." : "Registrarse"}
                 </Button>
+                <div className="text-center text-xs text-muted-foreground mt-2">
+                  Al registrarte, aceptas nuestros{" "}
+                  <Link
+                    href="/terms"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    Términos y Condiciones
+                  </Link>
+                </div>
               </div>
               <div className="mt-4 text-center text-sm">
                 ¿Ya tienes cuenta?{" "}

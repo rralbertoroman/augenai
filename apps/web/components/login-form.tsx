@@ -128,6 +128,15 @@ export function LoginForm({
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
                 </Button>
+                <div className="text-center text-xs text-muted-foreground mt-2">
+                  Al iniciar sesión, aceptas nuestros{" "}
+                  <Link
+                    href="/terms"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    Términos y Condiciones
+                  </Link>
+                </div>
               </div>
               <div className="mt-4 text-center text-sm">
                 ¿No tienes cuenta?{" "}
