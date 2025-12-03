@@ -14,6 +14,7 @@ dependencies = [
     "gunicorn>=22.0.0",
     "uvicorn[standard]>=0.34.0",
     "ultralytics>=8.3.231",
+    "safetensors>=0.4.0",
 ]
 
 [project.scripts]
