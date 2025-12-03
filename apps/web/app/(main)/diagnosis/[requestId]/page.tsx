@@ -3,7 +3,8 @@
 import * as React from "react";
 import { usePredictionRequestDetail } from "@/hooks/use-prediction-request-detail";
 import { formatDate } from "@/hooks/use-prediction-requests";
-import { SkeletonLoader } from "@/components/common/skeleton-loader";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PredictionCard } from "@/components/predictions/prediction-card";
@@ -15,6 +16,7 @@ import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal"
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
+import type { ClassificationWithExtras } from "@/server/zod-schemas/prediction_workflow";
 
 export default function PredictionDetailPage({
   params,
@@ -52,18 +54,17 @@ export default function PredictionDetailPage({
   };
 
   // Convert detection predictions to bounding boxes
-  const detectionBoxes =
-    request?.predictionsWithExtras
-      ?.flatMap((pred) => pred.detections)
-      .map((detection) => ({
-        id: detection.id ?? "",
-        x: detection.bbox.x_left,
-        y: detection.bbox.y_top,
-        width: detection.bbox.width,
-        height: detection.bbox.height,
-        label: detection.lesion_name,
-        confidence: detection.confidence,
-      })) || [];
+  const detectionBoxes = request?.predictionsWithExtras
+    ?.flatMap((pred) => pred.detections)
+    .map((detection) => ({
+      id: detection.id!,
+      x: detection.bbox.x_left,
+      y: detection.bbox.y_top,
+      width: detection.bbox.width,
+      height: detection.bbox.height,
+      label: detection.lesion_name,
+      confidence: detection.confidence,
+    }));
 
   // Get image storage info from the request
   const bucketName = request?.bucket_name;
@@ -83,8 +84,8 @@ export default function PredictionDetailPage({
   if (isLoading) {
     return (
       <main className="flex-1 flex-col p-6">
-        <SkeletonLoader width="100%" height={60} className="mb-6" />
-        <SkeletonLoader width="100%" height={400} />
+        <Skeleton className="w-full h-[60px] mb-6" />
+        <Skeleton className="w-full h-[400px]" />
       </main>
     );
   }
@@ -92,9 +93,9 @@ export default function PredictionDetailPage({
   if (error) {
     return (
       <main className="flex-1 flex-col p-6">
-        <div className="p-4 bg-destructive/10 border border-destructive rounded">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </main>
     );
   }
@@ -102,7 +103,7 @@ export default function PredictionDetailPage({
   return (
     <main className="flex-1 flex-col animate-fadein">
       {/* Header */}
-      <div className="border-b border-border bg-card px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="border-b border-border bg-card px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/diagnosis">
@@ -110,7 +111,7 @@ export default function PredictionDetailPage({
                 ← Volver
               </Button>
             </Link>
-            <h1 className="text-foreground dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">
+            <h1 className="text-foreground text-xl font-bold leading-tight tracking-[-0.015em]">
               Detalles de Solicitud
             </h1>
           </div>
@@ -120,29 +121,27 @@ export default function PredictionDetailPage({
       {/* Content */}
       <div className="flex-1 p-6">
         {/* Request Info */}
-        <div className="rounded-lg border border-border bg-card p-6 dark:border-gray-700 dark:bg-gray-900 mb-6">
-          <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] mb-4">
+        <div className="rounded-lg border border-border bg-card p-6 mb-6">
+          <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] mb-4">
             Información de la Solicitud
           </h2>
           <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Fecha
-              </p>
-              <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
+              <p className="text-sm font-medium text-muted-foreground">Fecha</p>
+              <p className="mt-1 text-base text-foreground font-semibold">
                 {request ? formatDate(request.created_at) : ""}
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-medium text-muted-foreground">
                 Paciente
               </p>
-              <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {request?.patient_name || "N/A"}
+              <p className="mt-1 text-base text-foreground font-semibold">
+                {request?.patient_name}
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-medium text-muted-foreground">
                 Tipo de Tarea
               </p>
               <p className="mt-1">
@@ -150,15 +149,15 @@ export default function PredictionDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-medium text-muted-foreground">
                 Tipo de Imagen
               </p>
-              <p className="mt-1 text-base text-gray-900 dark:text-white">
+              <p className="mt-1 text-base text-foreground">
                 {request?.image_type}
               </p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+              <p className="text-sm font-medium text-muted-foreground mb-2">
                 Enfermedades Sospechadas
               </p>
               <div className="flex flex-wrap gap-2">
@@ -189,9 +188,9 @@ export default function PredictionDetailPage({
           )}
 
           {/* Diagnósticos */}
-          <div className="w-1/2 rounded-lg border border-border bg-card dark:border-gray-700 dark:bg-gray-900">
+          <div className="w-1/2 rounded-lg border border-border bg-card">
             <div className="flex items-center justify-between px-6 pb-3 pt-5">
-              <h2 className="text-foreground dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">
+              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">
                 Resultados de Diagnóstico
               </h2>
               {request?.predictionsWithExtras &&
@@ -201,12 +200,10 @@ export default function PredictionDetailPage({
                     size="sm"
                     onClick={() => {
                       // Flatten all tasks from predictionsWithExtras
-                      const allTasks =
-                        request.predictionsWithExtras?.flatMap((pred) => [
-                          ...pred.classifications,
-                          ...pred.detections,
-                        ]) || [];
-                      feedback.handleOpenFeedback(allTasks);
+                      const allTasks = request.predictionsWithExtras?.flatMap(
+                        (pred) => [...pred.classifications, ...pred.detections],
+                      );
+                      feedback.handleOpenFeedback(allTasks!);
                     }}
                     className="text-md"
                   >
@@ -230,7 +227,10 @@ export default function PredictionDetailPage({
                       console.log(
                         "🔍 DEBUG - Classifications with feedbacks:",
                         allTasks
-                          .filter((t) => "disease_name" in t)
+                          .filter(
+                            (t): t is ClassificationWithExtras =>
+                              "disease_name" in t,
+                          )
                           .map((t) => ({
                             id: t.id,
                             disease: t.disease_name,
@@ -242,14 +242,14 @@ export default function PredictionDetailPage({
 
                       return (
                         <>
-                          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          <p className="text-sm font-medium text-muted-foreground">
                             Predicciones ({allTasks.length})
                           </p>
                           {allTasks.map((task) => {
                             // Adapt task for PredictionCard
                             const isClassification = "disease_name" in task;
                             const cardProps = {
-                              id: task.id ?? "",
+                              id: task.id!,
                               disease_name: isClassification
                                 ? task.disease_name
                                 : "Detección",
@@ -269,7 +269,7 @@ export default function PredictionDetailPage({
                               console.log(`🎯 Card ${task.id}:`, {
                                 disease: cardProps.disease_name,
                                 feedbacks: cardProps.feedbacks,
-                                feedbackCount: cardProps.feedbacks?.length || 0,
+                                feedbackCount: cardProps.feedbacks?.length,
                                 willShowButton:
                                   isClassification &&
                                   cardProps.feedbacks &&
@@ -324,9 +324,7 @@ export default function PredictionDetailPage({
         {/* Feedbacks Modal */}
         <PredictionFeedbacksModal
           open={feedbacksModal.isOpen}
-          onClose={(onUpdate) =>
-            feedbacksModal.closeFeedbacksModal(refreshRequest)
-          }
+          onClose={() => feedbacksModal.closeFeedbacksModal(refreshRequest)}
           feedbacks={feedbacksModal.localFeedbacks}
           isRequestOwner={feedbacksModal.isRequestOwner}
           updatingFeedbackId={feedbacksModal.updatingFeedbackId}

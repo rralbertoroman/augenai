@@ -19,7 +19,22 @@ import {
   type F1ScoreData,
   type ConfusionMatrixData,
 } from "@/hooks/use-model-stats";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Calculate AUC (Area Under Curve)
 const calculateAUC = (data: F1ScoreData[]): number => {
@@ -101,55 +116,48 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="border p-2 bg-muted/50 dark:bg-muted/20">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="bg-muted/50 dark:bg-muted/20">
                   <div className="text-sm font-medium text-foreground">
                     Real \ Predicho
                   </div>
-                </th>
+                </TableHead>
                 {currentData.stages.map((stage, i) => (
-                  <th
-                    key={i}
-                    className="border p-2 bg-muted/50 dark:bg-muted/20"
-                  >
+                  <TableHead key={i} className="bg-muted/50 dark:bg-muted/20">
                     <div className="text-sm font-medium text-foreground whitespace-nowrap">
                       {stage}
                     </div>
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {currentData.matrix.map((row, rowIndex) => {
                 const rowSum = currentData.matrix[rowIndex].reduce(
                   (a, b) => a + b,
                   0,
                 );
                 return (
-                  <tr key={rowIndex}>
-                    <td className="border p-2 text-sm font-medium whitespace-nowrap bg-muted/30 dark:bg-muted/10">
+                  <TableRow key={rowIndex}>
+                    <TableCell className="text-sm font-medium whitespace-nowrap bg-muted/30 dark:bg-muted/10">
                       <span className="text-foreground">
                         {currentData.stages[rowIndex]}
                       </span>
-                    </td>
+                    </TableCell>
                     {row.map((cell, colIndex) => {
                       const percentage =
                         rowSum > 0 ? Math.round((cell / rowSum) * 100) : 0;
                       const isDiagonal = rowIndex === colIndex;
 
                       return (
-                        <td
+                        <TableCell
                           key={`${rowIndex}-${colIndex}`}
                           className={`
-                            border p-2 text-center text-sm relative
-                            ${
-                              isDiagonal
-                                ? "bg-green-50 dark:bg-green-900/20"
-                                : "bg-background dark:bg-card"
-                            }
-                            ${cell > 0 ? "font-medium" : "text-muted-foreground/30 dark:text-muted-foreground/40"}
+                            text-center text-sm relative
+                            ${isDiagonal ? "bg-primary/10" : "bg-background"}
+                            ${cell > 0 ? "font-medium" : "text-muted-foreground/30"}
                           `}
                           title={`Predicted: ${currentData.stages[colIndex]}
 Actual: ${currentData.stages[rowIndex]}
@@ -159,11 +167,7 @@ Percentage: ${percentage}%`}
                           <div className="relative">
                             <div
                               className={`
-                              ${
-                                isDiagonal
-                                  ? "text-green-700 dark:text-green-300"
-                                  : "text-foreground"
-                              }
+                              ${isDiagonal ? "text-primary" : "text-foreground"}
                               ${cell > 0 ? "opacity-100" : "opacity-30"}
                             `}
                             >
@@ -174,8 +178,8 @@ Percentage: ${percentage}%`}
                               text-[10px] mt-[-2px] 
                               ${
                                 isDiagonal
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-muted-foreground/70 dark:text-muted-foreground/60"
+                                  ? "text-primary"
+                                  : "text-muted-foreground/70"
                               }
                               ${cell === 0 ? "opacity-0" : ""}
                             `}
@@ -183,14 +187,14 @@ Percentage: ${percentage}%`}
                               ({percentage}%)
                             </div>
                           </div>
-                        </td>
+                        </TableCell>
                       );
                     })}
-                  </tr>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>
@@ -274,18 +278,19 @@ const DiseaseF1ScoreChart = ({
 
 // Main component
 const ModelStats = () => {
-  const { f1ScoreData, confusionMatrixData, isLoading } = useModelStats();
+  const { f1ScoreData, confusionMatrixData, isLoading, hasData } =
+    useModelStats();
   const [selectedDisease, setSelectedDisease] = React.useState<number>(0);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="h-8 w-8 text-primary" />
       </div>
     );
   }
 
-  if (!confusionMatrixData.length) {
+  if (!hasData || !confusionMatrixData.length) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">
@@ -308,17 +313,21 @@ const ModelStats = () => {
           <label className="block text-sm font-medium mb-1">
             Seleccionar Enfermedad:
           </label>
-          <select
-            className="w-full p-2 border rounded"
-            value={selectedDisease}
-            onChange={(e) => setSelectedDisease(Number(e.target.value))}
+          <Select
+            value={selectedDisease.toString()}
+            onValueChange={(value) => setSelectedDisease(Number(value))}
           >
-            {confusionMatrixData.map((item, index) => (
-              <option key={item.disease} value={index}>
-                {item.disease}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona una enfermedad" />
+            </SelectTrigger>
+            <SelectContent>
+              {confusionMatrixData.map((item, index) => (
+                <SelectItem key={item.disease} value={index.toString()}>
+                  {item.disease}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

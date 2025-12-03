@@ -380,6 +380,8 @@ export const createPredictionRequest = async (
 export const getAllPredictionRequestsWithPredictionsByUserId = async (
   token: string,
   userId: string,
+  limit?: number,
+  offset?: number,
 ): Promise<PredictionRequest[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
@@ -398,6 +400,8 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
     orderBy: (predictionRequests, { desc }) => [
       desc(predictionRequests.createdAt),
     ],
+    limit,
+    offset,
   });
 
   const results = await Promise.all(

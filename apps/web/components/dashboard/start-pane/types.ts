@@ -1,26 +1,31 @@
 export type Prediction = {
-  id: string;
+  id?: string;
   request_id: string;
   patient_id: string;
-  patient_name: string;
-  disease_name: string;
-  stage_content: string;
+  patient_name: string | undefined;
+  disease_name?: string;
+  stage_content?: string;
   confidence: number;
   createdAt: string | Date;
-  bucket_name: string;
-  storage_path: string;
+  bucket_name?: string;
+  storage_path?: string;
   patient_birthdate: string;
+  patient_age: number | null;
   feedback_status: string;
-  feedbacks?: Array<{ isMainData: boolean }>;
+  feedbacks?: Array<{
+    isMainData: boolean;
+    classId: number;
+    confidence: number;
+  }>;
   isMainData: boolean;
   class_id: number;
   model_id: string;
   bbox: {
     label?: string;
-    x_left: number;
-    y_top: number;
-    width: number;
-    height: number;
+    x_left?: number;
+    y_top?: number;
+    width?: number;
+    height?: number;
   };
   type: string;
 };
@@ -31,8 +36,8 @@ export type PredictionGroup = {
   requestDate: Date;
   patientName: string;
   predictions: Prediction[];
-  bucket_name: string;
-  storage_path: string;
+  bucket_name?: string;
+  storage_path?: string;
 };
 
 export type PatientInfo = {

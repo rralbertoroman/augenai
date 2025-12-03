@@ -53,7 +53,10 @@ export function LoginForm({
         if (pendingProfileData) {
           try {
             const parsed = JSON.parse(pendingProfileData);
-            const name = parsed.name || "";
+            if (!parsed.name) {
+              throw new Error("No se encontró el nombre del perfil pendiente");
+            }
+            const name = parsed.name;
 
             if (name) {
               // Call server action directly to create profile
@@ -121,10 +124,19 @@ export function LoginForm({
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
                 </Button>
+                <div className="text-center text-xs text-muted-foreground mt-2">
+                  Al iniciar sesión, aceptas nuestros{" "}
+                  <Link
+                    href="/terms"
+                    className="underline underline-offset-4 hover:text-primary"
+                  >
+                    Términos y Condiciones
+                  </Link>
+                </div>
               </div>
               <div className="mt-4 text-center text-sm">
                 ¿No tienes cuenta?{" "}

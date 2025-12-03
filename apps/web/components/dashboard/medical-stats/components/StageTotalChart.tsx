@@ -117,9 +117,9 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{title}</h3>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+          <div className="bg-card rounded-lg p-4 shadow">
             <div className="w-full h-[400px] flex items-center justify-center">
-              <div className="text-center text-gray-500 dark:text-gray-400">
+              <div className="text-center text-muted-foreground">
                 <p className="text-lg font-medium">
                   No hay datos de etapas disponibles
                 </p>
@@ -136,19 +136,20 @@ export const StageTotalChart: React.FC<StageTotalChartProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{title}</h3>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                <Users className="w-4 h-4 mr-1" />
-                <span>{totalPatients} Total de Pacientes</span>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Users className="w-4 h-4 mr-1 text-primary" />
+                <span className="text-foreground">{totalPatients}</span>
+                <span className="ml-1">Total de Pacientes</span>
               </div>
               {totalRequiringTreatment > 0 && (
-                <div className="text-amber-600 dark:text-amber-400 text-sm">
+                <div className="text-destructive text-sm">
                   {totalRequiringTreatment} requieren tratamiento
                 </div>
               )}
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+          <div className="bg-card rounded-lg p-4 shadow">
             <BaseStackedBar
               data={chartData}
               keys={stageKeys}

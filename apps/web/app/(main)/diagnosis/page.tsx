@@ -2,7 +2,8 @@
 
 import { usePredictionRequests } from "@/hooks/use-prediction-requests";
 import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
-import { SkeletonLoader } from "@/components/common/skeleton-loader";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { SharePredictionModal } from "@/components/predictions/share-prediction-modal";
 import Link from "next/link";
@@ -37,22 +38,22 @@ export default function DiagnosisPage() {
   if (isLoading) {
     return (
       <main className="flex-1 flex-col p-6">
-        <SkeletonLoader width="100%" height={60} className="mb-6" />
-        <SkeletonLoader width="100%" height={400} />
+        <Skeleton className="w-full h-[60px] mb-6" />
+        <Skeleton className="w-full h-[400px]" />
       </main>
     );
   }
   return (
     <main className="flex-1 flex-col animate-fadein">
-      <div className="border-b border-border bg-card px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+      <div className="border-b border-border bg-card px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-foreground dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">
+            <h1 className="text-foreground text-xl font-bold leading-tight tracking-[-0.015em]">
               Solicitudes de Predicción
             </h1>
             <div className="relative">
               <input
-                className="w-64 rounded-lg border border-border bg-background py-2 pl-3 pr-4 text-sm text-foreground focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                className="w-64 rounded-lg border border-border bg-background py-2 pl-3 pr-4 text-sm text-foreground focus:border-primary focus:ring-primary"
                 placeholder="Buscar por paciente o enfermedad..."
                 type="text"
                 value={searchQuery}
@@ -71,11 +72,14 @@ export default function DiagnosisPage() {
         </div>
       </div>
       <div className="flex-1 p-6">
-        <div className="rounded-lg border border-border bg-card dark:bg-gray-900 dark:border-gray-700 w-full">
+        <div className="rounded-lg border border-border bg-card w-full">
           {error && (
-            <div className="p-4 bg-destructive/10 border-b border-destructive rounded-t">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
+            <Alert
+              variant="destructive"
+              className="rounded-none border-x-0 border-t-0"
+            >
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
           {isLoading ? (
             <p className="text-center text-muted-foreground py-8">
@@ -99,7 +103,7 @@ export default function DiagnosisPage() {
         key={shareModalOpen ? "open" : "closed"}
         open={shareModalOpen}
         onClose={handleCloseShareModal}
-        predictionId={selectedRequestId || ""}
+        predictionId={selectedRequestId!}
       />
     </main>
   );
