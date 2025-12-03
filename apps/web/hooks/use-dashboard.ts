@@ -7,11 +7,24 @@ export function useDashboard() {
   const { predictions, isLoading: isPredictionsLoading } = usePredictions();
   const { patients, isLoading: isPatientsLoading } = usePatients();
 
-  const displayName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email?.split("@")[0] ||
-    "Doctor";
+  // Get display name from user metadata - throw error if not available
+  const getDisplayName = () => {
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+    
+    const fullName = user.user_metadata?.full_name;
+    const name = user.user_metadata?.name;
+    const emailPrefix = user.email?.split("@")[0];
+    
+    if (fullName) return fullName;
+    if (name) return name;
+    if (emailPrefix) return emailPrefix;
+    
+    throw new Error("No se pudo obtener el nombre del usuario");
+  };
+
+  const displayName = getDisplayName();
 
   const isLoading = isPredictionsLoading || isPatientsLoading;
 
@@ -24,7 +37,7 @@ export function useDashboard() {
           predictions.reduce((sum, pred) => sum + pred.confidence * 100, 0) /
           predictions.length
         ).toFixed(1)
-      : "0";
+      : "0.0";
 
   const recentPredictions = predictions
     .slice()

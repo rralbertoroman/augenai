@@ -99,7 +99,7 @@ export default function DiagnosisPage() {
         key={shareModalOpen ? "open" : "closed"}
         open={shareModalOpen}
         onClose={handleCloseShareModal}
-        predictionId={selectedRequestId || ""}
+        predictionId={selectedRequestId!}
       />
     </main>
   );

@@ -69,8 +69,8 @@ export const DashboardProvider = ({
           results.push({
             ...c,
             created_at: pred.created_at,
-            request_id: pred.id ?? "",
-            patient_id: pred.patient_id ?? "",
+            request_id: pred.id!,
+            patient_id: pred.patient_id!,
             bucket_name: pred.bucket_name,
             storage_path: pred.storage_path,
           });
@@ -81,8 +81,8 @@ export const DashboardProvider = ({
           results.push({
             ...d,
             created_at: pred.created_at,
-            request_id: pred.id ?? "",
-            patient_id: pred.patient_id ?? "",
+            request_id: pred.id!,
+            patient_id: pred.patient_id!,
             bucket_name: pred.bucket_name,
             storage_path: pred.storage_path,
           });

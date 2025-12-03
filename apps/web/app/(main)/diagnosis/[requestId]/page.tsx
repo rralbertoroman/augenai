@@ -15,6 +15,7 @@ import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal"
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
+import type { ClassificationWithExtras } from "@/server/zod-schemas/prediction_workflow";
 
 export default function PredictionDetailPage({
   params,
@@ -56,14 +57,14 @@ export default function PredictionDetailPage({
     request?.predictionsWithExtras
       ?.flatMap((pred) => pred.detections)
       .map((detection) => ({
-        id: detection.id ?? "",
+        id: detection.id!,
         x: detection.bbox.x_left,
         y: detection.bbox.y_top,
         width: detection.bbox.width,
         height: detection.bbox.height,
         label: detection.lesion_name,
         confidence: detection.confidence,
-      })) || [];
+      }));
 
   // Get image storage info from the request
   const bucketName = request?.bucket_name;
@@ -138,7 +139,7 @@ export default function PredictionDetailPage({
                 Paciente
               </p>
               <p className="mt-1 text-base text-gray-900 dark:text-white font-semibold">
-                {request?.patient_name || "N/A"}
+                {request?.patient_name}
               </p>
             </div>
             <div>
@@ -205,8 +206,8 @@ export default function PredictionDetailPage({
                         request.predictionsWithExtras?.flatMap((pred) => [
                           ...pred.classifications,
                           ...pred.detections,
-                        ]) || [];
-                      feedback.handleOpenFeedback(allTasks);
+                        ]);
+                      feedback.handleOpenFeedback(allTasks!);
                     }}
                     className="text-md"
                   >
@@ -230,7 +231,7 @@ export default function PredictionDetailPage({
                       console.log(
                         "🔍 DEBUG - Classifications with feedbacks:",
                         allTasks
-                          .filter((t) => "disease_name" in t)
+                          .filter((t): t is ClassificationWithExtras => "disease_name" in t)
                           .map((t) => ({
                             id: t.id,
                             disease: t.disease_name,
@@ -249,7 +250,7 @@ export default function PredictionDetailPage({
                             // Adapt task for PredictionCard
                             const isClassification = "disease_name" in task;
                             const cardProps = {
-                              id: task.id ?? "",
+                              id: task.id!,
                               disease_name: isClassification
                                 ? task.disease_name
                                 : "Detección",
@@ -269,7 +270,7 @@ export default function PredictionDetailPage({
                               console.log(`🎯 Card ${task.id}:`, {
                                 disease: cardProps.disease_name,
                                 feedbacks: cardProps.feedbacks,
-                                feedbackCount: cardProps.feedbacks?.length || 0,
+                                feedbackCount: cardProps.feedbacks?.length,
                                 willShowButton:
                                   isClassification &&
                                   cardProps.feedbacks &&
@@ -324,7 +325,7 @@ export default function PredictionDetailPage({
         {/* Feedbacks Modal */}
         <PredictionFeedbacksModal
           open={feedbacksModal.isOpen}
-          onClose={(onUpdate) =>
+          onClose={() =>
             feedbacksModal.closeFeedbacksModal(refreshRequest)
           }
           feedbacks={feedbacksModal.localFeedbacks}
