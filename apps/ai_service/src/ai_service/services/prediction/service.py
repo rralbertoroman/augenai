@@ -39,6 +39,7 @@ class PredictionService:
             "diabetic-retinopathy-224-procnorm-vit": hf.vit_clsf_model_factory,
             "swinv2_tiny_for_glaucoma_classification": hf.swinv2_clsf_model_factory,
             "yolo11m_dr_lesion": ultralytics_detection_factory,
+            "Diabetic_RetinoPathy_detection": hf.dinov2_clsf_model_factory,
         }
         self._model_pool = ModelPool(factories)
         logger.info("Prediction service initialized")
