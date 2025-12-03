@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { usePatientsMap } from "./use-patients-map";
 import { isToday, calculateAge } from "@/lib/date-utils";
-import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import type { PredictionGroup } from "@/components/dashboard/start-pane/types";
 
 /**

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, and, getTableColumns } from "drizzle-orm";
+import { eq, and, getTableColumns, count } from "drizzle-orm";
 import { db } from "../db/client";
 import {
   PredictionRequestsTable,
@@ -382,9 +382,14 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
   userId: string,
   limit?: number,
   offset?: number,
-): Promise<PredictionRequest[]> => {
+): Promise<{ requests: PredictionRequest[]; count: number }> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(PredictionRequestsTable)
+    .where(eq(PredictionRequestsTable.userId, userId));
 
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
@@ -410,7 +415,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
     ),
   );
 
-  return results;
+  return { requests: results, count: total as number };
 };
 
 /**

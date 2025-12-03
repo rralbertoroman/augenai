@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProfileEditModal } from "@/components/profile-edit-modal";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,12 +42,14 @@ export function UserMenu() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors outline-none"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full w-8 h-8"
               title="Menú de usuario"
             >
               <User className="w-4 h-4" />
-            </button>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => setIsProfileModalOpen(true)}>

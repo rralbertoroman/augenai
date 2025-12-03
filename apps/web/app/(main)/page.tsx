@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CreatePredictionModal } from "@/components/diagnosis/create-prediction-modal";
 import Dashboard from "@/components/dashboard/dashboard";
 
 export default function HomePage() {
@@ -16,11 +15,13 @@ export default function HomePage() {
         </div>
         {/**New Prediction */}
         <div className="max-w-[480px] w-full ml-auto">
-          <Link href="/diagnosis/create" className="w-full">
-            <Button variant="default" size="lg" className="w-full">
-              <span className="truncate">Generar nueva predicción</span>
-            </Button>
-          </Link>
+          <CreatePredictionModal
+            trigger={
+              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+                <span className="truncate">Generar nueva predicción</span>
+              </button>
+            }
+          />
         </div>
       </div>
 

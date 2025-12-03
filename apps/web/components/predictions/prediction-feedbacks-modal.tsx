@@ -2,6 +2,7 @@
 
 import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
+import { translateStageContent } from "@/lib/translations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/hooks/use-prediction-requests";
@@ -105,7 +106,7 @@ export function PredictionFeedbacksModal({
                       Etapa
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      {feedback.stage_content}
+                      {translateStageContent(feedback.stage_content)}
                     </p>
                   </div>
                   <div>
