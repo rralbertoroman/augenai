@@ -20,8 +20,6 @@ export function PatientList({
   selectedPatient,
   onSelectPatient,
 }: PatientListProps) {
-
-
   return (
     <Table>
       <TableHeader>
