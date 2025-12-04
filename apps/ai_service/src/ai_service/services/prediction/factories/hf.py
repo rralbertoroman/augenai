@@ -24,8 +24,12 @@ from ai_service.models.schemas import (
 
 from .model_instance import ModelInstance
 
-logger = get_logger(__name__)
+from .constants import (
+    UNKNOWN_DISEASE_ID,
+    UNKNOWN_DISEASE_NAME,
+)
 
+logger = get_logger(__name__)
 
 def process_classification_output(
     logits: torch.Tensor,
@@ -103,9 +107,9 @@ def process_classification_output(
         )
         classification_objects = [
             ClassificationObject(
-                class_id=0,
-                confidence=0.0,
-                class_name="Unknown",
+                class_id=UNKNOWN_DISEASE_ID,
+                confidence=1.0,
+                class_name=UNKNOWN_DISEASE_NAME,
             )
         ]
 
