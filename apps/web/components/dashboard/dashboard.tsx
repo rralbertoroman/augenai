@@ -18,14 +18,23 @@ const DashboardContent: React.FC = () => {
     <div className="w-full p-4">
       <Tabs defaultValue="start" className="w-full">
         <TabsList className="grid w-full grid-cols-3 space-x-2 mb-4">
-          <TabsTrigger value={TabsValue.START} className="p-2 hover:bg-muted/60">
+          <TabsTrigger
+            value={TabsValue.START}
+            className="p-2 hover:bg-muted/60"
+          >
             <ClipboardPlus /> Inicio
           </TabsTrigger>
-          <TabsTrigger value={TabsValue.MEDICAL_STATS} className="hover:bg-muted/60">
+          <TabsTrigger
+            value={TabsValue.MEDICAL_STATS}
+            className="hover:bg-muted/60"
+          >
             <ChartColumnStacked />
             Estadísticas de Pacientes y Enfermedades
           </TabsTrigger>
-          <TabsTrigger value={TabsValue.MODEL_STATS} className="hover:bg-muted/60">
+          <TabsTrigger
+            value={TabsValue.MODEL_STATS}
+            className="hover:bg-muted/60"
+          >
             <Sparkles />
             Estadísticas del Modelo
           </TabsTrigger>

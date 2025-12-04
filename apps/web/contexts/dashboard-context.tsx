@@ -8,7 +8,7 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllSystemPredictionsWithFeedbacksAndExtras } from "@/server/services/prediction";
+import { getAllPredictionsWithFeedbacksAndExtrasByUserId } from "@/server/services/prediction";
 import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import { flattenPredictions } from "@/lib/prediction-transformer";
 
@@ -35,7 +35,7 @@ export const DashboardProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [predictions, setPredictions] = useState<TaskWithExtras[]>([]);
   const [predictionClasses, setPredictionClasses] = useState<
     PredictionClassDiseaseWithDisease[]
@@ -46,14 +46,14 @@ export const DashboardProvider = ({
     useState<TaskWithExtras | null>(null);
 
   const fetchPredictions = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken || !user?.id) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
       const [predictionsData, classesData] = await Promise.all([
-        getAllSystemPredictionsWithFeedbacksAndExtras(accessToken),
+        getAllPredictionsWithFeedbacksAndExtrasByUserId(accessToken, user.id),
         getAllPredictionClasses(accessToken),
       ]);
 
@@ -70,7 +70,7 @@ export const DashboardProvider = ({
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, [accessToken, user]);
 
   useEffect(() => {
     fetchPredictions();
