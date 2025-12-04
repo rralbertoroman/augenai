@@ -14,7 +14,16 @@ const SEED_FILES = [
 ];
 
 // Drop tables in reverse order (to handle foreign key constraints)
+// First drop tables that depend on predictions, then predictions themselves,
+// then tables that depend on models/diseases/lesions, and finally the seed tables
 const DROP_TABLES = [
+  'classification_feedback',
+  'detection_feedback',
+  'classifications',
+  'detections',
+  'predictions',
+  'prediction_requests',
+  'prediction_sharing',
   'prediction_class_lesion',
   'prediction_class_disease', 
   'lesion_disease_link',

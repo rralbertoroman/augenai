@@ -22,6 +22,7 @@ export interface ScanData {
 interface EyeScanUploadProps {
   onSubmit: (data: ScanData) => void;
   isLoading?: boolean;
+  preselectedPatientId?: string;
 }
 
 const STEPS = [
@@ -33,6 +34,7 @@ const STEPS = [
 export function EyeScanUpload({
   onSubmit,
   isLoading = false,
+  preselectedPatientId,
 }: EyeScanUploadProps) {
   const {
     currentStep,
@@ -52,7 +54,7 @@ export function EyeScanUpload({
     handleBack,
     handleSubmit,
     handleFileAreaClick,
-  } = useDiagnosisForm(onSubmit);
+  } = useDiagnosisForm(onSubmit, preselectedPatientId);
 
   return (
     <div className="space-y-6">
