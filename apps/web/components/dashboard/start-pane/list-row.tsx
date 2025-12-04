@@ -2,8 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { PredictionGroup } from "./types";
-import { calculateAge } from "@/lib/date-utils";
-import Image from "next/image";
+import { formatAgeWithMonths } from "@/lib/date-utils";
 import { translateStageContent } from "@/lib/translations";
 
 function getFeedbackVariant(status: string) {
@@ -97,7 +96,7 @@ export function ListRow({ group }: ListRowProps) {
                   <div className="min-w-0">
                     <h3 className="font-medium">{group.patientName}</h3>
                     <p className="text-xs text-muted-foreground">
-                      {calculateAge(mainPrediction.patient_birthdate)} años
+                      {formatAgeWithMonths(mainPrediction.patient_birthdate)}
                     </p>
                   </div>
                 </div>

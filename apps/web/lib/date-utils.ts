@@ -23,6 +23,36 @@ export function calculateAge(birthDateString?: string): number | null {
 }
 
 /**
+ * Calculate age from birth date string and return formatted string with years and months
+ * @param birthDateString - Date string in ISO format
+ * @returns Age string e.g. "X años Y meses"
+ */
+export function formatAgeWithMonths(birthDateString?: string): string {
+  if (!birthDateString) return "";
+
+  const birthDate = new Date(birthDateString);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  const days = today.getDate() - birthDate.getDate();
+
+  if (months < 0 || (months === 0 && days < 0)) {
+    years--;
+    months += 12;
+  }
+
+  if (days < 0) {
+    months--;
+    if (months < 0) {
+      months += 12;
+    }
+  }
+
+  return `${years} años ${months} meses`;
+}
+
+/**
  * Check if a date is today
  * @param date - Date object or string
  * @returns true if date is today
