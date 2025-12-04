@@ -76,7 +76,10 @@ export function SignUpForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6 min-w-[25vw]", className)}
+      {...props}
+    >
       <Clipboard>
         <Card>
           <CardHeader>

@@ -69,7 +69,7 @@ export function PredictionCard({
             size="sm"
             variant="outline"
             onClick={() => onViewFeedbacks(diagnosis.feedbacks!)}
-            className="shrink-0 bg-accent text-accent-foreground"
+            className="shrink-0 bg-secondary dark:bg-secondary text-accent-foreground dark:hover:bg-primary"
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Retroalimentaciones ({feedbackCount})

@@ -31,7 +31,7 @@ export function ClipboardDialog({
 
       <DialogContent
         customContent
-        className="min-w-[50vw] max-w-4xl max-h-[90vh] p-0 bg-transparent shadow-none flex items-center justify-center"
+        className="min-w-[50vw] max-w-4xl max-h-[90vh] p-0 bg-transparent shadow-none flex items-center justify-center transition:all ease-in-out duration-300"
       >
         <Clipboard className="flex flex-col w-full h-full">
           <div className="px-6 pt-8 pb-0 shrink-0">
@@ -40,7 +40,7 @@ export function ClipboardDialog({
             </DialogHeader>
           </div>
 
-          <div className="px-6 py-4 overflow-y-auto scrollbar-hide max-h-[60vh] min-h-0">
+          <div className="px-6 py-4 overflow-y-auto scrollbar-hide max-h-[77vh] min-h-0">
             {children}
           </div>
         </Clipboard>
