@@ -37,7 +37,7 @@ export function PatientList({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Nombre</TableHead>
+          <TableHead className="pl-4">Nombre</TableHead>
           <TableHead>Edad</TableHead>
           <TableHead>Género</TableHead>
         </TableRow>
@@ -53,7 +53,7 @@ export function PatientList({
                 : ""
             }`}
           >
-            <TableCell className="font-medium text-foreground">
+            <TableCell className="font-medium text-foreground p-4">
               {patient.name}
             </TableCell>
             <TableCell
