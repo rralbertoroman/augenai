@@ -63,7 +63,7 @@ export default function Start() {
               variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("grid")}
-              className="h-8 w-8 p-0"
+              className={`h-8 w-8 p-0 ${viewMode === "grid" ? "" : "hover:bg-background"}`}
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -71,7 +71,7 @@ export default function Start() {
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
-              className="h-8 w-8 p-0"
+              className={`h-8 w-8 p-0 ${viewMode === "list" ? "" : "hover:bg-background"}`}
             >
               <List className="h-4 w-4" />
             </Button>
