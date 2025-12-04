@@ -11,7 +11,8 @@
     "check-types": "tsc --noEmit",
     "generate": "drizzle-kit generate --name",
     "migrate": "drizzle-kit migrate",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate:seed": "pnpm run migrate && tsx server/db/seed/init.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
