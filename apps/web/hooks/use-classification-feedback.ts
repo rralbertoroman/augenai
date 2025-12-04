@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { createClassificationFeedback } from "@/server/services/classification_feedback";
+import {
+  createClassificationFeedback,
+  getClassificationFeedbackWithExtras,
+} from "@/server/services/classification_feedback";
+import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import { getAllDiseases } from "@/server/services/disease";
 import { getClassIdByStageDiseaseAndModel } from "@/server/services/prediction_class_disease";
 import { useAuth } from "@/contexts/auth-context";
@@ -13,7 +17,12 @@ interface FeedbackFormData {
   stageIdx: number;
 }
 
-export function useClassificationFeedback() {
+export function useClassificationFeedback(
+  onFeedbackCreated?: (
+    classificationId: string,
+    feedback: ClassificationFeedbackWithExtras,
+  ) => void,
+) {
   const { accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +152,27 @@ export function useClassificationFeedback() {
         };
         console.log("[Feedback] Enviando feedback:", feedbackData);
 
-        await createClassificationFeedback(accessToken, feedbackData);
+        const createdFeedback = await createClassificationFeedback(
+          accessToken,
+          feedbackData,
+        );
+
+        // Obtener todos los feedbacks con extras y encontrar el recién creado
+        if (onFeedbackCreated && createdFeedback) {
+          const allFeedbacks = await getClassificationFeedbackWithExtras(
+            accessToken,
+            { classificationId: prediction.id! },
+          );
+
+          // Buscar el feedback recién creado por ID
+          const newFeedback = allFeedbacks.find(
+            (f) => f.id === createdFeedback.id,
+          );
+
+          if (newFeedback) {
+            onFeedbackCreated(prediction.id!, newFeedback);
+          }
+        }
       }
 
       console.log("[Feedback] Todos los feedbacks enviados exitosamente");

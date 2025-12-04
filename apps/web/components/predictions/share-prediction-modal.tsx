@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { usePredictionSharing } from "@/hooks/use-prediction-sharing";
 import { useAuth } from "@/contexts/auth-context";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -57,62 +52,63 @@ export function SharePredictionModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogTitle>Compartir predicción</DialogTitle>
-        <Input
-          placeholder="Buscar usuario por nombre o email"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          disabled={loading}
-        />
-        <div style={{ maxHeight: 200, overflowY: "auto", marginTop: 8 }}>
-          {loading ? (
-            <div>Cargando usuarios...</div>
-          ) : filteredUsers.length === 0 ? (
-            <div>No se encontraron usuarios.</div>
-          ) : (
-            filteredUsers.map((user) => (
-              <div
-                key={user.id}
-                style={{
-                  padding: "8px 12px",
-                  cursor: "pointer",
-                  background:
-                    selectedUser?.id === user.id ? "#e0e7ff" : "transparent",
-                  borderRadius: 4,
-                  marginBottom: 4,
-                }}
-                onClick={() => setSelectedUser(user)}
-              >
-                <strong>{user.name}</strong>{" "}
-                <span style={{ color: "#888" }}>{user.email}</span>
-              </div>
-            ))
-          )}
-        </div>
-        {error && (
-          <Alert variant="destructive" className="mt-2">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+    <ClipboardDialog
+      open={open}
+      onOpenChange={onClose}
+      title="Compartir predicción"
+    >
+      <Input
+        placeholder="Buscar usuario por nombre o email"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        disabled={loading}
+      />
+      <div style={{ maxHeight: 200, overflowY: "auto", marginTop: 8 }}>
+        {loading ? (
+          <div>Cargando usuarios...</div>
+        ) : filteredUsers.length === 0 ? (
+          <div>No se encontraron usuarios.</div>
+        ) : (
+          filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              style={{
+                padding: "8px 12px",
+                cursor: "pointer",
+                background:
+                  selectedUser?.id === user.id ? "#e0e7ff" : "transparent",
+                borderRadius: 4,
+                marginBottom: 4,
+              }}
+              onClick={() => setSelectedUser(user)}
+            >
+              <strong>{user.name}</strong>{" "}
+              <span style={{ color: "#888" }}>{user.email}</span>
+            </div>
+          ))
         )}
-        {shared && (
-          <Alert className="mt-2">
-            <AlertDescription>¡Predicción compartida!</AlertDescription>
-          </Alert>
-        )}
-        <DialogFooter>
-          <Button onClick={onClose} variant="secondary">
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleShare}
-            disabled={!selectedUser || loading || shared}
-          >
-            Compartir
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+      {error && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {shared && (
+        <Alert className="mt-2">
+          <AlertDescription>¡Predicción compartida!</AlertDescription>
+        </Alert>
+      )}
+      <div className="flex gap-2 justify-end pt-4">
+        <Button onClick={onClose} variant="secondary">
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleShare}
+          disabled={!selectedUser || loading || shared}
+        >
+          Compartir
+        </Button>
+      </div>
+    </ClipboardDialog>
   );
 }

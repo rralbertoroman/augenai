@@ -78,7 +78,7 @@ export function ListRow({ group }: ListRowProps) {
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-colors">
       <div className="flex">
-        <div className="bg-muted w-32 shrink-0 flex items-center justify-center">
+        {/* <div className="bg-muted w-32 shrink-0 flex items-center justify-center">
           <div className="relative w-12 h-12 opacity-50">
             <Image
               src="/file.svg"
@@ -87,7 +87,7 @@ export function ListRow({ group }: ListRowProps) {
               className="object-contain"
             />
           </div>
-        </div>
+        </div> */}
         <div className="p-4 grow">
           <div className="grid grid-cols-2 gap-4">
             {/* First Column: Patient Info */}
