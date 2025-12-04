@@ -126,12 +126,12 @@ export function usePatients() {
         patientId,
         data,
       );
-      
+
       // Update local state if the updated patient is the selected one
       if (selectedPatient?.id === patientId) {
         setSelectedPatient(updatedPatient);
       }
-      
+
       await fetchPatients(accessToken);
       return true;
     } catch (err) {
