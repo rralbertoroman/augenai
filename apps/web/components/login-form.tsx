@@ -83,11 +83,14 @@ export function LoginForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div
+      className={cn("flex flex-col gap-6  min-w-[25vw]", className)}
+      {...props}
+    >
       <Clipboard>
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Iniciar sesión</CardTitle>
+            <CardTitle className="text-3xl">Iniciar sesión</CardTitle>
             <CardDescription>
               Ingresa tu correo electrónico para acceder a tu cuenta
             </CardDescription>

@@ -120,13 +120,13 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="bg-muted/50 dark:bg-muted/20">
+                <TableHead className=" dark:bg-muted/20">
                   <div className="text-sm font-medium text-foreground">
                     Real \ Predicho
                   </div>
                 </TableHead>
                 {currentData.stages.map((stage, i) => (
-                  <TableHead key={i} className="bg-muted/50 dark:bg-muted/20">
+                  <TableHead key={i} className="bg-muted/20 dark:bg-muted/20">
                     <div className="text-sm font-medium text-foreground whitespace-nowrap">
                       {stage}
                     </div>
@@ -142,7 +142,7 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
                 );
                 return (
                   <TableRow key={rowIndex}>
-                    <TableCell className="text-sm font-medium whitespace-nowrap bg-muted/30 dark:bg-muted/10">
+                    <TableCell className="text-sm font-medium whitespace-nowrap bg-muted/20 dark:bg-muted/10">
                       <span className="text-foreground">
                         {currentData.stages[rowIndex]}
                       </span>
@@ -158,17 +158,16 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
                           className={`
                             text-center text-sm relative
                             ${isDiagonal ? "bg-primary/10" : "bg-background"}
-                            ${cell > 0 ? "font-medium" : "text-muted-foreground/30"}
+                            ${cell > 0 ? "font-medium" : "text-foreground/30"}
                           `}
                           title={`Predicted: ${currentData.stages[colIndex]}
-Actual: ${currentData.stages[rowIndex]}
-Count: ${cell}
-Percentage: ${percentage}%`}
+                            Actual: ${currentData.stages[rowIndex]}
+                            Count: ${cell}
+                            Percentage: ${percentage}%`}
                         >
                           <div className="relative">
                             <div
                               className={`
-                              ${isDiagonal ? "text-primary" : "text-foreground"}
                               ${cell > 0 ? "opacity-100" : "opacity-30"}
                             `}
                             >
@@ -177,10 +176,7 @@ Percentage: ${percentage}%`}
                             <div
                               className={`
                               text-[10px] mt-[-2px] 
-                              ${
-                                isDiagonal
-                                  ? "text-primary"
-                                  : "text-muted-foreground/70"
+                              "text-muted-foreground/70"
                               }
                               ${cell === 0 ? "opacity-0" : ""}
                             `}
