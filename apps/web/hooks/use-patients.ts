@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   getPatientsByUserId,
   createPatient as createPatientService,
+  updatePatient as updatePatientService,
 } from "@/server/services/patient";
 import type { PatientDTO } from "@/server/zod-schemas/patient";
 import { useAuth } from "@/contexts/auth-context";
@@ -106,6 +107,44 @@ export function usePatients() {
     }
   };
 
+  const updatePatient = async (
+    patientId: string,
+    data: {
+      name?: string;
+      dateOfBirth?: string;
+      gender?: string;
+      clinicalConditions?: string[];
+    },
+  ) => {
+    try {
+      setError(null);
+      if (!accessToken) {
+        throw new Error("Usuario no autenticado");
+      }
+      const updatedPatient = await updatePatientService(
+        accessToken,
+        patientId,
+        data,
+      );
+      
+      // Update local state if the updated patient is the selected one
+      if (selectedPatient?.id === patientId) {
+        setSelectedPatient(updatedPatient);
+      }
+      
+      await fetchPatients(accessToken);
+      return true;
+    } catch (err) {
+      const errorMessage = translateErrorMessage(
+        err instanceof Error
+          ? err
+          : new Error("Error al actualizar el paciente"),
+      );
+      setError(errorMessage);
+      return false;
+    }
+  };
+
   return {
     patients,
     selectedPatient,
@@ -113,6 +152,7 @@ export function usePatients() {
     isLoading,
     error,
     createPatient,
+    updatePatient,
     refreshPatients: () => accessToken && fetchPatients(accessToken),
     pagination,
   };
