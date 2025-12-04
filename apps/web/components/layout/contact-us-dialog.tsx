@@ -61,11 +61,11 @@ export function ContactUsDialog() {
       trigger={
         <Button
           variant="ghost"
-          size="icon"
-          className="text-foreground hover:bg-muted"
-          title="Contáctanos"
+          size="sm"
+          className="gap-2"
         >
-          <MessageSquare className="h-5 w-5" />
+          <MessageSquare className="h-4 w-4" />
+          <span>Contáctanos</span>
         </Button>
       }
     >

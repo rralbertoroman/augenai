@@ -21,3 +21,7 @@
 
 - [ ] **Implement dataset generation module**: This module will be used to generate new datasets, facilitating the training of additional models.
 - [ ] **Integrate new models**: Add additional models to expand the coverage of detected diseases.
+
+## Unit Tests
+
+- [ ] **Implement unit tests**: Add unit tests to ensure the functionality of the Back-end.

@@ -34,7 +34,7 @@ export function Navbar() {
           <nav className="hidden items-center gap-2 lg:flex">
             <Link
               href="/"
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/") && pathname === "/"
                   ? "bg-secondary text-primary-foreground"
                   : "text-foreground hover:bg-muted hover:text-primary-foreground"
@@ -45,7 +45,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/patients"
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/patients")
                   ? "bg-secondary text-primary-foreground"
                   : "text-foreground hover:bg-muted hover:text-primary-foreground"
@@ -56,7 +56,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/diagnosis"
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/diagnosis")
                   ? "bg-secondary text-primary-foreground"
                   : "text-foreground hover:bg-muted hover:text-primary-foreground"
@@ -70,7 +70,9 @@ export function Navbar() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-4">
-          <ContactUsDialog />
+          <div className="border border-muted-foreground/20 rounded-lg">
+            <ContactUsDialog />
+          </div>
           <ThemeToggle />
           <UserMenu />
         </div>

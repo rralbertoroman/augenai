@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Pencil } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,8 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface AddPatientDialogProps {
-  onAddPatient: (data: {
+interface PatientDialogProps {
+  onSave: (data: {
     name: string;
     dateOfBirth: string;
     gender: string;
@@ -33,12 +34,12 @@ interface AddPatientDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function AddPatientDialog({
-  onAddPatient,
+export function PatientDialog({
+  onSave,
   patient,
   isOpen: externalOpen,
   onOpenChange: externalOnOpenChange,
-}: AddPatientDialogProps) {
+}: PatientDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = externalOnOpenChange || setInternalOpen;
@@ -51,6 +52,24 @@ export function AddPatientDialog({
     clinicalConditions: patient?.clinicalConditions || "",
   });
 
+  useEffect(() => {
+    if (patient) {
+      setFormData({
+        name: patient.name,
+        dateOfBirth: patient.dateOfBirth,
+        gender: patient.gender,
+        clinicalConditions: patient.clinicalConditions,
+      });
+    } else {
+      setFormData({
+        name: "",
+        dateOfBirth: "",
+        gender: "",
+        clinicalConditions: "",
+      });
+    }
+  }, [patient]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -62,7 +81,7 @@ export function AddPatientDialog({
         .map((c) => c.trim())
         .filter(Boolean);
 
-      const success = await onAddPatient({
+      const success = await onSave({
         ...formData,
         clinicalConditions: conditions,
       });
@@ -91,12 +110,17 @@ export function AddPatientDialog({
       onOpenChange={setOpen}
       title={patient ? "Editar Paciente" : "Crear Nuevo Paciente"}
       trigger={
-        <Button variant="default" size="lg" className="max-w-[480px] w-full">
-          <span className="text-lg">+</span>
-          <span className="truncate">
-            {patient ? "Editar Paciente" : "Agregar Paciente"}
-          </span>
-        </Button>
+        patient ? (
+          <Button variant="ghost" size="sm" className="gap-2">
+            <Pencil className="h-4 w-4" />
+            <span>Editar</span>
+          </Button>
+        ) : (
+          <Button variant="default" size="lg" className="max-w-[480px] w-full">
+            <span className="text-lg">+</span>
+            <span className="truncate">Agregar Paciente</span>
+          </Button>
+        )
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -141,6 +165,9 @@ export function AddPatientDialog({
               id="dateOfBirth"
               type="date"
               value={formData.dateOfBirth}
+              max={new Date(new Date().setDate(new Date().getDate() - 2))
+                .toISOString()
+                .split("T")[0]}
               onChange={(e) =>
                 setFormData({ ...formData, dateOfBirth: e.target.value })
               }

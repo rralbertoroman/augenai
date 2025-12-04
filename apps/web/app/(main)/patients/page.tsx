@@ -3,7 +3,7 @@
 import { usePatients } from "@/hooks/use-patients";
 import { PatientList } from "@/components/patients/patient-list";
 import { PatientDetail } from "@/components/patients/patient-detail";
-import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
+import { PatientDialog } from "@/components/patients/add-patient-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ export default function PatientsPage() {
     isLoading,
     error,
     createPatient,
+    updatePatient,
     pagination,
   } = usePatients();
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,7 +58,7 @@ export default function PatientsPage() {
               }
             />
           </div>
-          <AddPatientDialog onAddPatient={createPatient} />
+          <PatientDialog onSave={createPatient} />
         </div>
       </div>
       <div className="flex-1 p-6">
@@ -112,7 +113,10 @@ export default function PatientsPage() {
             style={{ alignSelf: "flex-start" }}
           >
             {selectedPatient ? (
-              <PatientDetail patient={selectedPatient} />
+              <PatientDetail
+                patient={selectedPatient}
+                onUpdate={updatePatient}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground min-w-[430px]">
                 Selecciona un paciente para ver los detalles

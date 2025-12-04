@@ -21,3 +21,7 @@
 
 - [ ] **Implementar el módulo de generación de Datasets**: Este módulo se utilizará para generar nuevos conjuntos de datos, facilitando el entrenamiento de modelos adicionales.
 - [ ] **Integrar nuevos modelos**: Añadir modelos adicionales para expandir la cobertura de enfermedades detectadas.
+
+## Pruebas Unitarias
+
+- [ ] **Implementar pruebas unitarias**: Añadir pruebas unitarias para asegurar la funcionalidad del Back-end.
