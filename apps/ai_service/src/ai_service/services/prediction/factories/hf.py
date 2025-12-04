@@ -31,6 +31,7 @@ from .constants import (
 
 logger = get_logger(__name__)
 
+
 def process_classification_output(
     logits: torch.Tensor,
     model: PreTrainedModel,
