@@ -12,12 +12,14 @@ interface CreatePredictionModalProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: React.ReactNode;
+  preselectedPatientId?: string;
 }
 
 export function CreatePredictionModal({
   isOpen: externalOpen,
   onOpenChange: externalOnOpenChange,
   trigger,
+  preselectedPatientId,
 }: CreatePredictionModalProps) {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -109,7 +111,11 @@ export function CreatePredictionModal({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <EyeScanUpload onSubmit={handleFormSubmit} isLoading={isSubmitting} />
+      <EyeScanUpload
+        onSubmit={handleFormSubmit}
+        isLoading={isSubmitting}
+        preselectedPatientId={preselectedPatientId}
+      />
     </ClipboardDialog>
   );
 }
