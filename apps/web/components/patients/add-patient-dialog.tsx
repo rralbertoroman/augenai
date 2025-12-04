@@ -165,9 +165,11 @@ export function PatientDialog({
               id="dateOfBirth"
               type="date"
               value={formData.dateOfBirth}
-              max={new Date(new Date().setDate(new Date().getDate() - 2))
-                .toISOString()
-                .split("T")[0]}
+              max={
+                new Date(new Date().setDate(new Date().getDate() - 2))
+                  .toISOString()
+                  .split("T")[0]
+              }
               onChange={(e) =>
                 setFormData({ ...formData, dateOfBirth: e.target.value })
               }
