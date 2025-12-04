@@ -2,8 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { PredictionGroup } from "./types";
-import { calculateAge } from "@/lib/date-utils";
-import Image from "next/image";
+import { formatAgeWithMonths } from "@/lib/date-utils";
 import { translateStageContent } from "@/lib/translations";
 
 function getFeedbackVariant(status: string) {
@@ -87,7 +86,7 @@ export function GridCard({ group }: GridCardProps) {
                 {mainPrediction.patient_name}
               </h4>
               <h3 className="text-muted-foreground text-sm">
-                {calculateAge(mainPrediction.patient_birthdate)} años
+                {formatAgeWithMonths(mainPrediction.patient_birthdate)}
               </h3>
             </div>
             <h4 className="text-sm truncate">

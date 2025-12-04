@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import {
-  calculateAge,
   translateGender,
   type Patient,
 } from "@/hooks/use-patients";
+import { formatAgeWithMonths } from "@/lib/date-utils";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -120,7 +120,7 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
               <div>
                 <p className="text-xs text-muted-foreground">Edad</p>
                 <p className="font-medium">
-                  {calculateAge(selectedPatient.dateOfBirth)} años
+                  {formatAgeWithMonths(selectedPatient.dateOfBirth)}
                 </p>
               </div>
               <div>
