@@ -59,11 +59,7 @@ export function ContactUsDialog() {
       onOpenChange={setIsOpen}
       title="Contáctanos"
       trigger={
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-        >
+        <Button variant="ghost" size="sm" className="gap-2">
           <MessageSquare className="h-4 w-4" />
           <span>Contáctanos</span>
         </Button>
