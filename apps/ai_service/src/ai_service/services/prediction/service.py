@@ -4,6 +4,8 @@ from ai_service.logging_config import get_logger
 from ai_service.models.schemas import (
     ClassificationObject,
     ClassificationResult,
+    DetectionObject,
+    DetectionResult,
     PredictionMetadata,
     PredictionResult,
 )
@@ -21,13 +23,29 @@ def get_mocked_classification() -> ClassificationResult:
         metadata=PredictionMetadata(
             inference_time_ms=0,
             model_version="1",
-            model_id="diabetic-retinopathy-224-procnorm-vit",
         ),
         predictions=[
             ClassificationObject(
                 class_id=0,
                 class_name="Normal",
                 confidence=1.0,
+            )
+        ],
+    )
+
+
+def get_mocked_detection() -> DetectionResult:
+    return DetectionResult(
+        metadata=PredictionMetadata(
+            inference_time_ms=0,
+            model_version="1",
+        ),
+        predictions=[
+            DetectionObject(
+                class_id=0,
+                class_name="Normal",
+                confidence=1.0,
+                box=[0.0, 0.0, 0.0, 0.0],  # [x1, y1, x2, y2] placeholder coordinates
             )
         ],
     )
@@ -46,7 +64,11 @@ class PredictionService:
 
     def predict(self, image: Image, model_id: str, is_mocked: bool) -> PredictionResult:
         if is_mocked:
-            return get_mocked_classification()
+            return (
+                get_mocked_classification()
+                if model_id != "yolo11m_dr_lesion"
+                else get_mocked_detection()
+            )
 
         model: ModelInstance = self._model_pool.get_model(model_id)
 
