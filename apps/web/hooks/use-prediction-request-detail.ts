@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
 import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
+import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
 
 export function usePredictionRequestDetail(requestId: string) {
   const { accessToken } = useAuth();
@@ -103,6 +104,68 @@ export function usePredictionRequestDetail(requestId: string) {
     });
   };
 
+  const addFeedbacksToDetection = (
+    detectionId: string,
+    newFeedback: DetectionFeedbackWithExtras,
+  ) => {
+    if (!request) return;
+
+    setRequest((prevRequest) => {
+      if (!prevRequest) return prevRequest;
+
+      const updatedPredictions = prevRequest.predictionsWithExtras?.map(
+        (pred) => ({
+          ...pred,
+          detections: pred.detections.map((detection) => {
+            if (detection.id === detectionId) {
+              return {
+                ...detection,
+                feedbacks: [...(detection.feedbacks || []), newFeedback],
+              };
+            }
+            return detection;
+          }),
+        }),
+      );
+
+      return {
+        ...prevRequest,
+        predictionsWithExtras: updatedPredictions,
+      };
+    });
+  };
+
+  const addFeedbacksToMultipleDetections = (
+    feedbacksByDetection: Map<string, DetectionFeedbackWithExtras>,
+  ) => {
+    if (!request) return;
+
+    setRequest((prevRequest) => {
+      if (!prevRequest) return prevRequest;
+
+      const updatedPredictions = prevRequest.predictionsWithExtras?.map(
+        (pred) => ({
+          ...pred,
+          detections: pred.detections.map((detection) => {
+            const newFeedback = feedbacksByDetection.get(detection.id!);
+            if (newFeedback) {
+              return {
+                ...detection,
+                feedbacks: [...(detection.feedbacks || []), newFeedback],
+              };
+            }
+            return detection;
+          }),
+        }),
+      );
+
+      return {
+        ...prevRequest,
+        predictionsWithExtras: updatedPredictions,
+      };
+    });
+  };
+
   return {
     request,
     isLoading,
@@ -111,5 +174,7 @@ export function usePredictionRequestDetail(requestId: string) {
       requestId && accessToken && fetchRequest(requestId, accessToken),
     addFeedbacksToClassification,
     updateFeedbacksForClassification,
+    addFeedbacksToDetection,
+    addFeedbacksToMultipleDetections,
   };
 }

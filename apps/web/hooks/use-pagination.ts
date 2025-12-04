@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 export interface UsePaginationReturn {
   currentPage: number;
@@ -64,19 +64,36 @@ export function usePagination(
     setPageSizeState(initialPageSize);
   }, [initialPageSize]);
 
-  return {
-    currentPage,
-    pageSize,
-    totalItems,
-    totalPages,
-    offset,
-    canGoNext,
-    canGoPrevious,
-    goToPage,
-    nextPage,
-    previousPage,
-    setPageSize,
-    setTotalItems,
-    reset,
-  };
+  return useMemo(
+    () => ({
+      currentPage,
+      pageSize,
+      totalItems,
+      totalPages,
+      offset,
+      canGoNext,
+      canGoPrevious,
+      goToPage,
+      nextPage,
+      previousPage,
+      setPageSize,
+      setTotalItems,
+      reset,
+    }),
+    [
+      currentPage,
+      pageSize,
+      totalItems,
+      totalPages,
+      offset,
+      canGoNext,
+      canGoPrevious,
+      goToPage,
+      nextPage,
+      previousPage,
+      setPageSize,
+      setTotalItems,
+      reset,
+    ],
+  );
 }

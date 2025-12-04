@@ -14,6 +14,7 @@ import type { ChangeEvent } from "react";
 export default function PatientsPage() {
   const {
     patients,
+    allPatients,
     selectedPatient,
     setSelectedPatient,
     isLoading,
@@ -24,7 +25,7 @@ export default function PatientsPage() {
   } = usePatients();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPatients = patients.filter((patient) =>
+  const filteredPatients = allPatients.filter((patient) =>
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -84,7 +85,7 @@ export default function PatientsPage() {
               <>
                 <div className="overflow-x-auto flex-1">
                   <PatientList
-                    patients={filteredPatients}
+                    patients={searchQuery ? filteredPatients : patients}
                     selectedPatient={selectedPatient}
                     onSelectPatient={setSelectedPatient}
                   />

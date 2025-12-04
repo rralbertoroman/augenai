@@ -12,14 +12,15 @@ import { Input } from "@/components/ui/input";
 import type { ChangeEvent } from "react";
 
 export default function DiagnosisPage() {
-  const { requests, isLoading, error, pagination } = usePredictionRequests();
+  const { requests, allRequests, isLoading, error, pagination } =
+    usePredictionRequests();
   const [searchQuery, setSearchQuery] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(
     null,
   );
 
-  const filteredRequests = requests.filter(
+  const filteredRequests = allRequests.filter(
     (request) =>
       request.patient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.diseaseNames?.some((diseaseName: string) =>
@@ -91,7 +92,7 @@ export default function DiagnosisPage() {
             <>
               <div className="overflow-x-auto flex-1">
                 <PredictionRequestList
-                  requests={filteredRequests}
+                  requests={searchQuery ? filteredRequests : requests}
                   onShare={handleOpenShareModal}
                 />
               </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   createClassificationFeedback,
   getClassificationFeedbackWithExtras,
+  hasUserProvidedClassificationFeedback,
 } from "@/server/services/classification_feedback";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import { getAllDiseases } from "@/server/services/disease";
@@ -25,6 +26,8 @@ export function useClassificationFeedback(
 ) {
   const { accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [checkingFeedback, setCheckingFeedback] = useState(false);
+  const [hasExistingFeedback, setHasExistingFeedback] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
@@ -52,6 +55,29 @@ export function useClassificationFeedback(
       getAllDiseases(accessToken).then(setDiseases);
     }
   }, [accessToken]);
+
+  const checkUserFeedback = async (
+    classificationIds: string[],
+  ): Promise<boolean> => {
+    if (!accessToken || classificationIds.length === 0) {
+      return false;
+    }
+
+    setCheckingFeedback(true);
+    try {
+      const hasFeedback = await hasUserProvidedClassificationFeedback(
+        accessToken,
+        classificationIds,
+      );
+      setHasExistingFeedback(hasFeedback);
+      return hasFeedback;
+    } catch (err) {
+      console.error("Error checking user feedback:", err);
+      return false;
+    } finally {
+      setCheckingFeedback(false);
+    }
+  };
 
   const handleOpenFeedback = (allPredictions: TaskWithExtras[]) => {
     // Filter only classifications for this feedback workflow
@@ -177,6 +203,7 @@ export function useClassificationFeedback(
 
       console.log("[Feedback] Todos los feedbacks enviados exitosamente");
       setSuccess(true);
+      setHasExistingFeedback(true);
       handleCloseFeedback();
     } catch (err) {
       setError(
@@ -189,6 +216,8 @@ export function useClassificationFeedback(
 
   return {
     loading,
+    checkingFeedback,
+    hasExistingFeedback,
     error,
     success,
     openFeedbackModal,
@@ -200,5 +229,6 @@ export function useClassificationFeedback(
     handleOpenFeedback,
     handleCloseFeedback,
     handleSubmitFeedback,
+    checkUserFeedback,
   };
 }

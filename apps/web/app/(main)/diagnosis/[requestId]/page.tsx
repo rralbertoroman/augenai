@@ -14,9 +14,13 @@ import Link from "next/link";
 import { use } from "react";
 import { BatchFeedbackModal } from "@/components/diagnosis/batch-feedback-modal";
 import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
+import { useDetectionFeedback } from "@/hooks/use-detection-feedback";
+import { DetectionFeedbackModal } from "@/components/detection/detection-feedback-modal";
+import { DetectionFeedbacksModal } from "@/components/detection/detection-feedbacks-modal";
 import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
-import type { ClassificationWithExtras } from "@/server/zod-schemas/prediction_workflow";
+import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
+import type { DetectionWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import {
   translateImageType,
   translateTaskType,
@@ -36,22 +40,82 @@ export default function PredictionDetailPage({
     error,
     addFeedbacksToClassification,
     updateFeedbacksForClassification,
+    addFeedbacksToDetection,
   } = usePredictionRequestDetail(requestId);
 
-  // Feedback hook with callback to update local state
-  const feedback = useClassificationFeedback(addFeedbacksToClassification);
-
-  // Feedbacks modal hook
+  // Feedback hooks
+  const classificationFeedback = useClassificationFeedback(
+    addFeedbacksToClassification,
+  );
+  const detectionFeedback = useDetectionFeedback(addFeedbacksToDetection);
   const feedbacksModal = usePredictionFeedbacks();
 
-  // State to store disease/stage info for the modal
+  // State for classification feedbacks modal
   const [currentPredictionInfo, setCurrentPredictionInfo] = React.useState<{
     diseaseName?: string;
     stageContent?: string;
     classificationId?: string;
   }>({});
 
-  const handleViewFeedbacks = (
+  // Get all classifications and detections
+  const allClassifications = React.useMemo(
+    () =>
+      request?.predictionsWithExtras?.flatMap((pred) => pred.classifications) ||
+      [],
+    [request?.predictionsWithExtras],
+  );
+
+  const allDetections = React.useMemo(
+    () =>
+      request?.predictionsWithExtras?.flatMap((pred) => pred.detections) || [],
+    [request?.predictionsWithExtras],
+  );
+
+  // Check if user has already provided feedback (only once when data loads)
+  const [hasCheckedDetectionFeedback, setHasCheckedDetectionFeedback] =
+    React.useState(false);
+  const [
+    hasCheckedClassificationFeedback,
+    setHasCheckedClassificationFeedback,
+  ] = React.useState(false);
+
+  React.useEffect(() => {
+    if (allDetections.length > 0 && !hasCheckedDetectionFeedback) {
+      const detectionIds = allDetections.map((d) => d.id!).filter(Boolean);
+      detectionFeedback.checkUserFeedback(detectionIds);
+      setHasCheckedDetectionFeedback(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDetections.length, hasCheckedDetectionFeedback]);
+
+  React.useEffect(() => {
+    if (allClassifications.length > 0 && !hasCheckedClassificationFeedback) {
+      const classificationIds = allClassifications
+        .map((c) => c.id!)
+        .filter(Boolean);
+      classificationFeedback.checkUserFeedback(classificationIds);
+      setHasCheckedClassificationFeedback(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allClassifications.length, hasCheckedClassificationFeedback]);
+
+  // Get image storage info
+  const bucketName = request?.bucket_name;
+  const storagePath = request?.storage_path;
+
+  // Convert detections to bounding boxes for display
+  const detectionBoxes = allDetections.map((detection) => ({
+    id: detection.id!,
+    x: detection.bbox.x_left,
+    y: detection.bbox.y_top,
+    width: detection.bbox.width,
+    height: detection.bbox.height,
+    label: detection.lesion_name,
+    confidence: detection.confidence,
+  }));
+
+  // Handlers
+  const handleViewClassificationFeedbacks = (
     feedbacks: ClassificationFeedbackWithExtras[],
     diseaseName?: string,
     stageContent?: string,
@@ -65,33 +129,45 @@ export default function PredictionDetailPage({
     );
   };
 
-  // Convert detection predictions to bounding boxes
-  const detectionBoxes = request?.predictionsWithExtras
-    ?.flatMap((pred) => pred.detections)
-    .map((detection) => ({
-      id: detection.id!,
-      x: detection.bbox.x_left,
-      y: detection.bbox.y_top,
-      width: detection.bbox.width,
-      height: detection.bbox.height,
-      label: detection.lesion_name,
-      confidence: detection.confidence,
-    }));
+  const handleViewDetectionFeedbacks = (
+    feedbacks: DetectionFeedbackWithExtras[],
+    detection: DetectionWithExtras,
+  ) => {
+    detectionFeedback.openViewFeedbacksModal(
+      feedbacks,
+      request?.user_id,
+      detection.id,
+      detection.lesion_name,
+      {
+        xLeft: detection.bbox.x_left,
+        yTop: detection.bbox.y_top,
+        width: detection.bbox.width,
+        height: detection.bbox.height,
+      },
+      bucketName,
+      storagePath,
+    );
+  };
 
-  // Get image storage info from the request
-  const bucketName = request?.bucket_name;
-  const storagePath = request?.storage_path;
-
-  // DEBUG: Log del request completo
-  React.useEffect(() => {
-    if (request) {
-      console.log("📦 DEBUG - Full request data:", request);
-      console.log(
-        "📦 DEBUG - Predictions with extras:",
-        request.predictionsWithExtras,
+  const handleOpenDetectionFeedback = () => {
+    if (allDetections.length > 0 && bucketName && storagePath) {
+      detectionFeedback.handleOpenFeedback(
+        allDetections,
+        bucketName,
+        storagePath,
       );
     }
-  }, [request]);
+  };
+
+  const handleOpenClassificationFeedback = () => {
+    const allTasks = request?.predictionsWithExtras?.flatMap((pred) => [
+      ...pred.classifications,
+      ...pred.detections,
+    ]);
+    if (allTasks) {
+      classificationFeedback.handleOpenFeedback(allTasks);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -111,6 +187,14 @@ export default function PredictionDetailPage({
       </main>
     );
   }
+
+  const isDetectionFeedbackDisabled =
+    detectionFeedback.hasExistingFeedback || detectionFeedback.checkingFeedback;
+  const isClassificationFeedbackDisabled =
+    classificationFeedback.hasExistingFeedback ||
+    classificationFeedback.checkingFeedback;
+  const hasClassifications = allClassifications.length > 0;
+  const hasDetections = allDetections.length > 0;
 
   return (
     <main className="flex-1 flex-col animate-fadein">
@@ -190,10 +274,83 @@ export default function PredictionDetailPage({
         </div>
 
         <div className="flex flex-row w-full space-x-3">
-          {/* Display the eye scan image if available */}
+          {/* Image Section */}
           {bucketName && storagePath && (
-            <div className="w-1/2">
-              <div className="w-full max-w-full mx-auto">
+            <div className="w-1/2 rounded-lg border border-border bg-card">
+              <div className="flex items-center justify-between px-6 pb-3 pt-5">
+                <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                  Imagen de Análisis
+                </h2>
+                <div className="flex gap-2">
+                  {/* Detection feedback button */}
+                  {hasDetections && (
+                    <Button
+                      onClick={handleOpenDetectionFeedback}
+                      disabled={isDetectionFeedbackDisabled}
+                      size="sm"
+                      className="gap-2"
+                      title={
+                        detectionFeedback.hasExistingFeedback
+                          ? "Ya has brindado retroalimentación"
+                          : "Brindar retroalimentación"
+                      }
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      {detectionFeedback.checkingFeedback
+                        ? "Verificando..."
+                        : detectionFeedback.hasExistingFeedback
+                          ? "Retroalimentación Enviada"
+                          : "Brindar retroalimentación"}
+                    </Button>
+                  )}
+                  {/* Classification feedback button */}
+                  {hasClassifications && request?.task !== "detection" && (
+                    <Button
+                      onClick={handleOpenClassificationFeedback}
+                      disabled={isClassificationFeedbackDisabled}
+                      size="sm"
+                      className="gap-2"
+                      title={
+                        classificationFeedback.hasExistingFeedback
+                          ? "Ya has brindado retroalimentación"
+                          : "Brindar retroalimentación"
+                      }
+                    >
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                        />
+                      </svg>
+                      {classificationFeedback.checkingFeedback
+                        ? "Verificando..."
+                        : classificationFeedback.hasExistingFeedback
+                          ? "Retroalimentación Enviada"
+                          : "Brindar retroalimentación"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="p-6 pt-0">
                 <ImageBoundingBoxes
                   bucketName={bucketName}
                   path={storagePath}
@@ -204,148 +361,117 @@ export default function PredictionDetailPage({
           )}
 
           {/* Diagnósticos */}
-          <div className="w-1/2 rounded-lg border border-border bg-card">
-            <div className="flex items-center justify-between px-6 pb-3 pt-5">
-              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">
-                Resultados de Diagnóstico
-              </h2>
-              {request?.task !== "detection" &&
-                request?.predictionsWithExtras &&
-                request.predictionsWithExtras.length > 0 && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => {
-                      // Flatten all tasks from predictionsWithExtras
-                      const allTasks = request.predictionsWithExtras?.flatMap(
-                        (pred) => [...pred.classifications, ...pred.detections],
-                      );
-                      feedback.handleOpenFeedback(allTasks!);
-                    }}
-                    className="text-md"
-                  >
-                    Brindar retroalimentación
-                  </Button>
-                )}
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="flex flex-row gap-4 w-full">
-                {request?.predictionsWithExtras &&
-                request.predictionsWithExtras.length > 0 ? (
-                  <div className="w-full space-y-4">
-                    {(() => {
-                      // Flatten all classifications and detections
-                      const allTasks = request.predictionsWithExtras.flatMap(
-                        (pred) => [...pred.classifications, ...pred.detections],
-                      );
+          <div className={bucketName && storagePath ? "w-1/2" : "w-full"}>
+            <div className="rounded-lg border border-border bg-card h-full">
+              <div className="flex items-center justify-between px-6 pb-3 pt-5">
+                <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">
+                  Resultados de Diagnóstico
+                </h2>
+              </div>
+              <div className="p-6 pt-0 space-y-6">
+                <div className="flex flex-row gap-4 w-full">
+                  {request?.predictionsWithExtras &&
+                  request.predictionsWithExtras.length > 0 ? (
+                    <div className="w-full space-y-4">
+                      {(() => {
+                        const allTasks = request.predictionsWithExtras.flatMap(
+                          (pred) => [
+                            ...pred.classifications,
+                            ...pred.detections,
+                          ],
+                        );
 
-                      // DEBUG: Log para ver qué datos tenemos
-                      console.log("🔍 DEBUG - All tasks:", allTasks);
-                      console.log(
-                        "🔍 DEBUG - Classifications with feedbacks:",
-                        allTasks
-                          .filter(
-                            (t): t is ClassificationWithExtras =>
-                              "disease_name" in t,
-                          )
-                          .map((t) => ({
-                            id: t.id,
-                            disease: t.disease_name,
-                            feedbacks: t.feedbacks,
-                            hasFeedbacks:
-                              !!t.feedbacks && t.feedbacks.length > 0,
-                          })),
-                      );
+                        return (
+                          <>
+                            <p className="text-sm font-medium text-muted-foreground">
+                              Predicciones ({allTasks.length})
+                            </p>
+                            {allTasks.map((task) => {
+                              const isClassification = "disease_name" in task;
+                              const isDetection = "lesion_name" in task;
+                              const diseaseName = isClassification
+                                ? task.disease_name
+                                : request?.diseaseNames?.join(", ") ||
+                                  "Detección";
 
-                      return (
-                        <>
-                          <p className="text-sm font-medium text-muted-foreground">
-                            Predicciones ({allTasks.length})
-                          </p>
-                          {allTasks.map((task) => {
-                            // Adapt task for PredictionCard
-                            const isClassification = "disease_name" in task;
+                              const cardProps = {
+                                id: task.id!,
+                                disease_name: diseaseName,
+                                stage_content: isClassification
+                                  ? translateStageContent(task.stage_content)
+                                  : translateLesionName(
+                                      (task as DetectionWithExtras).lesion_name,
+                                    ),
+                                confidence: task.confidence,
+                                feedbacks: isClassification
+                                  ? (task.feedbacks as
+                                      | ClassificationFeedbackWithExtras[]
+                                      | undefined)
+                                  : undefined,
+                                detectionFeedbacks: isDetection
+                                  ? ((task as DetectionWithExtras).feedbacks as
+                                      | DetectionFeedbackWithExtras[]
+                                      | undefined)
+                                  : undefined,
+                              };
 
-                            // For detections, use the disease names from the request
-                            const diseaseName = isClassification
-                              ? task.disease_name
-                              : request?.diseaseNames?.join(", ") ||
-                                "Detección";
-
-                            const cardProps = {
-                              id: task.id!,
-                              disease_name: diseaseName,
-                              stage_content: isClassification
-                                ? translateStageContent(task.stage_content)
-                                : translateLesionName(task.lesion_name),
-                              confidence: task.confidence,
-                              feedbacks: isClassification
-                                ? (task.feedbacks as
-                                    | ClassificationFeedbackWithExtras[]
-                                    | undefined)
-                                : undefined,
-                            };
-
-                            // DEBUG: Log para cada card
-                            if (isClassification) {
-                              console.log(`🎯 Card ${task.id}:`, {
-                                disease: cardProps.disease_name,
-                                feedbacks: cardProps.feedbacks,
-                                feedbackCount: cardProps.feedbacks?.length,
-                                willShowButton:
-                                  isClassification &&
-                                  cardProps.feedbacks &&
-                                  cardProps.feedbacks.length > 0,
-                              });
-                            }
-
-                            return (
-                              <PredictionCard
-                                key={task.id}
-                                diagnosis={cardProps}
-                                onViewFeedbacks={
-                                  request?.task !== "detection" &&
-                                  isClassification &&
-                                  cardProps.feedbacks
-                                    ? (feedbacks) =>
-                                        handleViewFeedbacks(
-                                          feedbacks,
-                                          cardProps.disease_name,
-                                          cardProps.stage_content,
-                                          task.id,
-                                        )
-                                    : undefined
-                                }
-                              />
-                            );
-                          })}
-                        </>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No hay diagnósticos disponibles para esta solicitud
-                  </p>
-                )}
+                              return (
+                                <PredictionCard
+                                  key={task.id}
+                                  diagnosis={cardProps}
+                                  onViewFeedbacks={
+                                    isClassification && cardProps.feedbacks
+                                      ? (feedbacks) =>
+                                          handleViewClassificationFeedbacks(
+                                            feedbacks,
+                                            cardProps.disease_name,
+                                            cardProps.stage_content,
+                                            task.id,
+                                          )
+                                      : undefined
+                                  }
+                                  onViewDetectionFeedbacks={
+                                    isDetection &&
+                                    cardProps.detectionFeedbacks &&
+                                    cardProps.detectionFeedbacks.length > 0
+                                      ? () =>
+                                          handleViewDetectionFeedbacks(
+                                            cardProps.detectionFeedbacks!,
+                                            task as DetectionWithExtras,
+                                          )
+                                      : undefined
+                                  }
+                                />
+                              );
+                            })}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No hay diagnósticos disponibles para esta solicitud
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-
-            <BatchFeedbackModal
-              open={feedback.openFeedbackModal}
-              onOpenChange={feedback.setOpenFeedbackModal}
-              predictions={feedback.predictions}
-              feedbackForms={feedback.feedbackForms}
-              diseases={feedback.diseases}
-              onUpdateForm={feedback.updateFeedbackForm}
-              loading={feedback.loading}
-              error={feedback.error}
-              onSubmit={feedback.handleSubmitFeedback}
-            />
           </div>
         </div>
 
-        {/* Feedbacks Modal */}
+        {/* Modals */}
+        <BatchFeedbackModal
+          open={classificationFeedback.openFeedbackModal}
+          onOpenChange={classificationFeedback.setOpenFeedbackModal}
+          predictions={classificationFeedback.predictions}
+          feedbackForms={classificationFeedback.feedbackForms}
+          diseases={classificationFeedback.diseases}
+          onUpdateForm={classificationFeedback.updateFeedbackForm}
+          loading={classificationFeedback.loading}
+          error={classificationFeedback.error}
+          onSubmit={classificationFeedback.handleSubmitFeedback}
+        />
+
         <PredictionFeedbacksModal
           open={feedbacksModal.isOpen}
           onClose={() =>
@@ -364,6 +490,30 @@ export default function PredictionDetailPage({
           onSetMainFeedback={feedbacksModal.handleSetMainFeedback}
           diseaseName={currentPredictionInfo.diseaseName}
           stageContent={currentPredictionInfo.stageContent}
+        />
+
+        {bucketName && storagePath && (
+          <DetectionFeedbackModal
+            open={detectionFeedback.openFeedbackModal}
+            onOpenChange={detectionFeedback.setOpenFeedbackModal}
+            bucketName={bucketName}
+            storagePath={storagePath}
+            detections={detectionFeedback.detections}
+            onSave={detectionFeedback.handleSubmitFeedback}
+          />
+        )}
+
+        <DetectionFeedbacksModal
+          open={detectionFeedback.viewModalOpen}
+          onClose={detectionFeedback.closeViewFeedbacksModal}
+          feedbacks={detectionFeedback.viewModalFeedbacks}
+          lesionName={detectionFeedback.viewModalInfo.lesionName}
+          originalBbox={detectionFeedback.viewModalInfo.originalBbox}
+          isRequestOwner={detectionFeedback.isRequestOwner}
+          updatingFeedbackId={detectionFeedback.updatingFeedbackId}
+          onSetMainFeedback={detectionFeedback.handleSetMainFeedback}
+          bucketName={detectionFeedback.viewModalInfo.bucketName}
+          storagePath={detectionFeedback.viewModalInfo.storagePath}
         />
       </div>
     </main>

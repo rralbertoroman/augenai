@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getConfidenceBadge } from "@/hooks/use-predictions";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
+import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
 import { MessageSquare } from "lucide-react";
 
 export interface PredictionCardProps {
@@ -11,25 +12,20 @@ export interface PredictionCardProps {
     stage_content?: string;
     confidence: number;
     feedbacks?: ClassificationFeedbackWithExtras[];
+    detectionFeedbacks?: DetectionFeedbackWithExtras[];
   };
   onViewFeedbacks?: (feedbacks: ClassificationFeedbackWithExtras[]) => void;
+  onViewDetectionFeedbacks?: () => void;
 }
 
 export function PredictionCard({
   diagnosis,
   onViewFeedbacks,
+  onViewDetectionFeedbacks,
 }: PredictionCardProps) {
   const badge = getConfidenceBadge(diagnosis.confidence);
-  const feedbackCount = diagnosis.feedbacks?.length;
-
-  // DEBUG: Log para ver qué está recibiendo el componente
-  console.log(`🎴 PredictionCard ${diagnosis.id}:`, {
-    disease: diagnosis.disease_name,
-    hasFeedbacks: !!diagnosis.feedbacks,
-    feedbackCount,
-    hasCallback: !!onViewFeedbacks,
-    willShowButton: !!onViewFeedbacks,
-  });
+  const feedbackCount = diagnosis.feedbacks?.length ?? 0;
+  const detectionFeedbackCount = diagnosis.detectionFeedbacks?.length ?? 0;
 
   return (
     <div className="bg-muted rounded-lg p-4">
@@ -64,17 +60,30 @@ export function PredictionCard({
           </div>
         </div>
 
-        {onViewFeedbacks && diagnosis.feedbacks && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onViewFeedbacks(diagnosis.feedbacks!)}
-            className="shrink-0 bg-secondary dark:bg-secondary text-accent-foreground dark:hover:bg-primary"
-          >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Retroalimentaciones ({feedbackCount})
-          </Button>
-        )}
+        <div className="flex gap-2 shrink-0">
+          {onViewFeedbacks && diagnosis.feedbacks && feedbackCount > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onViewFeedbacks(diagnosis.feedbacks!)}
+              className="bg-secondary dark:bg-secondary text-accent-foreground dark:hover:bg-primary"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Retroalimentaciones ({feedbackCount})
+            </Button>
+          )}
+          {onViewDetectionFeedbacks && detectionFeedbackCount > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onViewDetectionFeedbacks}
+              className="bg-secondary dark:bg-secondary text-accent-foreground dark:hover:bg-primary"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Retroalimentaciones ({detectionFeedbackCount})
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
