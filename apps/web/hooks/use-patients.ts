@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   getPatientsByUserId,
   createPatient as createPatientService,
@@ -42,31 +42,23 @@ export function translateGender(gender: string): string {
 
 export function usePatients() {
   const { accessToken } = useAuth();
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [allPatients, setAllPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const pagination = usePagination(INITIAL_PAGE_SIZE);
+  const { setTotalItems } = pagination;
 
-  useEffect(() => {
-    if (accessToken) {
-      fetchPatients(accessToken);
-    }
-  }, [accessToken, pagination.pageSize, pagination.offset]);
-
+  // Fetch all patients once
   const fetchPatients = useCallback(
     async (token: string) => {
       setIsLoading(true);
       setError(null);
       try {
-        const { patients: data, count } = await getPatientsByUserId(
-          token,
-          pagination.pageSize,
-          pagination.offset,
-        );
-        setPatients(data);
-        pagination.setTotalItems(count);
+        const { patients: data } = await getPatientsByUserId(token);
+        setAllPatients(data);
+        setTotalItems(data.length);
       } catch (err) {
         const errorMessage = translateErrorMessage(
           err instanceof Error
@@ -78,8 +70,21 @@ export function usePatients() {
         setIsLoading(false);
       }
     },
-    [pagination],
+    [setTotalItems],
   );
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchPatients(accessToken);
+    }
+  }, [accessToken, fetchPatients]);
+
+  // Client-side pagination: slice the patients array based on current page
+  const patients = useMemo(() => {
+    const start = pagination.offset;
+    const end = start + pagination.pageSize;
+    return allPatients.slice(start, end);
+  }, [allPatients, pagination.offset, pagination.pageSize]);
 
   const createPatient = async (data: {
     name: string;
@@ -147,6 +152,7 @@ export function usePatients() {
 
   return {
     patients,
+    allPatients,
     selectedPatient,
     setSelectedPatient,
     isLoading,

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and, getTableColumns, inArray } from "drizzle-orm";
 import { db } from "../db/client";
 import { DetectionFeedbackTable } from "../db/schemas";
 import {
@@ -21,7 +21,6 @@ import {
 } from "../db/schemas";
 import DetectionsTable from "../db/schemas/detection";
 import PredictionsTable from "../db/schemas/prediction";
-import { and, getTableColumns } from "drizzle-orm";
 
 export const createDetectionFeedback = async (
   token: string,
@@ -137,4 +136,32 @@ export const updateIsMainData = async (
   }
 
   return updatedFeedback;
+};
+
+/**
+ * Checks if the current user has already provided feedback for any detection in a prediction request.
+ * Returns true if the user has already given feedback.
+ */
+export const hasUserProvidedDetectionFeedback = async (
+  token: string,
+  detectionIds: string[],
+): Promise<boolean> => {
+  if (!detectionIds || detectionIds.length === 0) {
+    return false;
+  }
+
+  const user = await getCurrentUser(token);
+
+  const existingFeedback = await db
+    .select({ id: DetectionFeedbackTable.id })
+    .from(DetectionFeedbackTable)
+    .where(
+      and(
+        eq(DetectionFeedbackTable.userProfileId, user.userId),
+        inArray(DetectionFeedbackTable.detectionId, detectionIds),
+      ),
+    )
+    .limit(1);
+
+  return existingFeedback.length > 0;
 };
