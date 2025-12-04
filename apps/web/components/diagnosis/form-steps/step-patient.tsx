@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   calculateAge,
   translateGender,
-  usePatients,
+  type Patient,
 } from "@/hooks/use-patients";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +17,8 @@ import {
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { getPatientsByUserId } from "@/server/services/patient";
+import { useAuth } from "@/contexts/auth-context";
 
 interface StepPatientProps {
   patientId: string;
@@ -24,7 +27,36 @@ interface StepPatientProps {
 }
 
 export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
-  const { patients, isLoading } = usePatients();
+  const { accessToken } = useAuth();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load all patients without pagination
+  useEffect(() => {
+    const loadAllPatients = async () => {
+      if (!accessToken) return;
+
+      setIsLoading(true);
+      try {
+        // Load all patients by using a very high limit
+        const { patients: allPatients } = await getPatientsByUserId(
+          accessToken,
+          1000, // High limit to get all patients
+          0,
+        );
+        setPatients(allPatients);
+      } catch (err) {
+        console.error("Error loading patients:", err);
+        setPatients([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAllPatients();
+  }, [accessToken]);
+
+  // Find selected patient
   const selectedPatient = patients.find((p) => p.id === patientId);
 
   return (

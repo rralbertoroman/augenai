@@ -37,7 +37,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/") && pathname === "/"
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <LayoutDashboard className="w-5 h-5" />
@@ -48,7 +48,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/patients")
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <Users className="w-5 h-5" />
@@ -59,7 +59,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/diagnosis")
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <PieChart className="w-5 h-5" />

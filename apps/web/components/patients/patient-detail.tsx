@@ -48,7 +48,7 @@ export function PatientDetail({ patient, onUpdate }: PatientDetailProps) {
               preselectedPatientId={patient.id}
               trigger={
                 <Button variant="default" className="mt-6 w-full">
-                  <span>Analizar</span>
+                  <span>Diagnosticar</span>
                 </Button>
               }
             />
