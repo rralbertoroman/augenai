@@ -83,13 +83,23 @@ AI_PREDICTION_SERVICE_SECRET_KEY=your_secret_key_here
 
 ### 4. Database Setup
 
-Run database migrations:
+Initialize database structure (tables only):
 
 ```bash
 cd apps/web
-pnpm migrate
+pnpm migrate          # Creates tables and schema
 cd ../..
 ```
+
+Initialize database with essential data:
+
+```bash
+cd apps/web
+pnpm migrate:seed     # Creates tables + loads required data
+cd ../..
+```
+
+**CAUTION**: `migrate:seed` will delete existing data before loading new data. Use with caution in production.
 
 ### 5. Start the development servers
 
@@ -128,8 +138,11 @@ cd apps/web
 # Generate a new migration
 pnpm generate -- <migration_name>
 
-# Apply migrations
+# Apply migrations (structure only)
 pnpm migrate
+
+# Apply migrations + load essential data
+pnpm migrate:seed
 ```
 
 ## 🐳 Docker Support
