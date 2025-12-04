@@ -3,6 +3,7 @@ import { getPredictionRequestById } from "@/server/services/prediction_request";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
 import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
+import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 
 export function usePredictionRequestDetail(requestId: string) {
   const { accessToken } = useAuth();
@@ -40,11 +41,75 @@ export function usePredictionRequestDetail(requestId: string) {
     }
   };
 
+  const addFeedbacksToClassification = (
+    classificationId: string,
+    newFeedback: ClassificationFeedbackWithExtras,
+  ) => {
+    if (!request) return;
+
+    setRequest((prevRequest) => {
+      if (!prevRequest) return prevRequest;
+
+      const updatedPredictions = prevRequest.predictionsWithExtras?.map(
+        (pred) => ({
+          ...pred,
+          classifications: pred.classifications.map((classification) => {
+            if (classification.id === classificationId) {
+              return {
+                ...classification,
+                feedbacks: [...(classification.feedbacks || []), newFeedback],
+              };
+            }
+            return classification;
+          }),
+        }),
+      );
+
+      return {
+        ...prevRequest,
+        predictionsWithExtras: updatedPredictions,
+      };
+    });
+  };
+
+  const updateFeedbacksForClassification = (
+    classificationId: string,
+    updatedFeedbacks: ClassificationFeedbackWithExtras[],
+  ) => {
+    if (!request) return;
+
+    setRequest((prevRequest) => {
+      if (!prevRequest) return prevRequest;
+
+      const updatedPredictions = prevRequest.predictionsWithExtras?.map(
+        (pred) => ({
+          ...pred,
+          classifications: pred.classifications.map((classification) => {
+            if (classification.id === classificationId) {
+              return {
+                ...classification,
+                feedbacks: updatedFeedbacks,
+              };
+            }
+            return classification;
+          }),
+        }),
+      );
+
+      return {
+        ...prevRequest,
+        predictionsWithExtras: updatedPredictions,
+      };
+    });
+  };
+
   return {
     request,
     isLoading,
     error,
     refreshRequest: () =>
       requestId && accessToken && fetchRequest(requestId, accessToken),
+    addFeedbacksToClassification,
+    updateFeedbacksForClassification,
   };
 }

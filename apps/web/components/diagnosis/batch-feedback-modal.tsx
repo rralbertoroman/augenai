@@ -1,10 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,116 +52,115 @@ export function BatchFeedbackModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Dar retroalimentación</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {predictions.map((prediction, index) => {
-            const diseaseObj = diseases.find(
-              (d) => d.id === prediction.disease_id,
+    <ClipboardDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Dar retroalimentación"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {predictions.map((prediction, index) => {
+          const diseaseObj = diseases.find(
+            (d) => d.id === prediction.disease_id,
+          );
+          const stages = diseaseObj?.stages;
+          const formData = feedbackForms[prediction.id];
+          if (!formData) {
+            throw new Error(
+              `No se encontró formData para la predicción ${prediction.id}`,
             );
-            const stages = diseaseObj?.stages;
-            const formData = feedbackForms[prediction.id];
-            if (!formData) {
-              throw new Error(
-                `No se encontró formData para la predicción ${prediction.id}`,
-              );
-            }
+          }
 
-            return (
-              <div
-                key={prediction.id}
-                className="border border-border rounded-lg p-4 space-y-4 bg-muted"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Predicción {index + 1}
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    Confianza: {(prediction.confidence * 100).toFixed(1)}%
-                  </span>
-                </div>
-
-                <div>
-                  <Label htmlFor={`disease-${prediction.id}`}>
-                    Enfermedad detectada
-                  </Label>
-                  <Input
-                    id={`disease-${prediction.id}`}
-                    value={prediction.disease_name}
-                    disabled
-                    className="bg-muted/50 cursor-not-allowed mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor={`stage-${prediction.id}`}>
-                    Etapa que considera correcta
-                  </Label>
-                  <Select
-                    value={formData.stageIdx.toString()}
-                    onValueChange={(value) =>
-                      onUpdateForm(prediction.id, "stageIdx", Number(value))
-                    }
-                  >
-                    <SelectTrigger className="w-full mt-2">
-                      <SelectValue placeholder="Seleccione una etapa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {stages!.map((stage, idx) => (
-                        <SelectItem key={idx} value={idx.toString()}>
-                          {stage}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor={`observations-${prediction.id}`}>
-                    Observaciones (opcional)
-                  </Label>
-                  <Textarea
-                    id={`observations-${prediction.id}`}
-                    value={localObservations[prediction.id] || ""}
-                    onChange={(e) =>
-                      setLocalObservations((prev) => ({
-                        ...prev,
-                        [prediction.id]: e.target.value,
-                      }))
-                    }
-                    placeholder="Agregue cualquier observación sobre esta predicción..."
-                    rows={3}
-                    className="mt-2"
-                  />
-                </div>
-              </div>
-            );
-          })}
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <DialogFooter className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
+          return (
+            <div
+              key={prediction.id}
+              className="border border-border rounded-lg p-4 space-y-4 bg-secondary-foreground dark:bg-background"
             >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Enviando..." : "Enviar todas las retroalimentaciones"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Predicción {index + 1}
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  Confianza: {(prediction.confidence * 100).toFixed(1)}%
+                </span>
+              </div>
+
+              <div>
+                <Label htmlFor={`disease-${prediction.id}`}>
+                  Enfermedad detectada
+                </Label>
+                <Input
+                  id={`disease-${prediction.id}`}
+                  value={prediction.disease_name}
+                  disabled
+                  className="bg-muted/50 cursor-not-allowed mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`stage-${prediction.id}`}>
+                  Etapa que considera correcta
+                </Label>
+                <Select
+                  value={formData.stageIdx.toString()}
+                  onValueChange={(value) =>
+                    onUpdateForm(prediction.id, "stageIdx", Number(value))
+                  }
+                >
+                  <SelectTrigger className="w-full mt-2">
+                    <SelectValue placeholder="Seleccione una etapa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {stages!.map((stage, idx) => (
+                      <SelectItem key={idx} value={idx.toString()}>
+                        {stage}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor={`observations-${prediction.id}`}>
+                  Observaciones (opcional)
+                </Label>
+                <Textarea
+                  id={`observations-${prediction.id}`}
+                  value={localObservations[prediction.id] || ""}
+                  onChange={(e) =>
+                    setLocalObservations((prev) => ({
+                      ...prev,
+                      [prediction.id]: e.target.value,
+                    }))
+                  }
+                  placeholder="Agregue cualquier observación sobre esta predicción..."
+                  rows={3}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex gap-2 justify-end pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Enviando..." : "Enviar todas las retroalimentaciones"}
+          </Button>
+        </div>
+      </form>
+    </ClipboardDialog>
   );
 }

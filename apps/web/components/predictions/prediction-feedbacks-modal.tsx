@@ -37,10 +37,10 @@ export function PredictionFeedbacksModal({
     >
       <div className="space-y-4">
         {diseaseName && stageContent && (
-          <div className="sticky z-10 -top-4 bg-accent rounded-lg p-4 mb-5">
+          <div className="sticky z-10 -top-4 bg-muted rounded-lg p-4 mb-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-semibold text-muted-foreground">
                   Enfermedad Original
                 </p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
@@ -48,7 +48,7 @@ export function PredictionFeedbacksModal({
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-semibold text-muted-foreground">
                   Clasificación Original
                 </p>
                 <p className="mt-1 text-sm text-foreground">{stageContent}</p>

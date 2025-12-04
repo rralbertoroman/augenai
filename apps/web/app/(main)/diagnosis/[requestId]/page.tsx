@@ -30,11 +30,16 @@ export default function PredictionDetailPage({
   params: Promise<{ requestId: string }>;
 }) {
   const { requestId } = use(params);
-  const { request, isLoading, error, refreshRequest } =
-    usePredictionRequestDetail(requestId);
+  const {
+    request,
+    isLoading,
+    error,
+    addFeedbacksToClassification,
+    updateFeedbacksForClassification,
+  } = usePredictionRequestDetail(requestId);
 
-  // Feedback hook
-  const feedback = useClassificationFeedback();
+  // Feedback hook with callback to update local state
+  const feedback = useClassificationFeedback(addFeedbacksToClassification);
 
   // Feedbacks modal hook
   const feedbacksModal = usePredictionFeedbacks();
@@ -43,6 +48,7 @@ export default function PredictionDetailPage({
   const [currentPredictionInfo, setCurrentPredictionInfo] = React.useState<{
     diseaseName?: string;
     stageContent?: string;
+    classificationId?: string;
   }>({});
 
   const handleViewFeedbacks = (
@@ -51,7 +57,7 @@ export default function PredictionDetailPage({
     stageContent?: string,
     classificationId?: string,
   ) => {
-    setCurrentPredictionInfo({ diseaseName, stageContent });
+    setCurrentPredictionInfo({ diseaseName, stageContent, classificationId });
     feedbacksModal.openFeedbacksModal(
       feedbacks,
       request?.user_id,
@@ -342,7 +348,16 @@ export default function PredictionDetailPage({
         {/* Feedbacks Modal */}
         <PredictionFeedbacksModal
           open={feedbacksModal.isOpen}
-          onClose={() => feedbacksModal.closeFeedbacksModal(refreshRequest)}
+          onClose={() =>
+            feedbacksModal.closeFeedbacksModal((updatedFeedbacks) => {
+              if (currentPredictionInfo.classificationId) {
+                updateFeedbacksForClassification(
+                  currentPredictionInfo.classificationId,
+                  updatedFeedbacks,
+                );
+              }
+            })
+          }
           feedbacks={feedbacksModal.localFeedbacks}
           isRequestOwner={feedbacksModal.isRequestOwner}
           updatingFeedbackId={feedbacksModal.updatingFeedbackId}

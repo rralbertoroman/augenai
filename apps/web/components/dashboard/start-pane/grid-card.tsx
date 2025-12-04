@@ -63,7 +63,7 @@ export function GridCard({ group }: GridCardProps) {
       key={`${group.requestId}-${group.patientId}`}
       className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-row hover:shadow-md transition-shadow"
     >
-      <div className="flex flex-col bg-muted w-32 min-h-[8rem] items-center justify-center shrink-0">
+      {/* <div className="flex flex-col bg-muted w-32 min-h-[8rem] items-center justify-center shrink-0">
         <div className="relative w-12 h-12 opacity-50">
           <Image
             src="/file.svg"
@@ -72,7 +72,7 @@ export function GridCard({ group }: GridCardProps) {
             className="object-contain"
           />
         </div>
-      </div>
+      </div> */}
       <div className="p-4 flex flex-col grow w-1/2">
         <div className="grow">
           <div className="flex justify-between items-start gap-2">

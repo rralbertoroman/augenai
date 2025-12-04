@@ -16,7 +16,9 @@ interface UsePredictionFeedbacksReturn {
     requestUserId?: string,
     classificationId?: string,
   ) => void;
-  closeFeedbacksModal: (onUpdate?: () => void) => void;
+  closeFeedbacksModal: (
+    onUpdate?: (feedbacks: ClassificationFeedbackWithExtras[]) => void,
+  ) => void;
   handleSetMainFeedback: (feedbackId: string) => Promise<void>;
 }
 
@@ -59,10 +61,12 @@ export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
     setHasChanges(false);
   };
 
-  const closeFeedbacksModal = (onUpdate?: () => void) => {
-    // Si hubo cambios, refrescar los datos
+  const closeFeedbacksModal = (
+    onUpdate?: (feedbacks: ClassificationFeedbackWithExtras[]) => void,
+  ) => {
+    // Si hubo cambios, pasar los feedbacks actualizados
     if (hasChanges && onUpdate) {
-      onUpdate();
+      onUpdate(localFeedbacks);
     }
     setIsOpen(false);
     setFeedbacks([]);

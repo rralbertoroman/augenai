@@ -16,7 +16,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-10 w-full border-b border-border bg-card px-4 py-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-10 w-full border-b border-border bg-background px-4 py-3 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Logo */}
@@ -24,9 +24,9 @@ export function Navbar() {
             <Image
               src="/augen 2.svg"
               alt="Logo"
-              width={150}
-              height={150}
-              className="mx-1"
+              width={180}
+              height={180}
+              className="mx-1 dark:brightness-100 filter-[brightness(0)_saturate(100%)_invert(47%)_sepia(77%)_saturate(654%)_hue-rotate(117deg)_brightness(95%)_contrast(86%)] dark:filter-none"
             />
           </Link>
 
@@ -37,7 +37,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/") && pathname === "/"
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <LayoutDashboard className="w-5 h-5" />
@@ -48,7 +48,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/patients")
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <Users className="w-5 h-5" />
@@ -59,7 +59,7 @@ export function Navbar() {
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-muted-foreground/20 ${
                 isActive("/diagnosis")
                   ? "bg-secondary text-primary-foreground"
-                  : "text-foreground hover:bg-muted hover:text-primary-foreground"
+                  : "text-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <PieChart className="w-5 h-5" />

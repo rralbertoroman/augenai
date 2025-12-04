@@ -19,28 +19,50 @@ export function ThemeToggle() {
 
   const isDark = theme === "dark";
 
+  const handleThemeChange = () => {
+    // Agregar clase transitioning al html
+    document.documentElement.classList.add("transitioning");
+
+    // Cambiar el tema
+    setTheme(isDark ? "light" : "dark");
+
+    // Remover la clase después de la transición
+    setTimeout(() => {
+      document.documentElement.classList.remove("transitioning");
+    }, 300);
+  };
+
   return (
     <button
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative inline-flex items-center w-12 h-7 rounded-full transition-colors bg-muted hover:bg-accent"
+      onClick={handleThemeChange}
+      className="relative inline-flex items-center w-16 h-9 rounded-full transition-colors bg-muted hover:bg-accent border border-foreground/10"
       aria-label={`Cambiar a modo ${isDark ? "claro" : "oscuro"}`}
     >
       {/* Sliding background */}
       <div
-        className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-background shadow-md transition-transform duration-300 ease-in-out ${
-          isDark ? "translate-x-5" : "translate-x-0"
+        className={`absolute left-0.5 w-7 h-7 rounded-full bg-background shadow-md will-change-transform ${
+          isDark ? "translate-x-7" : "translate-x-0"
         }`}
+        style={{
+          transition: "transform 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       />
       {/* Icons inside the toggle */}
       <Sun
-        className={`absolute left-1.5 w-4 h-4 transition-opacity duration-300 ${
+        className={`absolute left-1.5 w-5 h-5 ${
           isDark ? "opacity-0" : "opacity-100"
-        } text-primary`}
+        } text-foreground/70`}
+        style={{
+          transition: "opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       />
       <Moon
-        className={`absolute right-1.5 w-4 h-4 transition-opacity duration-300 ${
+        className={`absolute right-1.5 w-5 h-5 ${
           isDark ? "opacity-100" : "opacity-0"
         } text-primary`}
+        style={{
+          transition: "opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       />
     </button>
   );
