@@ -54,12 +54,8 @@
           "name": "classifications_prediction_id_predictions_id_fk",
           "tableFrom": "classifications",
           "tableTo": "predictions",
-          "columnsFrom": [
-            "prediction_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prediction_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -140,12 +136,8 @@
           "name": "classification_feedback_classification_id_classifications_id_fk",
           "tableFrom": "classification_feedback",
           "tableTo": "classifications",
-          "columnsFrom": [
-            "classification_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["classification_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -153,12 +145,8 @@
           "name": "classification_feedback_user_profile_id_user_profiles_id_fk",
           "tableFrom": "classification_feedback",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "user_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -243,12 +231,8 @@
           "name": "detections_prediction_id_predictions_id_fk",
           "tableFrom": "detections",
           "tableTo": "predictions",
-          "columnsFrom": [
-            "prediction_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prediction_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -353,12 +337,8 @@
           "name": "detection_feedback_detection_id_detections_id_fk",
           "tableFrom": "detection_feedback",
           "tableTo": "detections",
-          "columnsFrom": [
-            "detection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["detection_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -366,12 +346,8 @@
           "name": "detection_feedback_user_profile_id_user_profiles_id_fk",
           "tableFrom": "detection_feedback",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "user_profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -465,12 +441,8 @@
           "name": "lesion_disease_link_lesion_id_lesions_id_fk",
           "tableFrom": "lesion_disease_link",
           "tableTo": "lesions",
-          "columnsFrom": [
-            "lesion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lesion_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -478,12 +450,8 @@
           "name": "lesion_disease_link_disease_id_diseases_id_fk",
           "tableFrom": "lesion_disease_link",
           "tableTo": "diseases",
-          "columnsFrom": [
-            "disease_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["disease_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -491,10 +459,7 @@
       "compositePrimaryKeys": {
         "lesion_disease_link_lesion_id_disease_id_pk": {
           "name": "lesion_disease_link_lesion_id_disease_id_pk",
-          "columns": [
-            "lesion_id",
-            "disease_id"
-          ]
+          "columns": ["lesion_id", "disease_id"]
         }
       },
       "uniqueConstraints": {},
@@ -692,12 +657,8 @@
           "name": "patients_doctor_id_user_profiles_id_fk",
           "tableFrom": "patients",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "doctor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["doctor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -751,12 +712,8 @@
           "name": "prediction_class_lesion_model_id_models_id_fk",
           "tableFrom": "prediction_class_lesion",
           "tableTo": "models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -764,12 +721,8 @@
           "name": "prediction_class_lesion_lesion_id_lesions_id_fk",
           "tableFrom": "prediction_class_lesion",
           "tableTo": "lesions",
-          "columnsFrom": [
-            "lesion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lesion_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -777,10 +730,7 @@
       "compositePrimaryKeys": {
         "prediction_class_lesion_class_id_model_id_pk": {
           "name": "prediction_class_lesion_class_id_model_id_pk",
-          "columns": [
-            "class_id",
-            "model_id"
-          ]
+          "columns": ["class_id", "model_id"]
         }
       },
       "uniqueConstraints": {},
@@ -837,12 +787,8 @@
           "name": "prediction_class_disease_model_id_models_id_fk",
           "tableFrom": "prediction_class_disease",
           "tableTo": "models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -850,12 +796,8 @@
           "name": "prediction_class_disease_disease_id_diseases_id_fk",
           "tableFrom": "prediction_class_disease",
           "tableTo": "diseases",
-          "columnsFrom": [
-            "disease_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["disease_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -863,10 +805,7 @@
       "compositePrimaryKeys": {
         "prediction_class_disease_class_id_model_id_pk": {
           "name": "prediction_class_disease_class_id_model_id_pk",
-          "columns": [
-            "class_id",
-            "model_id"
-          ]
+          "columns": ["class_id", "model_id"]
         }
       },
       "uniqueConstraints": {},
@@ -954,12 +893,8 @@
           "name": "prediction_requests_user_id_user_profiles_id_fk",
           "tableFrom": "prediction_requests",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -967,12 +902,8 @@
           "name": "prediction_requests_patient_id_patients_id_fk",
           "tableFrom": "prediction_requests",
           "tableTo": "patients",
-          "columnsFrom": [
-            "patient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["patient_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1027,12 +958,8 @@
           "name": "prediction_sharings_prediction_request_id_prediction_requests_id_fk",
           "tableFrom": "prediction_sharings",
           "tableTo": "prediction_requests",
-          "columnsFrom": [
-            "prediction_request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prediction_request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1040,12 +967,8 @@
           "name": "prediction_sharings_user_id_user_profiles_id_fk",
           "tableFrom": "prediction_sharings",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1053,10 +976,7 @@
       "compositePrimaryKeys": {
         "prediction_sharings_prediction_request_id_user_id_pk": {
           "name": "prediction_sharings_prediction_request_id_user_id_pk",
-          "columns": [
-            "prediction_request_id",
-            "user_id"
-          ]
+          "columns": ["prediction_request_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1108,12 +1028,8 @@
           "name": "predictions_request_id_prediction_requests_id_fk",
           "tableFrom": "predictions",
           "tableTo": "prediction_requests",
-          "columnsFrom": [
-            "request_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["request_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1121,12 +1037,8 @@
           "name": "predictions_model_id_models_id_fk",
           "tableFrom": "predictions",
           "tableTo": "models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1193,12 +1105,8 @@
           "name": "user_profiles_supervisor_id_user_profiles_id_fk",
           "tableFrom": "user_profiles",
           "tableTo": "user_profiles",
-          "columnsFrom": [
-            "supervisor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["supervisor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1208,9 +1116,7 @@
         "user_profiles_email_unique": {
           "name": "user_profiles_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
