@@ -15,13 +15,16 @@ interface ScanData {
   bucketName?: string;
 }
 
-export function useDiagnosisForm(onSubmit: (data: ScanData) => void) {
+export function useDiagnosisForm(
+  onSubmit: (data: ScanData) => void,
+  preselectedPatientId?: string,
+) {
   const searchParams = useSearchParams();
-  const patientIdFromUrl = searchParams.get("patientId");
+  const patientIdFromUrl = searchParams?.get("patientId");
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ScanData>({
-    patientId: patientIdFromUrl || "",
+    patientId: preselectedPatientId || patientIdFromUrl || "",
     task: "",
     imageType: "",
     diseases: [],
