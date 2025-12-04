@@ -3,5 +3,5 @@ import postgres from "postgres";
 import * as schema from "./schemas";
 import { SUPABASE_DB_URL } from "../constants";
 
-const queryClient = postgres(SUPABASE_DB_URL, { prepare: false });
+export const queryClient = postgres(SUPABASE_DB_URL, { prepare: false });
 export const db = drizzle(queryClient, { schema });
