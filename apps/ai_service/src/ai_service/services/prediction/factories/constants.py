@@ -1,4 +1,3 @@
-
 UNKNOWN_DISEASE_ID = 127
 UNKNOWN_DISEASE_NAME = "Unknown disease"
 
