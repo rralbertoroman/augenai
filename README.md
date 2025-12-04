@@ -23,11 +23,22 @@ Before you begin, ensure you have the following installed:
 ## 🚀 Quick Start
 
 ### 1. Clone the repository
+Unlike most repositories, this repo includes a submodule for each model and these include large files that store the model weights. To handle these files, Git LFS is used and must be 
+installed before the cloning.
+
+Once it is installed, proceed with the following steps. First clone the repository using the url provided by GitHub
 
 ```bash
 git clone <repository-url>
 cd augenai
 ```
+
+Then initialize the submodules with
+```bash
+git submodule update --init --recursive
+```
+
+Now all the models have been downloaded. We proceed to install the dependencies.
 
 ### 2. Install dependencies
 
