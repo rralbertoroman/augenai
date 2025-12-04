@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/services/prediction_request";
 import { useAuth } from "@/contexts/auth-context";
 import { translateErrorMessage } from "@/lib/error-translator";
@@ -37,32 +37,23 @@ export const getTaskLabel = (task: string) => {
 
 export function usePredictionRequests() {
   const { user, accessToken } = useAuth();
-  const [requests, setRequests] = useState<PredictionRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<PredictionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const pagination = usePagination(INITIAL_PAGE_SIZE);
+  const { setTotalItems } = pagination;
 
-  useEffect(() => {
-    if (user?.id && accessToken) {
-      fetchRequests(user.id, accessToken);
-    }
-  }, [user?.id, accessToken, pagination.pageSize, pagination.offset]);
-
+  // Fetch all requests once
   const fetchRequests = useCallback(
     async (userId: string, token: string) => {
       setIsLoading(true);
       setError(null);
       try {
-        const { requests: data, count } =
-          await getAllPredictionRequestsWithPredictionsByUserId(
-            token,
-            userId,
-            pagination.pageSize,
-            pagination.offset,
-          );
-        setRequests(data);
-        pagination.setTotalItems(count);
+        const { requests: data } =
+          await getAllPredictionRequestsWithPredictionsByUserId(token, userId);
+        setAllRequests(data);
+        setTotalItems(data.length);
       } catch (err) {
         const errorMessage = translateErrorMessage(
           err instanceof Error ? err : new Error(String(err)),
@@ -73,20 +64,34 @@ export function usePredictionRequests() {
         setIsLoading(false);
       }
     },
-    [pagination],
+    [setTotalItems],
   );
 
+  useEffect(() => {
+    if (user?.id && accessToken) {
+      fetchRequests(user.id, accessToken);
+    }
+  }, [user?.id, accessToken, fetchRequests]);
+
+  // Client-side pagination: slice the requests array based on current page
+  const requests = useMemo(() => {
+    const start = pagination.offset;
+    const end = start + pagination.pageSize;
+    return allRequests.slice(start, end);
+  }, [allRequests, pagination.offset, pagination.pageSize]);
+
   const getDiagnosesForRequest = (requestId: string) => {
-    const request = requests.find((r) => r.id === requestId);
+    const request = allRequests.find((r) => r.id === requestId);
     return request?.predictions;
   };
 
   const getRequestInfo = (requestId: string) => {
-    return requests.find((r) => r.id === requestId);
+    return allRequests.find((r) => r.id === requestId);
   };
 
   return {
     requests,
+    allRequests,
     isLoading,
     error,
     getDiagnosesForRequest,

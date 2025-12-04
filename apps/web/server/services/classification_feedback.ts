@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and, getTableColumns, inArray } from "drizzle-orm";
 import { db } from "../db/client";
 import { ClassificationFeedbackTable } from "../db/schemas";
 import {
@@ -21,7 +21,6 @@ import {
 } from "../db/schemas";
 import ClassificationsTable from "../db/schemas/classification";
 import PredictionsTable from "../db/schemas/prediction";
-import { and, getTableColumns } from "drizzle-orm";
 
 export const createClassificationFeedback = async (
   token: string,
@@ -161,4 +160,35 @@ export const setMainFeedbackForClassification = async (
     .update(ClassificationFeedbackTable)
     .set({ isMainData: true })
     .where(eq(ClassificationFeedbackTable.id, feedbackId));
+};
+
+/**
+ * Checks if the current user has already provided feedback for any classification in a prediction request.
+ * Returns true if the user has already given feedback.
+ */
+export const hasUserProvidedClassificationFeedback = async (
+  token: string,
+  classificationIds: string[],
+): Promise<boolean> => {
+  if (!classificationIds || classificationIds.length === 0) {
+    return false;
+  }
+
+  const user = await getCurrentUser(token);
+
+  const existingFeedback = await db
+    .select({ id: ClassificationFeedbackTable.id })
+    .from(ClassificationFeedbackTable)
+    .where(
+      and(
+        eq(ClassificationFeedbackTable.userProfileId, user.userId),
+        inArray(
+          ClassificationFeedbackTable.classificationId,
+          classificationIds,
+        ),
+      ),
+    )
+    .limit(1);
+
+  return existingFeedback.length > 0;
 };
