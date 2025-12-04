@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatAgeWithMonths } from "@/lib/date-utils";
 
 interface PatientListProps {
   patients: Patient[];
@@ -19,19 +20,7 @@ export function PatientList({
   selectedPatient,
   onSelectPatient,
 }: PatientListProps) {
-  const calculateAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
+
 
   return (
     <Table>
@@ -63,7 +52,7 @@ export function PatientList({
                   : ""
               }
             >
-              {calculateAge(patient.dateOfBirth)}
+              {formatAgeWithMonths(patient.dateOfBirth)}
             </TableCell>
             <TableCell
               className={
