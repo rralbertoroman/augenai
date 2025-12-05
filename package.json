@@ -2,6 +2,7 @@
   "name": "augenai",
   "private": true,
   "scripts": {
+    "start": "turbo run start",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
@@ -11,7 +12,6 @@
     "prepare": "husky",
     "docker:build": "docker compose up --build",
     "docker:run": "docker compose up"
-
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
