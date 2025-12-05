@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, gte, and } from "drizzle-orm";
 import { db } from "../db/client";
 import { ClassificationsTable, PredictionRequestsTable } from "../db/schemas";
 import {
@@ -167,16 +167,33 @@ export const getAllClassificationsWithExtrasByUserId = async (
 /**
  * Retrieves a flattened list of all classifications with their feedback data.
  * Usage (FE): Used by 'usePredictionsWithFeedback' hook to show predictions that might have been reviewed.
+ * @param token - Authentication token
+ * @param userId - User ID to filter by
+ * @param daysBack - Optional number of days to look back (default: all time)
  */
 export const getAllClassificationsWithFeedbacksAndExtrasByUserId = async (
   token: string,
   userId: string,
+  daysBack?: number,
 ): Promise<ClassificationWithExtras[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
+  // Calculate date filter if daysBack is provided
+  let whereClause;
+  if (daysBack !== undefined && daysBack > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+    whereClause = and(
+      eq(PredictionRequestsTable.userId, userId),
+      gte(PredictionRequestsTable.createdAt, cutoffDate)
+    );
+  } else {
+    whereClause = eq(PredictionRequestsTable.userId, userId);
+  }
+
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
-    where: eq(PredictionRequestsTable.userId, userId),
+    where: whereClause,
     with: {
       predictions: {
         with: {
@@ -212,13 +229,25 @@ export const getAllClassificationsWithFeedbacksAndExtrasByUserId = async (
 /**
  * Retrieves all classifications across the system with feedback.
  * Usage (FE): Used by DashboardContext (likely for Admin/Supervisor dashboard view).
+ * @param token - Authentication token
+ * @param daysBack - Optional number of days to look back (default: all time)
  */
 export const getAllSystemClassificationsWithFeedbacksAndExtras = async (
   token: string,
+  daysBack?: number,
 ): Promise<ClassificationWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
 
+  // Calculate date filter if daysBack is provided
+  let dateFilter;
+  if (daysBack !== undefined && daysBack > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+    dateFilter = gte(PredictionRequestsTable.createdAt, cutoffDate);
+  }
+
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
+    where: dateFilter,
     with: {
       predictions: {
         with: {

@@ -8,7 +8,10 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllPredictionsWithFeedbacksAndExtrasByUserId } from "@/server/services/prediction";
+import { 
+  getAllPredictionsWithFeedbacksAndExtrasByUserId,
+  getAllSystemPredictionsWithFeedbacksAndExtras 
+} from "@/server/services/prediction";
 import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import { flattenPredictions } from "@/lib/prediction-transformer";
 
@@ -16,7 +19,8 @@ import { getAllPredictionClasses } from "@/server/services/prediction_class_dise
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
 
 type DashboardContextType = {
-  predictions: TaskWithExtras[];
+  predictions: TaskWithExtras[]; // User's predictions (for Start tab)
+  systemPredictions: TaskWithExtras[]; // All system predictions (for stats tabs)
   predictionClasses: PredictionClassDiseaseWithDisease[];
   selectedPrediction: TaskWithExtras | null;
   setSelectedPrediction: (prediction: TaskWithExtras | null) => void;
@@ -36,7 +40,8 @@ export const DashboardProvider = ({
   children: React.ReactNode;
 }) => {
   const { accessToken, user } = useAuth();
-  const [predictions, setPredictions] = useState<TaskWithExtras[]>([]);
+  const [predictions, setPredictions] = useState<TaskWithExtras[]>([]); // User's predictions
+  const [systemPredictions, setSystemPredictions] = useState<TaskWithExtras[]>([]); // System predictions (last 30 days)
   const [predictionClasses, setPredictionClasses] = useState<
     PredictionClassDiseaseWithDisease[]
   >([]);
@@ -52,15 +57,20 @@ export const DashboardProvider = ({
     setError(null);
 
     try {
-      const [predictionsData, classesData] = await Promise.all([
-        getAllPredictionsWithFeedbacksAndExtrasByUserId(accessToken, user.id),
+      const [userPredictionsData, systemPredictionsData, classesData] = await Promise.all([
+        // User's predictions (for Start tab - today's predictions only)
+        getAllPredictionsWithFeedbacksAndExtrasByUserId(accessToken, user.id, 1),
+        // System predictions (for stats tabs - last 30 days)
+        getAllSystemPredictionsWithFeedbacksAndExtras(accessToken, 30),
         getAllPredictionClasses(accessToken),
       ]);
 
       // Flatten predictions using utility function
-      const processedData = flattenPredictions(predictionsData);
+      const processedUserData = flattenPredictions(userPredictionsData);
+      const processedSystemData = flattenPredictions(systemPredictionsData);
 
-      setPredictions(processedData);
+      setPredictions(processedUserData);
+      setSystemPredictions(processedSystemData);
       setPredictionClasses(classesData);
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
@@ -113,6 +123,7 @@ export const DashboardProvider = ({
     <DashboardContext.Provider
       value={{
         predictions,
+        systemPredictions,
         predictionClasses,
         selectedPrediction,
         setSelectedPrediction,

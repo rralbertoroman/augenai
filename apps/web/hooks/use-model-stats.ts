@@ -10,11 +10,11 @@ import {
 export type { F1ScoreData, ConfusionMatrixData };
 
 export function useModelStats() {
-  const { predictions, predictionClasses, isLoading } = useDashboard();
+  const { systemPredictions, predictionClasses, isLoading } = useDashboard();
 
   // Process data
   const stats = useMemo(() => {
-    if (isLoading || !predictions.length || !predictionClasses.length) {
+    if (isLoading || !systemPredictions.length || !predictionClasses.length) {
       return {
         f1ScoreData: [],
         confusionMatrixData: [],
@@ -23,14 +23,14 @@ export function useModelStats() {
     }
 
     return {
-      f1ScoreData: calculateF1ScoreData(predictions),
+      f1ScoreData: calculateF1ScoreData(systemPredictions),
       confusionMatrixData: calculateConfusionMatrices(
-        predictions,
+        systemPredictions,
         predictionClasses,
       ),
       hasData: true,
     };
-  }, [predictions, predictionClasses, isLoading]);
+  }, [systemPredictions, predictionClasses, isLoading]);
 
   return {
     ...stats,
