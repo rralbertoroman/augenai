@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useDashboard } from "@/contexts/dashboard-context";
-import { usePatientsMap } from "./use-patients-map";
-import { isToday, calculateAge } from "@/lib/date-utils";
+import { useDashboard } from "@/modules/dashboard/contexts";
+import { usePatientsMap } from "@/modules/patients/hooks/use-patients-map";
+import { calculateAge } from "@/lib/date-utils";
 import type { PredictionGroup } from "@/modules/dashboard/components/start-pane/types";
 
 /**

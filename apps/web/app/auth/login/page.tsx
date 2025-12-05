@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/login-form";
+import { LoginForm } from "@/modules/auth/components";
 import Image from "next/image";
 
 export default function Page() {

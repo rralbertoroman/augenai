@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, ChevronDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { useDiseases } from "@/modules/diagnosis/hooks/use-diseases";
+import { useDiseases } from "@/modules/commons/contexts";
 
 interface DiseaseMultiSelectProps {
   selectedDiseases: string[];

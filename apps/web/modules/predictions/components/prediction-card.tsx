@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getConfidenceBadge } from "@/modules/predictions/hooks/use-predictions";
+import { getConfidenceBadge } from "@/modules/predictions/utils";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
 import { MessageSquare } from "lucide-react";

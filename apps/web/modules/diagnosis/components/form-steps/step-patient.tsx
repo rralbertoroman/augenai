@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  translateGender,
-  type Patient,
-} from "@/modules/patients/hooks/use-patients";
+import { translateGender, type Patient } from "@/modules/patients/contexts";
 import { formatAgeWithMonths } from "@/lib/date-utils";
 import { Label } from "@/components/ui/label";
 import {

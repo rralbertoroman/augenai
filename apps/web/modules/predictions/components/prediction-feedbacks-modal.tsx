@@ -5,7 +5,7 @@ import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/clas
 import { translateStageContent } from "@/lib/translations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/modules/predictions/hooks/use-prediction-requests";
+import { formatDate } from "@/lib/date-utils";
 import { Star } from "lucide-react";
 
 interface PredictionFeedbacksModalProps {
@@ -73,7 +73,7 @@ export function PredictionFeedbacksModal({
                 key={feedback.id}
                 className="relative bg-card border border-border rounded-lg p-4"
               >
-                {/* Badge o botón en la esquina superior derecha */}
+                {/* Badge or button in the top right corner */}
                 {feedback.isMainData ? (
                   <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground text-sm">
                     <Star className="h-3 w-3 mr-1 fill-current" />

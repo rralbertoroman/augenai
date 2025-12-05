@@ -20,13 +20,13 @@ export function ThemeToggle() {
   const isDark = theme === "dark";
 
   const handleThemeChange = () => {
-    // Agregar clase transitioning al html
+    // Add transitioning class to html
     document.documentElement.classList.add("transitioning");
 
-    // Cambiar el tema
+    // Change the theme
     setTheme(isDark ? "light" : "dark");
 
-    // Remover la clase después de la transición
+    // Remove the class after the transition
     setTimeout(() => {
       document.documentElement.classList.remove("transitioning");
     }, 300);

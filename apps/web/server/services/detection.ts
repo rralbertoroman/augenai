@@ -15,7 +15,10 @@ import {
   type Detection,
 } from "../zod-schemas/prediction_workflow";
 import { getCurrentUser, verifyOwnership } from "../auth";
-import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
+import {
+  getAllPredictionClassLesionsAsMap,
+  type PredictionClassLesionWithLesion,
+} from "./prediction_class_lesion";
 
 export const createDetections = async (
   inputs: CreateDetectionInput[],
@@ -35,24 +38,24 @@ export const createDetections = async (
 /**
  * Internal Helper: Flattens the hierarchical prediction structure into a single list of findings.
  * Useful for list views or tables where grouping by request is not needed.
+ * Now receives a pre-loaded lesionsMap to avoid N+1 queries.
  */
-const flattenPredictionsWithExtras = async (
+const flattenPredictionsWithExtras = (
   request: PredictionRequestWithRelations,
+  lesionsMap: Map<string, PredictionClassLesionWithLesion>,
   includeFeedbacks: boolean = false,
-): Promise<
-  Array<
-    Detection & {
-      model_id: string;
-      prediction_id: string;
-      request_id: string;
-      patient_id: string;
-      patient_name?: string;
-      patient_birth_date?: string;
-      created_at: Date;
-      bucket_name?: string;
-      storage_path?: string;
-    }
-  >
+): Array<
+  Detection & {
+    model_id: string;
+    prediction_id: string;
+    request_id: string;
+    patient_id: string;
+    patient_name?: string;
+    patient_birth_date?: string;
+    created_at: Date;
+    bucket_name?: string;
+    storage_path?: string;
+  }
 > => {
   const allDetections: Array<
     Detection & {
@@ -74,10 +77,9 @@ const flattenPredictionsWithExtras = async (
     // Process Detections
     if (prediction.detections && Array.isArray(prediction.detections)) {
       for (const detection of prediction.detections) {
-        const lesionInfo = await getPredictionClassLesionByClassIdAndModelId({
-          classId: detection.classId,
-          modelId,
-        });
+        // O(1) lookup instead of DB query
+        const lesionKey = `${detection.classId}-${modelId}`;
+        const lesionInfo = lesionsMap.get(lesionKey);
 
         if (!lesionInfo) {
           throw new Error(
@@ -142,6 +144,9 @@ export const getAllDetectionsWithExtrasByUserId = async (
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
+  // Pre-load all lesion mappings for O(1) lookup
+  const lesionsMap = await getAllPredictionClassLesionsAsMap();
+
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
     with: {
@@ -161,7 +166,7 @@ export const getAllDetectionsWithExtrasByUserId = async (
   const allDetections: DetectionWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const detections = await flattenPredictionsWithExtras(request, false);
+    const detections = flattenPredictionsWithExtras(request, lesionsMap, false);
     allDetections.push(...detections);
   }
 
@@ -182,6 +187,9 @@ export const getAllDetectionsWithFeedbacksAndExtrasByUserId = async (
 ): Promise<DetectionWithExtras[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
+
+  // Pre-load all lesion mappings for O(1) lookup
+  const lesionsMap = await getAllPredictionClassLesionsAsMap();
 
   // Calculate date filter if daysBack is provided
   let whereClause;
@@ -223,7 +231,7 @@ export const getAllDetectionsWithFeedbacksAndExtrasByUserId = async (
   const allDetections: DetectionWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const detections = await flattenPredictionsWithExtras(request, true);
+    const detections = flattenPredictionsWithExtras(request, lesionsMap, true);
     allDetections.push(...detections);
   }
 
@@ -241,6 +249,9 @@ export const getAllSystemDetectionsWithFeedbacksAndExtras = async (
   daysBack?: number,
 ): Promise<DetectionWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
+
+  // Pre-load all lesion mappings for O(1) lookup
+  const lesionsMap = await getAllPredictionClassLesionsAsMap();
 
   // Calculate date filter if daysBack is provided
   let dateFilter;
@@ -277,7 +288,7 @@ export const getAllSystemDetectionsWithFeedbacksAndExtras = async (
   const allDetections: DetectionWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const detections = await flattenPredictionsWithExtras(request, true);
+    const detections = flattenPredictionsWithExtras(request, lesionsMap, true);
     allDetections.push(...detections);
   }
 
@@ -293,6 +304,9 @@ export const getDetectionsWithExtrasByRequestId = async (
   id: string,
 ): Promise<DetectionWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
+
+  // Pre-load all lesion mappings for O(1) lookup
+  const lesionsMap = await getAllPredictionClassLesionsAsMap();
 
   const request = await db.query.PredictionRequestsTable.findFirst({
     where: eq(PredictionRequestsTable.id, id),
@@ -311,6 +325,6 @@ export const getDetectionsWithExtrasByRequestId = async (
     return [];
   }
 
-  const detections = await flattenPredictionsWithExtras(request, false);
+  const detections = flattenPredictionsWithExtras(request, lesionsMap, false);
   return detections;
 };

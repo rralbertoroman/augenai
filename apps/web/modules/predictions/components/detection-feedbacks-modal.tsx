@@ -5,7 +5,7 @@ import { ClipboardDialog } from "@/modules/commons/clipboard/clipboard-dialog";
 import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/modules/predictions/hooks/use-prediction-requests";
+import { formatDate } from "@/lib/date-utils";
 import { Star, Eye, EyeOff, ZoomIn, ZoomOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 

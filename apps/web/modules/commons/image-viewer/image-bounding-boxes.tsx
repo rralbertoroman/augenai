@@ -80,7 +80,7 @@ export function ImageBoundingBoxes({
       />
       {/* Legend Overlay */}
       {uniqueLabels.length > 0 && (
-        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-md p-2 shadow-lg border border-white/10 z-[5]">
+        <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-md p-2 shadow-lg border border-white/10 z-5">
           <div className="flex flex-col gap-1">
             {uniqueLabels.map((item) => (
               <div key={item.label} className="flex items-center gap-2">

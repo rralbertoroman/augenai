@@ -1,4 +1,4 @@
-import { Patient } from "@/modules/patients/hooks/use-patients";
+import { type Patient } from "@/modules/patients/contexts";
 import { Button } from "@/components/ui/button";
 import { PatientDialog } from "./add-patient-dialog";
 import { CreatePredictionModal } from "@/modules/diagnosis/components/create-prediction-modal";

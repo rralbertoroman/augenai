@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   createClassificationFeedback,
   getClassificationFeedbackWithExtras,
   hasUserProvidedClassificationFeedback,
 } from "@/server/services/classification_feedback";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
-import { getAllDiseases } from "@/server/services/disease";
 import { getClassIdByStageDiseaseAndModel } from "@/server/services/prediction_class_disease";
 import { useAuth } from "@/contexts/auth-context";
+import { useSharedData } from "@/modules/commons/contexts";
 import type {
   ClassificationWithExtras,
   TaskWithExtras,
@@ -26,6 +26,7 @@ export function useClassificationFeedback(
   ) => void,
 ) {
   const { accessToken } = useAuth();
+  const { diseases: sharedDiseases } = useSharedData();
   const [loading, setLoading] = useState(false);
   const [checkingFeedback, setCheckingFeedback] = useState(false);
   const [hasExistingFeedback, setHasExistingFeedback] = useState(false);
@@ -47,15 +48,13 @@ export function useClassificationFeedback(
   const [feedbackForms, setFeedbackForms] = useState<
     Record<string, FeedbackFormData>
   >({});
-  const [diseases, setDiseases] = useState<
-    Array<{ id: string; name: string; stages: string[] }>
-  >([]);
 
-  useEffect(() => {
-    if (accessToken) {
-      getAllDiseases(accessToken).then(setDiseases);
-    }
-  }, [accessToken]);
+  // Use diseases from shared context
+  const diseases = sharedDiseases.map((d) => ({
+    id: d.id,
+    name: d.name,
+    stages: d.stages,
+  }));
 
   const checkUserFeedback = async (
     classificationIds: string[],
@@ -179,21 +178,21 @@ export function useClassificationFeedback(
           classId,
           confidence: 1,
         };
-        console.log("[Feedback] Enviando feedback:", feedbackData);
+        console.log("[Feedback] Sending feedback:", feedbackData);
 
         const createdFeedback = await createClassificationFeedback(
           accessToken,
           feedbackData,
         );
 
-        // Obtener todos los feedbacks con extras y encontrar el recién creado
+        // Get all feedbacks with extras and find the newly created one
         if (onFeedbackCreated && createdFeedback) {
           const allFeedbacks = await getClassificationFeedbackWithExtras(
             accessToken,
             { classificationId: prediction.id! },
           );
 
-          // Buscar el feedback recién creado por ID
+          // Find the newly created feedback by ID
           const newFeedback = allFeedbacks.find(
             (f) => f.id === createdFeedback.id,
           );

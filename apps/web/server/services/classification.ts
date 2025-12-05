@@ -15,7 +15,10 @@ import {
   type Classification,
 } from "../zod-schemas/prediction_workflow";
 import { getCurrentUser, verifyOwnership } from "../auth";
-import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
+import {
+  getAllPredictionClassesAsMap,
+  type PredictionClassDiseaseWithDisease,
+} from "./prediction_class_disease";
 
 export const createClassifications = async (
   inputs: CreateClassificationInput[],
@@ -35,24 +38,24 @@ export const createClassifications = async (
 /**
  * Internal Helper: Flattens the hierarchical prediction structure into a single list of findings.
  * Useful for list views or tables where grouping by request is not needed.
+ * Now accepts a pre-loaded classesMap to avoid N+1 queries.
  */
-const flattenPredictionsWithExtras = async (
+const flattenPredictionsWithExtras = (
   request: PredictionRequestWithRelations,
+  classesMap: Map<string, PredictionClassDiseaseWithDisease>,
   includeFeedbacks: boolean = false,
-): Promise<
-  Array<
-    Classification & {
-      model_id: string;
-      prediction_id: string;
-      request_id: string;
-      patient_id: string;
-      patient_name?: string;
-      patient_birth_date?: string;
-      created_at: Date;
-      bucket_name?: string;
-      storage_path?: string;
-    }
-  >
+): Array<
+  Classification & {
+    model_id: string;
+    prediction_id: string;
+    request_id: string;
+    patient_id: string;
+    patient_name?: string;
+    patient_birth_date?: string;
+    created_at: Date;
+    bucket_name?: string;
+    storage_path?: string;
+  }
 > => {
   const allClassifications: Array<
     Classification & {
@@ -77,10 +80,9 @@ const flattenPredictionsWithExtras = async (
       Array.isArray(prediction.classifications)
     ) {
       for (const classification of prediction.classifications) {
-        const classInfo = await getPredictionClassDiseaseByClassIdAndModelId({
-          classId: classification.classId,
-          modelId,
-        });
+        // O(1) lookup from pre-loaded map
+        const key = `${classification.classId}-${modelId}`;
+        const classInfo = classesMap.get(key);
 
         if (!classInfo) {
           throw new Error(
@@ -138,6 +140,9 @@ export const getAllClassificationsWithExtrasByUserId = async (
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
+  // Load all prediction classes once (O(1) lookup)
+  const classesMap = await getAllPredictionClassesAsMap();
+
   const predictionRequests = await db.query.PredictionRequestsTable.findMany({
     where: eq(PredictionRequestsTable.userId, userId),
     with: {
@@ -157,7 +162,11 @@ export const getAllClassificationsWithExtrasByUserId = async (
   const allClassifications: ClassificationWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const classifications = await flattenPredictionsWithExtras(request, false);
+    const classifications = flattenPredictionsWithExtras(
+      request,
+      classesMap,
+      false,
+    );
     allClassifications.push(...classifications);
   }
 
@@ -178,6 +187,9 @@ export const getAllClassificationsWithFeedbacksAndExtrasByUserId = async (
 ): Promise<ClassificationWithExtras[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
+
+  // Load all prediction classes once (O(1) lookup)
+  const classesMap = await getAllPredictionClassesAsMap();
 
   // Calculate date filter if daysBack is provided
   let whereClause;
@@ -219,7 +231,11 @@ export const getAllClassificationsWithFeedbacksAndExtrasByUserId = async (
   const allClassifications: ClassificationWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const classifications = await flattenPredictionsWithExtras(request, true);
+    const classifications = flattenPredictionsWithExtras(
+      request,
+      classesMap,
+      true,
+    );
     allClassifications.push(...classifications);
   }
 
@@ -237,6 +253,9 @@ export const getAllSystemClassificationsWithFeedbacksAndExtras = async (
   daysBack?: number,
 ): Promise<ClassificationWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
+
+  // Load all prediction classes once (O(1) lookup)
+  const classesMap = await getAllPredictionClassesAsMap();
 
   // Calculate date filter if daysBack is provided
   let dateFilter;
@@ -273,7 +292,11 @@ export const getAllSystemClassificationsWithFeedbacksAndExtras = async (
   const allClassifications: ClassificationWithExtras[] = [];
 
   for (const request of predictionRequests) {
-    const classifications = await flattenPredictionsWithExtras(request, true);
+    const classifications = flattenPredictionsWithExtras(
+      request,
+      classesMap,
+      true,
+    );
     allClassifications.push(...classifications);
   }
 
@@ -289,6 +312,9 @@ export const getClassificationsWithExtrasByRequestId = async (
   id: string,
 ): Promise<ClassificationWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
+
+  // Load all prediction classes once (O(1) lookup)
+  const classesMap = await getAllPredictionClassesAsMap();
 
   const request = await db.query.PredictionRequestsTable.findFirst({
     where: eq(PredictionRequestsTable.id, id),
@@ -307,6 +333,10 @@ export const getClassificationsWithExtrasByRequestId = async (
     return [];
   }
 
-  const classifications = await flattenPredictionsWithExtras(request, false);
+  const classifications = flattenPredictionsWithExtras(
+    request,
+    classesMap,
+    false,
+  );
   return classifications;
 };
