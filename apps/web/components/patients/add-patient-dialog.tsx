@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ChevronDownIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { ClipboardDialog } from "@/components/common/clipboard-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Pencil } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -45,6 +51,17 @@ export function PatientDialog({
   const setOpen = externalOnOpenChange || setInternalOpen;
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [initialFormData, setInitialFormData] = useState({
+    name: patient?.name || "",
+    dateOfBirth: patient?.dateOfBirth || "",
+    gender: patient?.gender || "",
+    clinicalConditions: patient?.clinicalConditions || "",
+  });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    patient?.dateOfBirth ? new Date(patient.dateOfBirth) : undefined,
+  );
   const [formData, setFormData] = useState({
     name: patient?.name || "",
     dateOfBirth: patient?.dateOfBirth || "",
@@ -54,21 +71,39 @@ export function PatientDialog({
 
   useEffect(() => {
     if (patient) {
-      setFormData({
+      const dateOfBirth = patient.dateOfBirth;
+      const initialData = {
         name: patient.name,
-        dateOfBirth: patient.dateOfBirth,
+        dateOfBirth: dateOfBirth,
         gender: patient.gender,
         clinicalConditions: patient.clinicalConditions,
-      });
+      };
+      setInitialFormData(initialData);
+      setFormData(initialData);
+      setSelectedDate(dateOfBirth ? new Date(dateOfBirth) : undefined);
+      setHasChanges(false);
     } else {
-      setFormData({
+      const emptyData = {
         name: "",
         dateOfBirth: "",
         gender: "",
         clinicalConditions: "",
-      });
+      };
+      setInitialFormData(emptyData);
+      setFormData(emptyData);
+      setSelectedDate(undefined);
+      setHasChanges(false);
     }
   }, [patient]);
+
+  useEffect(() => {
+    if (patient) {
+      // Solo rastrear cambios si estamos en modo edición
+      const hasDataChanged =
+        JSON.stringify(formData) !== JSON.stringify(initialFormData);
+      setHasChanges(hasDataChanged);
+    }
+  }, [formData, initialFormData, patient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,20 +196,51 @@ export function PatientDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Fecha de Nacimiento</Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={formData.dateOfBirth}
-              max={
-                new Date(new Date().setDate(new Date().getDate() - 2))
-                  .toISOString()
-                  .split("T")[0]
-              }
-              onChange={(e) =>
-                setFormData({ ...formData, dateOfBirth: e.target.value })
-              }
-              required
-            />
+            <Popover open={dateOpen} onOpenChange={setDateOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id="dateOfBirth"
+                  className="w-full justify-between font-normal"
+                >
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString("es-ES", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Seleccionar fecha"}
+                  <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto overflow-hidden p-0"
+                align="start"
+              >
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  captionLayout="dropdown"
+                  disabled={(date) => {
+                    // Disable future dates (max 2 days ago from today)
+                    const maxDate = new Date();
+                    maxDate.setDate(maxDate.getDate() - 2);
+                    return date > maxDate;
+                  }}
+                  onSelect={(date) => {
+                    setSelectedDate(date);
+                    if (date) {
+                      const isoDate = date.toISOString().split("T")[0];
+                      setFormData({
+                        ...formData,
+                        dateOfBirth: isoDate,
+                      });
+                    }
+                    setDateOpen(false);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
@@ -204,7 +270,11 @@ export function PatientDialog({
           >
             Cancelar
           </Button>
-          <Button type="submit" className="w-1/2" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="w-1/2"
+            disabled={isSubmitting || (patient && !hasChanges)}
+          >
             {isSubmitting ? "Guardando..." : patient ? "Actualizar" : "Guardar"}
           </Button>
         </div>

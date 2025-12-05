@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPatientsByUserId } from "@/server/services/patient";
 import { useAuth } from "@/contexts/auth-context";
@@ -67,12 +67,10 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
             <SelectValue
               placeholder={
                 isLoading ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="sr-only">Cargando pacientes...</span>
-                      <Skeleton className="w-[120px] h-5" />
-                    </div>
-                  </>
+                  <div className="flex items-center gap-2">
+                    <Spinner className="size-4 text-primary" />
+                    <span>Cargando pacientes...</span>
+                  </div>
                 ) : (
                   "Elige un paciente"
                 )
@@ -81,10 +79,8 @@ export function StepPatient({ patientId, error, onChange }: StepPatientProps) {
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
-              <div className="p-2">
-                <Skeleton className="w-[180px] h-5" />
-                <Skeleton className="w-[140px] h-5 mt-2" />
-                <Skeleton className="w-[160px] h-5 mt-2" />
+              <div className="flex items-center justify-center p-4">
+                <Spinner className="size-6 text-primary" />
               </div>
             ) : patients.length === 0 ? (
               <div className="p-2 text-sm text-muted-foreground text-center">

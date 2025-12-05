@@ -48,7 +48,7 @@ export function ClipboardDialog({
               className="absolute top-4 right-4 h-8 w-8"
               onClick={() => onOpenChange?.(false)}
             >
-              <X className="h-4 w-4" />
+              <X className="h-8 w-8" />
             </Button>
           </div>
 
