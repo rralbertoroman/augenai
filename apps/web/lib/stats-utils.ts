@@ -66,6 +66,8 @@ export function calculateConfusionMatrices(
   predictions: TaskWithExtras[],
   predictionClasses: PredictionClassDiseaseWithDisease[],
 ): ConfusionMatrixData[] {
+  const UNKNOWN_CLASS_ID = 127; // From AI service constants
+
   // Map modelId-classId to Disease and Stage (composite key)
   const classMap = new Map<
     string,
@@ -102,6 +104,7 @@ export function calculateConfusionMatrices(
   });
 
   // Map predictions using composite key: model_id-class_id
+  // Also collect unknown predictions for each disease
   predictions.forEach((p) => {
     const compositeKey = `${p.model_id}-${p.class_id}`;
     const classInfo = classMap.get(compositeKey);
@@ -112,19 +115,56 @@ export function calculateConfusionMatrices(
         predictionsByDisease.set(diseaseId, []);
       }
       predictionsByDisease.get(diseaseId)?.push(p);
+    } else if (p.class_id === UNKNOWN_CLASS_ID) {
+      // Unknown predictions: try to determine which disease they belong to
+      // by checking feedback or by looking at the model used
+      const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
+      if (mainFeedback) {
+        const actualCompositeKey = `${p.model_id}-${mainFeedback.classId}`;
+        const actualInfo = classMap.get(actualCompositeKey);
+        if (actualInfo) {
+          const diseaseId = actualInfo.diseaseId;
+          if (!predictionsByDisease.has(diseaseId)) {
+            predictionsByDisease.set(diseaseId, []);
+          }
+          predictionsByDisease.get(diseaseId)?.push(p);
+        }
+      }
     }
   });
 
   const confusionMatrixData: ConfusionMatrixData[] = [];
 
+  // First pass: Create matrices for each disease with normal predictions
   diseaseInfoMap.forEach((info, diseaseId) => {
+    // Skip "Unknown Disease" - it's not a real disease, just a placeholder
+    const isUnknownDisease =
+      info.name.toLowerCase().includes("unknown") ||
+      info.name.toLowerCase().includes("desconocida");
+
+    if (isUnknownDisease) {
+      return; // Skip this disease
+    }
+
     const diseasePredictions = predictionsByDisease.get(diseaseId);
     const stages = info.stages;
+
+    // Add "Unknown" as the last stage
+    const stagesWithUnknown = [...stages, "Desconocida"];
+
+    // Create matrix with extra column for unknown predictions
+    // Rows = actual stages, Columns = predicted stages + unknown
     const matrix = Array(stages.length)
       .fill(0)
-      .map(() => Array(stages.length).fill(0));
+      .map(() => Array(stagesWithUnknown.length).fill(0));
 
+    // Process normal predictions (not unknown)
     diseasePredictions?.forEach((p) => {
+      // Skip unknown predictions in this pass
+      if (p.class_id === UNKNOWN_CLASS_ID) {
+        return;
+      }
+
       const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
       const predictedCompositeKey = `${p.model_id}-${p.class_id}`;
       const actualCompositeKey = mainFeedback
@@ -135,21 +175,89 @@ export function calculateConfusionMatrices(
       const actualInfo = classMap.get(actualCompositeKey);
 
       if (predictedInfo && actualInfo) {
-        // Row = Actual, Col = Predicted
-        if (
-          actualInfo.stageIdx < stages.length &&
-          predictedInfo.stageIdx < stages.length
-        ) {
-          matrix[actualInfo.stageIdx][predictedInfo.stageIdx]++;
+        // Normal prediction: both actual and predicted are known
+        const actualRow = actualInfo.stageIdx;
+        const predictedCol = predictedInfo.stageIdx;
+        if (actualRow < stages.length && predictedCol < stages.length) {
+          matrix[actualRow][predictedCol]++;
         }
       }
     });
 
     confusionMatrixData.push({
       disease: info.name,
-      stages: stages,
+      stages: stagesWithUnknown,
       matrix: matrix,
     });
+  });
+
+  // Second pass: Process ALL unknown predictions and add them to appropriate disease matrices
+  predictions.forEach((p) => {
+    if (p.class_id !== UNKNOWN_CLASS_ID) {
+      return; // Only process unknown predictions
+    }
+
+    const mainFeedback = p.feedbacks?.find((f) => f.isMainData);
+
+    if (!mainFeedback) {
+      console.log(
+        "⚠️ Unknown prediction without feedback - cannot assign to disease:",
+        {
+          class_id: p.class_id,
+          model_id: p.model_id,
+        },
+      );
+      return; // Can't determine which disease without feedback
+    }
+
+    // Use feedback to determine the actual disease and stage
+    const actualCompositeKey = `${p.model_id}-${mainFeedback.classId}`;
+    const actualInfo = classMap.get(actualCompositeKey);
+
+    if (!actualInfo) {
+      console.log("⚠️ Unknown prediction with feedback but no class mapping:", {
+        class_id: p.class_id,
+        feedbackClassId: mainFeedback.classId,
+        model_id: p.model_id,
+      });
+      return;
+    }
+
+    // Find the confusion matrix for this disease
+    const diseaseMatrix = confusionMatrixData.find(
+      (cm) => cm.disease === actualInfo.diseaseName,
+    );
+
+    if (!diseaseMatrix) {
+      console.log("⚠️ Unknown prediction for filtered disease:", {
+        diseaseName: actualInfo.diseaseName,
+      });
+      return;
+    }
+
+    // Increment the unknown column for the actual stage
+    const actualRow = actualInfo.stageIdx;
+    const unknownColumnIndex = diseaseMatrix.stages.length - 1;
+
+    if (actualRow < diseaseMatrix.matrix.length) {
+      console.log("✅ Incrementing unknown column:", {
+        disease: actualInfo.diseaseName,
+        actualStage: actualInfo.stageName,
+        actualRow,
+        unknownColumnIndex,
+        beforeValue: diseaseMatrix.matrix[actualRow][unknownColumnIndex],
+      });
+      diseaseMatrix.matrix[actualRow][unknownColumnIndex]++;
+    }
+  });
+
+  // Debug: Log final matrix for each disease
+  confusionMatrixData.forEach((cm) => {
+    const unknownColumnData = cm.matrix.map((row, idx) => ({
+      stage: cm.stages[idx],
+      unknownCount: row[cm.stages.length - 1],
+    }));
+    console.log(`📊 ${cm.disease} - Unknown column data:`, unknownColumnData);
   });
 
   return confusionMatrixData;
