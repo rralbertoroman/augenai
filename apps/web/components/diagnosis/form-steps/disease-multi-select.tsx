@@ -46,7 +46,9 @@ export function DiseaseMultiSelect({
   };
 
   const availableOptions = diseases.filter(
-    (disease) => !selectedDiseases.includes(disease.id),
+    (disease) =>
+      !selectedDiseases.includes(disease.id) &&
+      !disease.name.toLowerCase().includes("desconocida"),
   );
 
   return (
