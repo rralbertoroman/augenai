@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePatients, type Patient } from "./use-patients";
+import {
+  usePatients,
+  type Patient,
+} from "@/modules/patients/hooks/use-patients";
 
 /**
  * Returns a map of patient IDs to patient info for fast lookups

@@ -1,13 +1,13 @@
 "use client";
 
-import { usePredictionRequests } from "@/hooks/use-prediction-requests";
-import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
+import { usePredictionRequests } from "@/modules/predictions/hooks/use-prediction-requests";
+import { PredictionRequestList } from "@/modules/predictions/components/prediction-request-list";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PaginationControls } from "@/components/common/pagination-controls";
+import { PaginationControls } from "@/modules/commons/pagination-controls";
 import { useState } from "react";
-import { SharePredictionModal } from "@/components/predictions/share-prediction-modal";
-import { CreatePredictionModal } from "@/components/diagnosis/create-prediction-modal";
+import { SharePredictionModal } from "@/modules/predictions/components/share-prediction-modal";
+import { CreatePredictionModal } from "@/modules/diagnosis/components/create-prediction-modal";
 import { Input } from "@/components/ui/input";
 import type { ChangeEvent } from "react";
 

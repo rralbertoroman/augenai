@@ -1,13 +1,13 @@
 "use client";
 
-import { usePatients } from "@/hooks/use-patients";
-import { PatientList } from "@/components/patients/patient-list";
-import { PatientDetail } from "@/components/patients/patient-detail";
-import { PatientDialog } from "@/components/patients/add-patient-dialog";
+import { usePatients } from "@/modules/patients/hooks/use-patients";
+import { PatientList } from "@/modules/patients/components/patient-list";
+import { PatientDetail } from "@/modules/patients/components/patient-detail";
+import { PatientDialog } from "@/modules/patients/components/add-patient-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { PaginationControls } from "@/components/common/pagination-controls";
+import { PaginationControls } from "@/modules/commons/pagination-controls";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 

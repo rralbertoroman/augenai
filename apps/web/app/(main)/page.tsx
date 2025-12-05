@@ -1,7 +1,7 @@
 "use client";
 
-import { CreatePredictionModal } from "@/components/diagnosis/create-prediction-modal";
-import Dashboard from "@/components/dashboard/dashboard";
+import { CreatePredictionModal } from "@/modules/diagnosis/components/create-prediction-modal";
+import Dashboard from "@/modules/dashboard/components/dashboard";
 import { useAuth } from "@/contexts/auth-context";
 import { useEffect, useState } from "react";
 import { getUserProfileById } from "@/server/services/user_profile";
