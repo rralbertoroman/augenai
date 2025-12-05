@@ -27,6 +27,11 @@ export function PredictionCard({
   const feedbackCount = diagnosis.feedbacks?.length ?? 0;
   const detectionFeedbackCount = diagnosis.detectionFeedbacks?.length ?? 0;
 
+  // Find main data feedback if it exists
+  const mainDataFeedback = diagnosis.feedbacks?.find(
+    (f) => f.isMainData === true,
+  );
+
   return (
     <div className="bg-muted rounded-lg p-4">
       <div className="flex items-start justify-between gap-4 mb-4">
@@ -35,17 +40,33 @@ export function PredictionCard({
             <p className="text-xs font-medium text-muted-foreground">
               Enfermedad
             </p>
-            <p className="mt-1 text-sm font-semibold text-foreground">
-              {diagnosis.disease_name}
-            </p>
+            <div>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {mainDataFeedback?.disease_name || diagnosis.disease_name}
+              </p>
+              {mainDataFeedback &&
+                mainDataFeedback.disease_name &&
+                mainDataFeedback.disease_name !== diagnosis.disease_name && (
+                  <p className="text-xs text-muted-foreground line-through">
+                    {diagnosis.disease_name}
+                  </p>
+                )}
+            </div>
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground">
               Clasificación
             </p>
-            <p className="mt-1 text-sm text-foreground">
-              {diagnosis.stage_content}
-            </p>
+            <div>
+              <p className="mt-1 text-sm text-foreground">
+                {mainDataFeedback?.stage_content || diagnosis.stage_content}
+              </p>
+              {mainDataFeedback && (
+                <p className="text-xs text-muted-foreground line-through">
+                  {diagnosis.stage_content}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1">

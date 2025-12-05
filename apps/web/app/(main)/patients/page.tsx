@@ -4,7 +4,7 @@ import { usePatients } from "@/hooks/use-patients";
 import { PatientList } from "@/components/patients/patient-list";
 import { PatientDetail } from "@/components/patients/patient-detail";
 import { PatientDialog } from "@/components/patients/add-patient-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/common/pagination-controls";
@@ -31,12 +31,8 @@ export default function PatientsPage() {
 
   if (isLoading && patients.length === 0) {
     return (
-      <main className="flex-1 flex-col p-6">
-        <Skeleton className="w-full h-[60px] mb-6" />
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 items-start">
-          <Skeleton className="w-full h-[320px] lg:col-span-3 mb-6" />
-          <Skeleton className="w-full h-[320px] lg:col-span-2" />
-        </div>
+      <main className="flex-1 flex-col p-6 flex items-center justify-center">
+        <Spinner className="size-24 text-primary" />
       </main>
     );
   }

@@ -2,7 +2,7 @@
 
 import { usePredictionRequests } from "@/hooks/use-prediction-requests";
 import { PredictionRequestList } from "@/components/predictions/prediction-request-list";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PaginationControls } from "@/components/common/pagination-controls";
 import { useState } from "react";
@@ -40,9 +40,8 @@ export default function DiagnosisPage() {
 
   if (isLoading && requests.length === 0) {
     return (
-      <main className="flex-1 flex-col p-6">
-        <Skeleton className="w-full h-[60px] mb-6" />
-        <Skeleton className="w-full h-[400px]" />
+      <main className="flex-1 flex-col p-6 flex items-center justify-center">
+        <Spinner className="size-24 text-primary" />
       </main>
     );
   }

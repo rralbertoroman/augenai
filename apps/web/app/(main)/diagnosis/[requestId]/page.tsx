@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePredictionRequestDetail } from "@/hooks/use-prediction-request-detail";
 import { formatDate } from "@/hooks/use-prediction-requests";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import { useClassificationFeedback } from "@/hooks/use-classification-feedback";
 import { useDetectionFeedback } from "@/hooks/use-detection-feedback";
 import { DetectionFeedbackModal } from "@/components/detection/detection-feedback-modal";
 import { DetectionFeedbacksModal } from "@/components/detection/detection-feedbacks-modal";
-import { ImageBoundingBoxes } from "@/components/d3/image-bounding-boxes";
+import { ImageBoundingBoxes } from "@/components/common/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
 import type { DetectionWithExtras } from "@/server/zod-schemas/prediction_workflow";
@@ -171,9 +171,8 @@ export default function PredictionDetailPage({
 
   if (isLoading) {
     return (
-      <main className="flex-1 flex-col p-6">
-        <Skeleton className="w-full h-[60px] mb-6" />
-        <Skeleton className="w-full h-[400px]" />
+      <main className="flex-1 flex-col p-6 flex items-center justify-center">
+        <Spinner className="size-24 text-primary" />
       </main>
     );
   }

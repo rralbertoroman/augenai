@@ -40,7 +40,7 @@ export function ThemeToggle() {
     >
       {/* Sliding background */}
       <div
-        className={`absolute left-0.5 w-7 h-7 rounded-full bg-background shadow-md will-change-transform ${
+        className={`absolute left-0.5 w-7 h-7 rounded-full bg-background shadow-md will-change-transform border border-foreground/20 ${
           isDark ? "translate-x-7" : "translate-x-0"
         }`}
         style={{
