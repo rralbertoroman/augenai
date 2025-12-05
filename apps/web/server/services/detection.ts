@@ -190,7 +190,7 @@ export const getAllDetectionsWithFeedbacksAndExtrasByUserId = async (
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
     whereClause = and(
       eq(PredictionRequestsTable.userId, userId),
-      gte(PredictionRequestsTable.createdAt, cutoffDate)
+      gte(PredictionRequestsTable.createdAt, cutoffDate),
     );
   } else {
     whereClause = eq(PredictionRequestsTable.userId, userId);

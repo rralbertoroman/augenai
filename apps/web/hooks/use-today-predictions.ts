@@ -15,39 +15,38 @@ export function useTodayPredictions() {
 
   const predictionGroups = useMemo(() => {
     // Backend already filters for today's predictions (last 1 day)
-    const todayPredictions = predictions
-      .map((prediction) => {
-        const patientId = prediction.patient_id as string;
-        const patient = patientsMap[patientId];
-        const patientName = patient?.name;
-        const patientAge = patient ? calculateAge(patient.dateOfBirth) : null;
+    const todayPredictions = predictions.map((prediction) => {
+      const patientId = prediction.patient_id as string;
+      const patient = patientsMap[patientId];
+      const patientName = patient?.name;
+      const patientAge = patient ? calculateAge(patient.dateOfBirth) : null;
 
-        const disease_name =
-          "disease_name" in prediction ? prediction.disease_name : undefined;
-        const stage_content =
-          "stage_content" in prediction ? prediction.stage_content : undefined;
+      const disease_name =
+        "disease_name" in prediction ? prediction.disease_name : undefined;
+      const stage_content =
+        "stage_content" in prediction ? prediction.stage_content : undefined;
 
-        const type =
-          "disease_name" in prediction ? "classification" : "detection";
+      const type =
+        "disease_name" in prediction ? "classification" : "detection";
 
-        const mainFeedback = prediction.feedbacks?.find((f) => f.isMainData);
+      const mainFeedback = prediction.feedbacks?.find((f) => f.isMainData);
 
-        return {
-          ...prediction,
-          disease_name,
-          stage_content,
-          bucket_name: prediction.bucket_name,
-          storage_path: prediction.storage_path,
-          patient_name: patientName,
-          patient_age: patientAge,
-          type,
-          feedback_status: mainFeedback ? "reviewed" : "pending",
-          confidence: mainFeedback
-            ? mainFeedback.confidence
-            : prediction.confidence,
-          class_id: mainFeedback ? mainFeedback.classId : prediction.class_id,
-        };
-      });
+      return {
+        ...prediction,
+        disease_name,
+        stage_content,
+        bucket_name: prediction.bucket_name,
+        storage_path: prediction.storage_path,
+        patient_name: patientName,
+        patient_age: patientAge,
+        type,
+        feedback_status: mainFeedback ? "reviewed" : "pending",
+        confidence: mainFeedback
+          ? mainFeedback.confidence
+          : prediction.confidence,
+        class_id: mainFeedback ? mainFeedback.classId : prediction.class_id,
+      };
+    });
 
     // Group predictions by request and patient
     const groupedPredictions = todayPredictions.reduce<

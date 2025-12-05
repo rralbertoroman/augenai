@@ -8,9 +8,9 @@ import {
   useEffect,
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { 
+import {
   getAllPredictionsWithFeedbacksAndExtrasByUserId,
-  getAllSystemPredictionsWithFeedbacksAndExtras 
+  getAllSystemPredictionsWithFeedbacksAndExtras,
 } from "@/server/services/prediction";
 import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import { flattenPredictions } from "@/lib/prediction-transformer";
@@ -41,7 +41,9 @@ export const DashboardProvider = ({
 }) => {
   const { accessToken, user } = useAuth();
   const [predictions, setPredictions] = useState<TaskWithExtras[]>([]); // User's predictions
-  const [systemPredictions, setSystemPredictions] = useState<TaskWithExtras[]>([]); // System predictions (last 30 days)
+  const [systemPredictions, setSystemPredictions] = useState<TaskWithExtras[]>(
+    [],
+  ); // System predictions (last 30 days)
   const [predictionClasses, setPredictionClasses] = useState<
     PredictionClassDiseaseWithDisease[]
   >([]);
@@ -57,13 +59,18 @@ export const DashboardProvider = ({
     setError(null);
 
     try {
-      const [userPredictionsData, systemPredictionsData, classesData] = await Promise.all([
-        // User's predictions (for Start tab - today's predictions only)
-        getAllPredictionsWithFeedbacksAndExtrasByUserId(accessToken, user.id, 1),
-        // System predictions (for stats tabs - last 30 days)
-        getAllSystemPredictionsWithFeedbacksAndExtras(accessToken, 30),
-        getAllPredictionClasses(accessToken),
-      ]);
+      const [userPredictionsData, systemPredictionsData, classesData] =
+        await Promise.all([
+          // User's predictions (for Start tab - today's predictions only)
+          getAllPredictionsWithFeedbacksAndExtrasByUserId(
+            accessToken,
+            user.id,
+            1,
+          ),
+          // System predictions (for stats tabs - last 30 days)
+          getAllSystemPredictionsWithFeedbacksAndExtras(accessToken, 30),
+          getAllPredictionClasses(accessToken),
+        ]);
 
       // Flatten predictions using utility function
       const processedUserData = flattenPredictions(userPredictionsData);
