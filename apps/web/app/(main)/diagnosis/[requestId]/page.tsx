@@ -368,7 +368,7 @@ export default function PredictionDetailPage({
                   Resultados de Diagnóstico
                 </h2>
               </div>
-              <div className="p-6 pt-0 space-y-6">
+              <div className="p-6 pt-0 space-y-6 max-h-[65vh] overflow-y-auto">
                 <div className="flex flex-row gap-4 w-full">
                   {request?.predictionsWithExtras &&
                   request.predictionsWithExtras.length > 0 ? (

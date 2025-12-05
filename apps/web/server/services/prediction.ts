@@ -87,7 +87,11 @@ export const getAllPredictionsWithFeedbacksAndExtrasByUserId = async (
 
   // Get enriched classifications and detections with feedbacks
   const allClassifications =
-    await getAllClassificationsWithFeedbacksAndExtrasByUserId(token, userId, daysBack);
+    await getAllClassificationsWithFeedbacksAndExtrasByUserId(
+      token,
+      userId,
+      daysBack,
+    );
   const allDetections = await getAllDetectionsWithFeedbacksAndExtrasByUserId(
     token,
     userId,
@@ -113,8 +117,10 @@ export const getAllSystemPredictionsWithFeedbacksAndExtras = async (
   // Get enriched classifications and detections system-wide
   const allClassifications =
     await getAllSystemClassificationsWithFeedbacksAndExtras(token, daysBack);
-  const allDetections =
-    await getAllSystemDetectionsWithFeedbacksAndExtras(token, daysBack);
+  const allDetections = await getAllSystemDetectionsWithFeedbacksAndExtras(
+    token,
+    daysBack,
+  );
 
   // Group by prediction_id using helper
   return groupByPredictionId(allClassifications, allDetections);

@@ -16,6 +16,7 @@ import type {
 interface FeedbackFormData {
   diagnosisId: string;
   stageIdx: number;
+  diseaseId?: string;
 }
 
 export function useClassificationFeedback(
@@ -103,6 +104,7 @@ export function useClassificationFeedback(
         initialForms[pred.id] = {
           diagnosisId: pred.id,
           stageIdx: pred.stage_idx ?? 0,
+          diseaseId: pred.disease_id, // Store the current disease_id
         };
       }
     });
@@ -113,7 +115,7 @@ export function useClassificationFeedback(
   const updateFeedbackForm = (
     diagnosisId: string,
     field: keyof FeedbackFormData,
-    value: number,
+    value: number | string,
   ) => {
     setFeedbackForms((prev) => ({
       ...prev,
@@ -151,7 +153,8 @@ export function useClassificationFeedback(
         console.log("[Feedback] Form data:", formData);
 
         const modelId = prediction.model_id;
-        const diseaseId = prediction.disease_id;
+        // Use diseaseId from form if it was changed (for Unknown disease), otherwise use prediction's disease_id
+        const diseaseId = formData.diseaseId || prediction.disease_id;
 
         if (!modelId) {
           throw new Error(

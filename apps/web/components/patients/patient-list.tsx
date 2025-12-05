@@ -40,7 +40,7 @@ export function PatientList({
                 : ""
             }`}
           >
-            <TableCell className="font-medium text-foreground p-4">
+            <TableCell className="font-medium text-foreground p-3.5">
               {patient.name}
             </TableCell>
             <TableCell
