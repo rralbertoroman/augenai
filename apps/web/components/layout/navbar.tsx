@@ -20,12 +20,15 @@ export function Navbar() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 transition-all ease-in-out duration-300 hover:scale-[1.05]"
+          >
             <Image
               src="/augen 2.svg"
               alt="Logo"
-              width={180}
-              height={180}
+              width={120}
+              height={120}
               className="mx-1 dark:brightness-100 filter-[brightness(0)_saturate(100%)_invert(47%)_sepia(77%)_saturate(654%)_hue-rotate(117deg)_brightness(95%)_contrast(86%)] dark:filter-none"
             />
           </Link>
