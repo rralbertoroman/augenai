@@ -15,54 +15,18 @@ import {
   createPatient as createPatientService,
   updatePatient as updatePatientService,
 } from "@/server/services/patient";
-import type { PatientDTO } from "@/server/zod-schemas/patient";
 import { translateErrorMessage } from "@/lib/error-translator";
 import { usePagination } from "@/hooks/use-pagination";
+import type {
+  Patient,
+  CreatePatientData,
+  UpdatePatientData,
+  PatientsContextType,
+} from "../types";
+import { INITIAL_PAGE_SIZE } from "../types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-export type Patient = PatientDTO;
-
-interface CreatePatientData {
-  name: string;
-  dateOfBirth: string;
-  gender: string;
-  clinicalConditions: string[];
-}
-
-interface UpdatePatientData {
-  name?: string;
-  dateOfBirth?: string;
-  gender?: string;
-  clinicalConditions?: string[];
-}
-
-interface PatientsContextType {
-  // Data
-  patients: Patient[];
-  allPatients: Patient[];
-  selectedPatient: Patient | null;
-  patientsMap: Map<string, Patient>;
-
-  // State
-  isLoading: boolean;
-  error: string | null;
-
-  // Actions
-  setSelectedPatient: (patient: Patient | null) => void;
-  createPatient: (data: CreatePatientData) => Promise<boolean>;
-  updatePatient: (
-    patientId: string,
-    data: UpdatePatientData,
-  ) => Promise<boolean>;
-  refreshPatients: () => Promise<void>;
-  clearError: () => void;
-
-  // Pagination
-  pagination: ReturnType<typeof usePagination>;
-}
+// Re-export types for external use
+export type { Patient, CreatePatientData, UpdatePatientData };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context
@@ -71,8 +35,6 @@ interface PatientsContextType {
 const PatientsContext = createContext<PatientsContextType | undefined>(
   undefined,
 );
-
-const INITIAL_PAGE_SIZE = 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utility Functions

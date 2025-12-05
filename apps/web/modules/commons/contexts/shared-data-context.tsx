@@ -11,29 +11,10 @@ import {
 } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getAllDiseases } from "@/server/services/disease";
+import type { Disease, SharedDataContextType } from "../types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface Disease {
-  id: string;
-  name: string;
-  stages: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface SharedDataContextType {
-  // Diseases
-  diseases: Disease[];
-  diseasesLoading: boolean;
-  diseasesError: string | null;
-  refreshDiseases: () => Promise<void>;
-
-  // Diseases map for quick lookup
-  diseasesMap: Map<string, Disease>;
-}
+// Re-export types for external use
+export type { Disease };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context

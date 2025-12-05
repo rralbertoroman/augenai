@@ -4,23 +4,7 @@ import { useState, useEffect } from "react";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import { setMainFeedbackForClassification } from "@/server/services/classification_feedback";
 import { useAuth } from "@/contexts/auth-context";
-
-interface UsePredictionFeedbacksReturn {
-  isOpen: boolean;
-  feedbacks: ClassificationFeedbackWithExtras[];
-  localFeedbacks: ClassificationFeedbackWithExtras[];
-  updatingFeedbackId: string | null;
-  isRequestOwner: boolean;
-  openFeedbacksModal: (
-    feedbacks: ClassificationFeedbackWithExtras[],
-    requestUserId?: string,
-    classificationId?: string,
-  ) => void;
-  closeFeedbacksModal: (
-    onUpdate?: (feedbacks: ClassificationFeedbackWithExtras[]) => void,
-  ) => void;
-  handleSetMainFeedback: (feedbackId: string) => Promise<void>;
-}
+import type { UsePredictionFeedbacksReturn } from "../types";
 
 export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
   const { user, accessToken } = useAuth();

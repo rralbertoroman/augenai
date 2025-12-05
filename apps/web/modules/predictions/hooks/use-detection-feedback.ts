@@ -9,62 +9,7 @@ import {
 import type { DetectionForEditing } from "@/modules/predictions/components/detection-bbox-editor";
 import type { DetectionWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
-
-export interface UseDetectionFeedbackReturn {
-  // Editor modal state
-  openFeedbackModal: boolean;
-  setOpenFeedbackModal: (open: boolean) => void;
-  detections: DetectionForEditing[];
-  bucketName: string;
-  storagePath: string;
-  loading: boolean;
-  checkingFeedback: boolean;
-  error: string | null;
-  hasExistingFeedback: boolean;
-  handleOpenFeedback: (
-    detections: DetectionWithExtras[],
-    bucketName: string,
-    storagePath: string,
-  ) => void;
-  handleSubmitFeedback: (
-    updatedDetections: DetectionForEditing[],
-  ) => Promise<void>;
-  checkUserFeedback: (detectionIds: string[]) => Promise<boolean>;
-
-  // View feedbacks modal state
-  viewModalOpen: boolean;
-  viewModalFeedbacks: DetectionFeedbackWithExtras[];
-  viewModalInfo: {
-    lesionName?: string;
-    originalBbox?: {
-      xLeft: number;
-      yTop: number;
-      width: number;
-      height: number;
-    };
-    detectionId?: string;
-    bucketName?: string;
-    storagePath?: string;
-  };
-  isRequestOwner: boolean;
-  updatingFeedbackId: string | null;
-  openViewFeedbacksModal: (
-    feedbacks: DetectionFeedbackWithExtras[],
-    requestUserId?: string,
-    detectionId?: string,
-    lesionName?: string,
-    originalBbox?: {
-      xLeft: number;
-      yTop: number;
-      width: number;
-      height: number;
-    },
-    bucketName?: string,
-    storagePath?: string,
-  ) => void;
-  closeViewFeedbacksModal: () => void;
-  handleSetMainFeedback: (feedbackId: string) => Promise<void>;
-}
+import type { UseDetectionFeedbackReturn } from "../types";
 
 export const useDetectionFeedback = (
   onFeedbackCreated?: (

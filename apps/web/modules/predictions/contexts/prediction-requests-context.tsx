@@ -14,35 +14,8 @@ import { getAllPredictionRequestsWithPredictionsByUserId } from "@/server/servic
 import { translateErrorMessage } from "@/lib/error-translator";
 import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 import { usePagination } from "@/hooks/use-pagination";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface PredictionRequestsContextType {
-  // Data
-  requests: PredictionRequest[];
-  allRequests: PredictionRequest[];
-  requestsMap: Map<string, PredictionRequest>;
-
-  // Selection
-  selectedRequest: PredictionRequest | null;
-  setSelectedRequest: (request: PredictionRequest | null) => void;
-
-  // Loading & Error
-  isLoading: boolean;
-  error: string | null;
-
-  // Actions
-  refreshRequests: () => Promise<void>;
-  getRequestById: (id: string) => PredictionRequest | undefined;
-  getDiagnosesForRequest: (
-    requestId: string,
-  ) => PredictionRequest["predictions"] | undefined;
-
-  // Pagination
-  pagination: ReturnType<typeof usePagination>;
-}
+import type { PredictionRequestsContextType } from "../types";
+import { INITIAL_PAGE_SIZE } from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context
@@ -51,12 +24,6 @@ interface PredictionRequestsContextType {
 const PredictionRequestsContext = createContext<
   PredictionRequestsContextType | undefined
 >(undefined);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const INITIAL_PAGE_SIZE = 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utility Functions

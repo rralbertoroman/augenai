@@ -15,67 +15,15 @@ import { useSearchParams } from "next/navigation";
 import { getAllDiseases } from "@/server/services/disease";
 import { uploadEyeScan } from "@/lib/supabase/storage";
 import { translateErrorMessage } from "@/lib/error-translator";
+import type {
+  Disease,
+  ScanData,
+  DiagnosisContextType,
+  EyeSelection,
+} from "../types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface Disease {
-  id: string;
-  name: string;
-  stages: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ScanData {
-  patientId: string;
-  task: string;
-  imageType: string;
-  diseases: string[];
-  eyeSelection: "left" | "right";
-  includeDetection: boolean;
-  file?: File;
-  storagePath?: string;
-  bucketName?: string;
-}
-
-interface DiagnosisContextType {
-  // Diseases
-  diseases: Disease[];
-  diseasesLoading: boolean;
-  diseasesError: string | null;
-  refreshDiseases: () => Promise<void>;
-
-  // Form state
-  currentStep: number;
-  formData: ScanData;
-  selectedFile: File | null;
-  errors: Record<string, string>;
-  isUploading: boolean;
-  storagePath: string;
-  imagePreview: string;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-
-  // Form actions
-  handleInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => void;
-  handleSelectChange: (name: string, value: string) => void;
-  handleEyeSelection: (eye: "left" | "right") => void;
-  handleDiseasesChange: (diseases: string[]) => void;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  handleCheckboxChange: (checked: boolean) => void;
-  handleNext: () => void;
-  handleBack: () => void;
-  handleSubmit: (
-    e: React.FormEvent,
-    onSubmit: (data: ScanData) => void,
-  ) => void;
-  handleFileAreaClick: () => void;
-  resetForm: () => void;
-  setPatientId: (patientId: string) => void;
-}
+// Re-export types for external use
+export type { Disease, ScanData, EyeSelection };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context

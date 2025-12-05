@@ -18,51 +18,16 @@ import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import { flattenPredictions } from "@/lib/prediction-transformer";
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
-type FilterCriteria = {
-  query: string;
-  dateRange?: { from: Date; to: Date };
-  confidenceThreshold?: number;
-};
-
-type DashboardStats = {
-  totalPredictions: number;
-  todayPredictions: number;
-  averageConfidence: number;
-  highConfidenceCount: number;
-};
-
-interface DashboardContextType {
-  // Data
-  predictions: TaskWithExtras[];
-  systemPredictions: TaskWithExtras[];
-  predictionClasses: PredictionClassDiseaseWithDisease[];
-
-  // Selection
-  selectedPrediction: TaskWithExtras | null;
-  setSelectedPrediction: (prediction: TaskWithExtras | null) => void;
-
-  // Loading & Error states
-  isLoading: boolean;
-  error: string | null;
-
-  // Filtering
-  filters: FilterCriteria;
-  setFilters: (filters: Partial<FilterCriteria>) => void;
-  filteredPredictions: TaskWithExtras[];
-  clearFilters: () => void;
-
-  // Stats
-  stats: DashboardStats;
-  todayPredictions: TaskWithExtras[];
-
-  // Actions
-  refreshData: () => Promise<void>;
-}
+import type {
+  FilterCriteria,
+  DashboardStats,
+  DashboardContextType,
+} from "../types";
+import {
+  CONFIDENCE_THRESHOLD_HIGH,
+  SYSTEM_PREDICTIONS_DAYS,
+  initialFilters,
+} from "../types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context
@@ -71,19 +36,6 @@ interface DashboardContextType {
 const DashboardContext = createContext<DashboardContextType | undefined>(
   undefined,
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const CONFIDENCE_THRESHOLD_HIGH = 0.8;
-const SYSTEM_PREDICTIONS_DAYS = 30;
-
-const initialFilters: FilterCriteria = {
-  query: "",
-  confidenceThreshold: undefined,
-  dateRange: undefined,
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper Functions
