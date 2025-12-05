@@ -73,20 +73,25 @@ export const getAllPredictionsWithExtrasByUserId = async (
 /**
  * Retrieves all predictions for a user with enriched data AND feedback.
  * Reuses classification and detection services to get enriched data with feedbacks.
+ * @param token - Authentication token
+ * @param userId - User ID to filter by
+ * @param daysBack - Optional number of days to look back (default: all time)
  */
 export const getAllPredictionsWithFeedbacksAndExtrasByUserId = async (
   token: string,
   userId: string,
+  daysBack?: number,
 ): Promise<PredictionWithExtras[]> => {
   const user = await getCurrentUser(token);
   verifyOwnership(user, userId);
 
   // Get enriched classifications and detections with feedbacks
   const allClassifications =
-    await getAllClassificationsWithFeedbacksAndExtrasByUserId(token, userId);
+    await getAllClassificationsWithFeedbacksAndExtrasByUserId(token, userId, daysBack);
   const allDetections = await getAllDetectionsWithFeedbacksAndExtrasByUserId(
     token,
     userId,
+    daysBack,
   );
 
   // Group by prediction_id using helper
@@ -96,17 +101,20 @@ export const getAllPredictionsWithFeedbacksAndExtrasByUserId = async (
 /**
  * Retrieves all predictions across the system with enriched data and feedback.
  * Reuses classification and detection services to get system-wide enriched data.
+ * @param token - Authentication token
+ * @param daysBack - Optional number of days to look back (default: all time)
  */
 export const getAllSystemPredictionsWithFeedbacksAndExtras = async (
   token: string,
+  daysBack?: number,
 ): Promise<PredictionWithExtras[]> => {
   await getCurrentUser(token); // Verify authentication only
 
   // Get enriched classifications and detections system-wide
   const allClassifications =
-    await getAllSystemClassificationsWithFeedbacksAndExtras(token);
+    await getAllSystemClassificationsWithFeedbacksAndExtras(token, daysBack);
   const allDetections =
-    await getAllSystemDetectionsWithFeedbacksAndExtras(token);
+    await getAllSystemDetectionsWithFeedbacksAndExtras(token, daysBack);
 
   // Group by prediction_id using helper
   return groupByPredictionId(allClassifications, allDetections);

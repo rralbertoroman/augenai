@@ -14,9 +14,8 @@ export function useTodayPredictions() {
   const patientsMap = usePatientsMap();
 
   const predictionGroups = useMemo(() => {
-    // Filter today's predictions
+    // Backend already filters for today's predictions (last 1 day)
     const todayPredictions = predictions
-      .filter((prediction) => isToday(prediction.created_at))
       .map((prediction) => {
         const patientId = prediction.patient_id as string;
         const patient = patientsMap[patientId];
