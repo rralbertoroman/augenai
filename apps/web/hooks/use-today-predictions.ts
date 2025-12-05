@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useDashboard } from "@/contexts/dashboard-context";
 import { usePatientsMap } from "./use-patients-map";
 import { isToday, calculateAge } from "@/lib/date-utils";
-import type { PredictionGroup } from "@/components/dashboard/start-pane/types";
+import type { PredictionGroup } from "@/modules/dashboard/components/start-pane/types";
 
 /**
  * Returns today's predictions grouped by request and enriched with patient data

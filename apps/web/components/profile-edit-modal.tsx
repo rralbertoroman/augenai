@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { ClipboardDialog } from "@/components/common/clipboard-dialog";
+import { ClipboardDialog } from "@/modules/commons/clipboard/clipboard-dialog";
 import {
   getUserProfileById,
   updateUserProfile,
