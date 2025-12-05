@@ -23,9 +23,16 @@ interface BatchFeedbackModalProps {
     confidence: number;
     stage_idx?: number;
   }>;
-  feedbackForms: Record<string, { diagnosisId: string; stageIdx: number }>;
+  feedbackForms: Record<
+    string,
+    { diagnosisId: string; stageIdx: number; diseaseId?: string }
+  >;
   diseases: Array<{ id: string; name: string; stages: string[] }>;
-  onUpdateForm: (diagnosisId: string, field: "stageIdx", value: number) => void;
+  onUpdateForm: (
+    diagnosisId: string,
+    field: "stageIdx" | "diseaseId",
+    value: number | string,
+  ) => void;
   onSubmit: () => void;
   loading?: boolean;
   error?: string | null;
@@ -59,11 +66,15 @@ export function BatchFeedbackModal({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {predictions.map((prediction, index) => {
-          const diseaseObj = diseases.find(
-            (d) => d.id === prediction.disease_id,
-          );
+          const currentDiseaseId =
+            feedbackForms[prediction.id]?.diseaseId || prediction.disease_id;
+          const diseaseObj = diseases.find((d) => d.id === currentDiseaseId);
           const stages = diseaseObj?.stages;
           const formData = feedbackForms[prediction.id];
+          const isUnknownDisease = prediction.disease_name
+            .toLowerCase()
+            .includes("desconocida");
+
           if (!formData) {
             throw new Error(
               `No se encontró formData para la predicción ${prediction.id}`,
@@ -88,12 +99,32 @@ export function BatchFeedbackModal({
                 <Label htmlFor={`disease-${prediction.id}`}>
                   Enfermedad detectada
                 </Label>
-                <Input
-                  id={`disease-${prediction.id}`}
-                  value={prediction.disease_name}
-                  disabled
-                  className="bg-muted/50 cursor-not-allowed mt-2"
-                />
+                {isUnknownDisease ? (
+                  <Select
+                    value={currentDiseaseId}
+                    onValueChange={(value) =>
+                      onUpdateForm(prediction.id, "diseaseId", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full mt-2">
+                      <SelectValue placeholder="Seleccione la enfermedad correcta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {diseases.map((disease) => (
+                        <SelectItem key={disease.id} value={disease.id}>
+                          {disease.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id={`disease-${prediction.id}`}
+                    value={prediction.disease_name}
+                    disabled
+                    className="bg-muted/50 cursor-not-allowed mt-2"
+                  />
+                )}
               </div>
 
               <div>
