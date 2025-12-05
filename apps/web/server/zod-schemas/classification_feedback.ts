@@ -47,6 +47,7 @@ export const ClassificationFeedbackWithExtrasSchema =
   ClassificationFeedbackDTOSchema.extend({
     user_name: z.string(),
     stage_content: z.string(),
+    disease_name: z.string().optional(),
   });
 
 export type ClassificationFeedbackWithExtras = z.output<
