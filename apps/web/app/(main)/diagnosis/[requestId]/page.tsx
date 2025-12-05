@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePredictionRequestDetail } from "@/modules/predictions/hooks/use-prediction-request-detail";
-import { formatDate } from "@/modules/predictions/hooks/use-prediction-requests";
+import { formatDate } from "@/modules/predictions/contexts";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

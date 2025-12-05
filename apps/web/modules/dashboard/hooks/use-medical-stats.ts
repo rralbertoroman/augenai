@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useDashboard } from "@/contexts/dashboard-context";
+import { useDashboard } from "@/modules/dashboard/contexts/dashboard-context";
 import {
   calculateStageTotals,
   calculateCohortData,

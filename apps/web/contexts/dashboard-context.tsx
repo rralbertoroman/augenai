@@ -51,9 +51,10 @@ export const DashboardProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [selectedPrediction, setSelectedPrediction] =
     useState<TaskWithExtras | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   const fetchPredictions = useCallback(async () => {
-    if (!accessToken || !user?.id) return;
+    if (!accessToken || !user?.id || hasFetched) return;
 
     setIsLoading(true);
     setError(null);
@@ -79,6 +80,7 @@ export const DashboardProvider = ({
       setPredictions(processedUserData);
       setSystemPredictions(processedSystemData);
       setPredictionClasses(classesData);
+      setHasFetched(true);
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
       setError(
@@ -87,7 +89,7 @@ export const DashboardProvider = ({
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, user]);
+  }, [accessToken, user, hasFetched]);
 
   useEffect(() => {
     fetchPredictions();
@@ -123,6 +125,7 @@ export const DashboardProvider = ({
   );
 
   const refreshData = useCallback(async () => {
+    setHasFetched(false); // Reset to allow re-fetching
     await fetchPredictions();
   }, [fetchPredictions]);
 

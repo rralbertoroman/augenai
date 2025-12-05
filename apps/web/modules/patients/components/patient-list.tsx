@@ -1,4 +1,4 @@
-import { Patient } from "@/modules/patients/hooks/use-patients";
+import { type Patient } from "@/modules/patients/contexts";
 import {
   Table,
   TableBody,

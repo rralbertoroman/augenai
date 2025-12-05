@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useDashboard } from "@/contexts/dashboard-context";
+import { useDashboard } from "@/modules/dashboard/contexts/dashboard-context";
 import {
   calculateF1ScoreData,
   calculateConfusionMatrices,

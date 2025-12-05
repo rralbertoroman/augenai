@@ -1,6 +1,6 @@
 "use client";
 
-import { usePatients } from "@/modules/patients/hooks/use-patients";
+import { usePatients } from "@/modules/patients/contexts";
 import { PatientList } from "@/modules/patients/components/patient-list";
 import { PatientDetail } from "@/modules/patients/components/patient-detail";
 import { PatientDialog } from "@/modules/patients/components/add-patient-dialog";

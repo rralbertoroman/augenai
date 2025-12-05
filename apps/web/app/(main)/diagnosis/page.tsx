@@ -1,6 +1,6 @@
 "use client";
 
-import { usePredictionRequests } from "@/modules/predictions/hooks/use-prediction-requests";
+import { usePredictionRequests } from "@/modules/predictions/contexts";
 import { PredictionRequestList } from "@/modules/predictions/components/prediction-request-list";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";

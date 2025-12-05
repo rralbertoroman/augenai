@@ -11,6 +11,9 @@ import {
   type PredictionClassDiseaseWithDisease,
 } from "../zod-schemas/prediction_class_disease";
 
+// Re-export type for consumers
+export type { PredictionClassDiseaseWithDisease };
+
 import { getCurrentUser } from "../auth";
 
 export const getPredictionClassDiseaseByClassIdAndModelId = async (
@@ -87,4 +90,33 @@ export const getAllPredictionClasses = async (
     );
 
   return results;
+};
+
+/**
+ * Gets all prediction classes as a Map for O(1) lookups.
+ * Key format: `${classId}-${modelId}`
+ * Use this instead of individual queries in loops.
+ */
+export const getAllPredictionClassesAsMap = async (): Promise<
+  Map<string, PredictionClassDiseaseWithDisease>
+> => {
+  const results = await db
+    .select({
+      ...getTableColumns(PredictionClassesTable),
+      diseaseName: DiseasesTable.name,
+      diseaseStages: DiseasesTable.stages,
+    })
+    .from(PredictionClassesTable)
+    .innerJoin(
+      DiseasesTable,
+      eq(PredictionClassesTable.diseaseId, DiseasesTable.id),
+    );
+
+  const map = new Map<string, PredictionClassDiseaseWithDisease>();
+  for (const result of results) {
+    const key = `${result.classId}-${result.modelId}`;
+    map.set(key, result);
+  }
+
+  return map;
 };

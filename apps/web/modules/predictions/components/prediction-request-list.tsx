@@ -15,7 +15,7 @@ import {
   formatDate,
   formatTime,
   getTaskLabel,
-} from "@/modules/predictions/hooks/use-prediction-requests";
+} from "@/modules/predictions/contexts";
 import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 
 interface PredictionRequestListProps {

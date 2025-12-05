@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useDashboard } from "@/contexts/dashboard-context";
-import { useTodayPredictions } from "@/hooks/use-today-predictions";
+import { useDashboard } from "@/modules/dashboard/contexts/dashboard-context";
+import { useTodayPredictions } from "@/modules/dashboard/hooks/use-today-predictions";
 import { Spinner } from "@/components/ui/spinner";
 import { Grid, List } from "lucide-react";
 import Link from "next/link";
