@@ -12,7 +12,7 @@ const dancingScript = Dancing_Script({
 export const metadata: Metadata = {
   title: "AugenAI",
   description: "Plataforma de diagnóstico ocular con IA",
-  icons: "/group 4309.svg",
+  icons: "/group4309.svg",
 };
 
 export default function RootLayout({
