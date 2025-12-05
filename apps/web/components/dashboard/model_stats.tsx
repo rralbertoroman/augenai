@@ -104,6 +104,15 @@ const F1ScoreChart = ({ data }: { data: F1ScoreData[] }) => {
 const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
   const currentData = data;
 
+  // Debug logging
+  console.log("Confusion Matrix Data:", {
+    disease: currentData.disease,
+    stages: currentData.stages,
+    matrixDimensions: `${currentData.matrix.length} x ${currentData.matrix[0]?.length || 0}`,
+    hasUnknownColumn:
+      currentData.stages[currentData.stages.length - 1] === "Unknown",
+  });
+
   return (
     <Card className="w-full bg-background">
       <CardHeader>
@@ -150,7 +159,11 @@ const ConfusionMatrixChart = ({ data }: { data: ConfusionMatrixData }) => {
                     {row.map((cell, colIndex) => {
                       const percentage =
                         rowSum > 0 ? Math.round((cell / rowSum) * 100) : 0;
-                      const isDiagonal = rowIndex === colIndex;
+                      // Diagonal highlighting only for actual disease stages, not for Unknown column
+                      const isUnknownColumn =
+                        colIndex === currentData.stages.length - 1;
+                      const isDiagonal =
+                        rowIndex === colIndex && !isUnknownColumn;
 
                       return (
                         <TableCell
@@ -204,7 +217,10 @@ const DiseaseF1ScoreChart = ({
 }: {
   diseaseData: ConfusionMatrixData;
 }) => {
-  // Calculate F1 score for each stage
+  // Calculate F1 score for each stage (excluding Unknown which is only a column)
+  // Unknown is the last stage, so we only calculate for stages that have rows
+  const actualStages = diseaseData.matrix.length; // Number of rows (actual stages)
+
   const f1Scores = diseaseData.matrix.map((row, i) => {
     const truePositives = row[i];
     const falsePositives = row.reduce(
