@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useDiagnosisForm } from "@/hooks/use-diagnosis-form";
 import { StepIndicator } from "./form-steps/step-indicator";
 import { StepPatient } from "./form-steps/step-patient";
@@ -55,6 +56,16 @@ export function EyeScanUpload({
     handleSubmit,
     handleFileAreaClick,
   } = useDiagnosisForm(onSubmit, preselectedPatientId);
+
+  // Show loading screen when submitting
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <Spinner className="size-26 text-primary" />
+        <p className="text-muted-foreground text-sm">Generando predicción...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

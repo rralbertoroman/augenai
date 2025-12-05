@@ -110,11 +110,16 @@ export function BatchFeedbackModal({
                       <SelectValue placeholder="Seleccione la enfermedad correcta" />
                     </SelectTrigger>
                     <SelectContent>
-                      {diseases.map((disease) => (
-                        <SelectItem key={disease.id} value={disease.id}>
-                          {disease.name}
-                        </SelectItem>
-                      ))}
+                      {diseases
+                        .filter(
+                          (disease) =>
+                            !disease.name.toLowerCase().includes("desconocida"),
+                        )
+                        .map((disease) => (
+                          <SelectItem key={disease.id} value={disease.id}>
+                            {disease.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 ) : (
