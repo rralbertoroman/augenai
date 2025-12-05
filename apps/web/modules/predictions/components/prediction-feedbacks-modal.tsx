@@ -5,7 +5,7 @@ import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/clas
 import { translateStageContent } from "@/lib/translations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/modules/predictions/contexts";
+import { formatDate } from "@/lib/date-utils";
 import { Star } from "lucide-react";
 
 interface PredictionFeedbacksModalProps {

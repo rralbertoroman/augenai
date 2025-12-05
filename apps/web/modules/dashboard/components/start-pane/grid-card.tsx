@@ -2,46 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import type { PredictionGroup } from "./types";
-import { formatAgeWithMonths } from "@/lib/date-utils";
+import { formatAgeWithMonths, formatDate, formatTime } from "@/lib/date-utils";
 import { translateStageContent } from "@/lib/translations";
-
-function getFeedbackVariant(status: string) {
-  switch (status) {
-    case "reviewed":
-      return {
-        variant: "default" as const,
-        text: "Revisado",
-        icon: "check-circle",
-      };
-    case "pending":
-      return {
-        variant: "secondary" as const,
-        text: "Pendiente",
-        icon: "clock",
-      };
-    default:
-      return {
-        variant: "outline" as const,
-        text: "No enviado",
-        icon: "alert-circle",
-      };
-  }
-}
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatTime(date: Date) {
-  return date.toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { getFeedbackVariant } from "@/modules/dashboard/utils";
 
 interface GridCardProps {
   group: PredictionGroup;

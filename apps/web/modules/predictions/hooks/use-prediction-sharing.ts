@@ -3,6 +3,7 @@ import type { UserProfileDTO } from "@/server/zod-schemas/user_profile";
 import { getAllUserProfiles } from "@/server/services/user_profile";
 import { sharePrediction } from "@/server/services/prediction_sharing";
 import { useAuth } from "@/contexts/auth-context";
+import { translateErrorMessage } from "@/lib/error-translator";
 
 export function usePredictionSharing() {
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
@@ -42,12 +43,22 @@ export function usePredictionSharing() {
     try {
       const result = await sharePrediction(accessToken, requestId, recipientId);
       if (!result.success) {
-        setError(result.error || "Error al compartir la solicitud");
+        setError(
+          translateErrorMessage(
+            result.error || "Error al compartir la solicitud",
+          ),
+        );
       } else {
         setShared(true);
       }
-    } catch {
-      setError("Error al compartir la solicitud");
+    } catch (err) {
+      setError(
+        translateErrorMessage(
+          err instanceof Error
+            ? err
+            : new Error("Error al compartir la solicitud"),
+        ),
+      );
     } finally {
       setIsSharing(false);
     }

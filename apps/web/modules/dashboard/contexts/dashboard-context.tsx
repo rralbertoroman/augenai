@@ -16,6 +16,7 @@ import {
 } from "@/server/services/prediction";
 import type { TaskWithExtras } from "@/server/zod-schemas/prediction_workflow";
 import { flattenPredictions } from "@/lib/prediction-transformer";
+import { isToday } from "@/lib/date-utils";
 import { getAllPredictionClasses } from "@/server/services/prediction_class_disease";
 import type { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
 import type {
@@ -40,15 +41,6 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper Functions
 // ─────────────────────────────────────────────────────────────────────────────
-
-function isToday(date: Date): boolean {
-  const today = new Date();
-  return (
-    date.getDate() === today.getDate() &&
-    date.getMonth() === today.getMonth() &&
-    date.getFullYear() === today.getFullYear()
-  );
-}
 
 function getConfidence(prediction: TaskWithExtras): number {
   if ("confidence" in prediction && typeof prediction.confidence === "number") {

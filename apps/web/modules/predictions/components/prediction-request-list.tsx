@@ -11,11 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-import {
-  formatDate,
-  formatTime,
-  getTaskLabel,
-} from "@/modules/predictions/contexts";
+import { formatDate, formatTime } from "@/lib/date-utils";
+import { translateTaskType } from "@/lib/translations";
 import type { PredictionRequest } from "@/server/zod-schemas/prediction_workflow";
 
 interface PredictionRequestListProps {
@@ -70,7 +67,9 @@ export function PredictionRequestList({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">{getTaskLabel(request.task)}</Badge>
+                <Badge variant="outline">
+                  {translateTaskType(request.task)}
+                </Badge>
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">

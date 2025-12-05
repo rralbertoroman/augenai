@@ -26,36 +26,6 @@ const PredictionRequestsContext = createContext<
 >(undefined);
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Utility Functions
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const formatDate = (date: string | Date) => {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-};
-
-export const formatTime = (date: string | Date) => {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-export const getTaskLabel = (task: string) => {
-  const taskMap: Record<string, string> = {
-    classification: "Clasificación",
-    detection: "Detección",
-    segmentation: "Segmentación",
-  };
-  return taskMap[task] || task;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Provider
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -116,6 +116,9 @@ export function translateErrorMessage(error: string | Error): string {
     lowerMessage.includes("predicción") ||
     lowerMessage.includes("prediction")
   ) {
+    if (lowerMessage.includes("already shared")) {
+      return "Esta predicción ya fue compartida con este usuario";
+    }
     if (
       lowerMessage.includes("not found") ||
       lowerMessage.includes("no encontrada")
@@ -124,6 +127,19 @@ export function translateErrorMessage(error: string | Error): string {
     }
     if (lowerMessage.includes("procesar")) {
       return "No se pudieron procesar las predicciones. Por favor, intenta nuevamente";
+    }
+  }
+
+  // Sharing errors
+  if (lowerMessage.includes("sharing") || lowerMessage.includes("compartir")) {
+    if (lowerMessage.includes("already shared")) {
+      return "Esta predicción ya fue compartida con este usuario";
+    }
+    if (
+      lowerMessage.includes("permission") ||
+      lowerMessage.includes("permiso")
+    ) {
+      return "No tienes permiso para compartir esta predicción";
     }
   }
 
