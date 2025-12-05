@@ -183,19 +183,9 @@ export const useDetectionFeedback = (
     setError(null);
 
     try {
-      const modifiedDetections = updatedDetections.filter((det) => {
-        const wasModified =
-          det.current.xLeft !== det.original.xLeft ||
-          det.current.yTop !== det.original.yTop ||
-          det.current.width !== det.original.width ||
-          det.current.height !== det.original.height ||
-          det.status === "deleted";
-        return wasModified;
-      });
-
-      // Create feedbacks and get the created feedback DTOs
+      // Create feedbacks for ALL detections, regardless of whether they were modified or not
       const createdFeedbacks = await Promise.all(
-        modifiedDetections.map(async (det) => {
+        updatedDetections.map(async (det) => {
           const isDeleted = det.status === "deleted";
           const created = await createDetectionFeedback(accessToken, {
             detectionId: det.id,
