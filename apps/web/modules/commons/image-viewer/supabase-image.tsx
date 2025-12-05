@@ -300,7 +300,7 @@ export default function SupabaseImage({
 
           {/* Legend */}
           {uniqueLabels.length > 0 && (
-            <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-md p-3 shadow-lg border border-white/10 z-[5]">
+            <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-md p-3 shadow-lg border border-white/10 z-5">
               <div className="flex flex-col gap-2">
                 {uniqueLabels.map((item) => (
                   <div key={item.label} className="flex items-center gap-2">

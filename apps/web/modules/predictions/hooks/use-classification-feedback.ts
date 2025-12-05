@@ -178,21 +178,21 @@ export function useClassificationFeedback(
           classId,
           confidence: 1,
         };
-        console.log("[Feedback] Enviando feedback:", feedbackData);
+        console.log("[Feedback] Sending feedback:", feedbackData);
 
         const createdFeedback = await createClassificationFeedback(
           accessToken,
           feedbackData,
         );
 
-        // Obtener todos los feedbacks con extras y encontrar el recién creado
+        // Get all feedbacks with extras and find the newly created one
         if (onFeedbackCreated && createdFeedback) {
           const allFeedbacks = await getClassificationFeedbackWithExtras(
             accessToken,
             { classificationId: prediction.id! },
           );
 
-          // Buscar el feedback recién creado por ID
+          // Find the newly created feedback by ID
           const newFeedback = allFeedbacks.find(
             (f) => f.id === createdFeedback.id,
           );

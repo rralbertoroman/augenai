@@ -27,8 +27,8 @@ export function Navbar() {
             <Image
               src="/augen 2.svg"
               alt="Logo"
-              width={120}
-              height={120}
+              width={130}
+              height={130}
               className="mx-1 dark:brightness-100 filter-[brightness(0)_saturate(100%)_invert(47%)_sepia(77%)_saturate(654%)_hue-rotate(117deg)_brightness(95%)_contrast(86%)] dark:filter-none"
             />
           </Link>

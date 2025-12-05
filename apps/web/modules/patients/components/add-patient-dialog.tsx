@@ -98,7 +98,7 @@ export function PatientDialog({
 
   useEffect(() => {
     if (patient) {
-      // Solo rastrear cambios si estamos en modo edición
+      // Only track changes if we're in edit mode
       const hasDataChanged =
         JSON.stringify(formData) !== JSON.stringify(initialFormData);
       setHasChanges(hasDataChanged);

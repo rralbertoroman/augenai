@@ -60,67 +60,51 @@ export function GridCard({ group }: GridCardProps) {
   return (
     <div
       key={`${group.requestId}-${group.patientId}`}
-      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden flex flex-row hover:shadow-md transition-shadow"
+      className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden hover:shadow-md transition-shadow"
     >
-      {/* <div className="flex flex-col bg-muted w-32 min-h-[8rem] items-center justify-center shrink-0">
-        <div className="relative w-12 h-12 opacity-50">
-          <Image
-            src="/file.svg"
-            alt="File icon"
-            fill
-            className="object-contain"
-          />
+      <div className="p-4 flex flex-col">
+        {/* Header: Badge + Confidence */}
+        <div className="flex justify-between items-center gap-2">
+          <Badge variant={feedbackVariant.variant} className="shrink-0">
+            {feedbackVariant.text}
+          </Badge>
+          <Badge variant="secondary" className="shrink-0">
+            {mainPrediction.type === "classification"
+              ? `${Math.round(mainPrediction.confidence * 100)}% confianza`
+              : `${Math.round(averageConfidence * 100)}% confianza promedio`}
+          </Badge>
         </div>
-      </div> */}
-      <div className="p-4 flex flex-col grow w-1/2">
-        <div className="grow">
-          <div className="flex justify-between items-start gap-2">
-            <Badge variant={feedbackVariant.variant} className="shrink-0">
-              {feedbackVariant.text}
-            </Badge>
-          </div>
 
-          <div className="mt-3">
-            <div className="flex flex-col">
-              <h4 className="text-sm font-medium text-foreground/90 truncate">
-                {mainPrediction.patient_name}
-              </h4>
-              <h3 className="text-muted-foreground text-sm">
-                {formatAgeWithMonths(mainPrediction.patient_birthdate)}
-              </h3>
-            </div>
-            <h4 className="text-sm truncate">
-              {mainPrediction.type == "classification" ? (
-                <div className="flex flex-col">
-                  <div>{mainPrediction.disease_name}</div>
+        {/* Patient Info */}
+        <div className="mt-3 flex justify-between items-baseline gap-2">
+          <h4 className="text-sm font-medium text-foreground/90 truncate">
+            {mainPrediction.patient_name}
+          </h4>
+          <span className="text-muted-foreground text-sm shrink-0">
+            {formatAgeWithMonths(mainPrediction.patient_birthdate)}
+          </span>
+        </div>
 
-                  <div className="flex flex-row justify-between">
-                    {mainPrediction.stage_content
-                      ? translateStageContent(mainPrediction.stage_content)
-                      : ""}
-                    <Badge variant="secondary" className="h-fit">
-                      {Math.round(mainPrediction.confidence * 100)}% confianza
-                    </Badge>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-row justify-between ">
-                  {group.predictions.length} lesiones detectadas
-                  <Badge variant="secondary">
-                    {Math.round(averageConfidence * 100)}% confianza promedio
-                  </Badge>
-                </div>
+        {/* Prediction Info */}
+        <div className="mt-2 text-sm text-muted-foreground">
+          {mainPrediction.type === "classification" ? (
+            <div className="flex justify-between items-center gap-2">
+              <span className="truncate">{mainPrediction.disease_name}</span>
+              {mainPrediction.stage_content && (
+                <span className="text-foreground/70 shrink-0">
+                  {translateStageContent(mainPrediction.stage_content)}
+                </span>
               )}
-            </h4>
-          </div>
+            </div>
+          ) : (
+            <span>{group.predictions.length} lesiones detectadas</span>
+          )}
         </div>
-        <div className="mt-3 pt-2 border-t flex justify-between items-center text-xs">
-          <span className="text-muted-foreground">
-            {formatTime(group.requestDate)}
-          </span>
-          <span className="text-muted-foreground">
-            {formatDate(group.requestDate)}
-          </span>
+
+        {/* Footer: Time + Date */}
+        <div className="mt-3 pt-2 border-t flex justify-between items-center text-xs text-muted-foreground">
+          <span>{formatTime(group.requestDate)}</span>
+          <span>{formatDate(group.requestDate)}</span>
         </div>
       </div>
     </div>

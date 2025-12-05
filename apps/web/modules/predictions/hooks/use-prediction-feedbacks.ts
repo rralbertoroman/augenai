@@ -24,10 +24,10 @@ export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
     string | undefined
   >();
 
-  // Verificar si el usuario actual es el creador de la request
+  // Check if the current user is the request creator
   const isRequestOwner = user?.id === requestUserId;
 
-  // Actualizar feedbacks locales cuando cambien los originales
+  // Update local feedbacks when originals change
   useEffect(() => {
     setLocalFeedbacks(feedbacks);
   }, [feedbacks]);
@@ -48,7 +48,7 @@ export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
   const closeFeedbacksModal = (
     onUpdate?: (feedbacks: ClassificationFeedbackWithExtras[]) => void,
   ) => {
-    // Si hubo cambios, pasar los feedbacks actualizados
+    // If there were changes, pass the updated feedbacks
     if (hasChanges && onUpdate) {
       onUpdate(localFeedbacks);
     }
@@ -84,7 +84,7 @@ export function usePredictionFeedbacks(): UsePredictionFeedbacksReturn {
       );
       console.log("✅ Main feedback updated successfully");
 
-      // Actualizar estado local inmediatamente
+      // Update local state immediately
       setLocalFeedbacks((prev) =>
         prev.map((fb) => ({
           ...fb,

@@ -149,13 +149,13 @@ export const setMainFeedbackForClassification = async (
 ): Promise<void> => {
   await getCurrentUser(token);
 
-  // Poner todos los feedbacks de esta clasificación como no principales
+  // Set all feedbacks for this classification as non-main
   await db
     .update(ClassificationFeedbackTable)
     .set({ isMainData: false })
     .where(eq(ClassificationFeedbackTable.classificationId, classificationId));
 
-  // Poner el feedback seleccionado como principal
+  // Set the selected feedback as main
   await db
     .update(ClassificationFeedbackTable)
     .set({ isMainData: true })

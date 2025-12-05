@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/auth-context";
 export function usePredictionSharing() {
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserProfileDTO | null>(null);
@@ -36,23 +37,26 @@ export function usePredictionSharing() {
     recipientId: string,
     accessToken: string,
   ) => {
-    setLoading(true);
+    setIsSharing(true);
     setError(null);
     try {
       const result = await sharePrediction(accessToken, requestId, recipientId);
       if (!result.success) {
         setError(result.error || "Error al compartir la solicitud");
+      } else {
+        setShared(true);
       }
     } catch {
       setError("Error al compartir la solicitud");
     } finally {
-      setLoading(false);
+      setIsSharing(false);
     }
   };
 
   return {
     users,
     loading,
+    isSharing,
     error,
     search,
     setSearch,

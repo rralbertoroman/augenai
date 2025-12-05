@@ -233,7 +233,7 @@ export function PredictionDetailContainer({
             />
           )}
 
-          {/* Diagnósticos */}
+          {/* Diagnosis Results */}
           <DiagnosisResultsSection
             request={request}
             hasImage={!!(bucketName && storagePath)}

@@ -22,7 +22,7 @@ export function usePredictionRequestDetail(requestId: string) {
     setIsLoading(true);
     setError(null);
     try {
-      // Cargar request con feedbacks incluidos
+      // Load request with feedbacks included
       const result = await getPredictionRequestById(token, id, true);
 
       if (!result) {

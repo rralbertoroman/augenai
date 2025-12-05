@@ -58,7 +58,7 @@ export function Clipboard({ className, children, ...props }: ClipboardProps) {
         className="relative rounded-3xl p-5"
         style={{
           background:
-            "linear-gradient(to bottom right, rgb(167, 243, 208), rgb(110, 231, 183), rgb(52, 211, 153))",
+            "linear-gradient(to bottom right, rgb(110, 231, 183), rgb(52, 211, 153), rgb(16, 185, 129))",
           boxShadow:
             "inset 0 2px 8px rgba(0,0,0,0.08), 0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.02)",
         }}
