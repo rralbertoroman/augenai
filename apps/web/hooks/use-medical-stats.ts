@@ -14,10 +14,10 @@ import {
 export type { StageTotalConfig, CohortDataConfigItem, CohortData };
 
 export function useMedicalStats() {
-  const { predictions, isLoading, error, refreshData } = useDashboard();
+  const { systemPredictions, isLoading, error, refreshData } = useDashboard();
 
   const { stageTotalData, cohortData, hasData } = useMemo(() => {
-    if (isLoading || !predictions || predictions.length === 0) {
+    if (isLoading || !systemPredictions || systemPredictions.length === 0) {
       return {
         stageTotalData: [],
         cohortData: [],
@@ -26,11 +26,11 @@ export function useMedicalStats() {
     }
 
     return {
-      stageTotalData: calculateStageTotals(predictions),
-      cohortData: calculateCohortData(predictions),
+      stageTotalData: calculateStageTotals(systemPredictions),
+      cohortData: calculateCohortData(systemPredictions),
       hasData: true,
     };
-  }, [predictions, isLoading]);
+  }, [systemPredictions, isLoading]);
 
   return {
     stageTotalData,
