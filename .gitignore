@@ -41,3 +41,5 @@ yarn-error.log*
 __pycache__
 *.log
 .github
+notebooks/
+*tfevents*

@@ -15,6 +15,8 @@ dependencies = [
     "uvicorn[standard]>=0.34.0",
     "ultralytics>=8.3.231",
     "safetensors>=0.4.0",
+    "opencv-python-headless>=4.5.0",
+    "numpy>=1.26.0",
 ]
 
 [project.scripts]
