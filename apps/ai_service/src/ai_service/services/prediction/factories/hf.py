@@ -32,6 +32,20 @@ from .constants import (
 logger = get_logger(__name__)
 
 
+class HFProcessor:
+    """Wraps a HuggingFace image processor to satisfy the Processor contract.
+
+    Calling it with a single PIL image returns a BatchEncoding ready to be
+    moved to the inference device and unpacked into the model as kwargs.
+    """
+
+    def __init__(self, hf_processor):
+        self._processor = hf_processor
+
+    def __call__(self, image: Image):
+        return self._processor(images=image, return_tensors="pt")
+
+
 def process_classification_output(
     logits: torch.Tensor,
     model: PreTrainedModel,
@@ -134,13 +148,15 @@ def swinv2_clsf_model_factory(model_id: str):
             model_path = Path(settings.weights_dir) / self.model_id
             logger.info(f"Loading {self.model_id} model from {model_path.resolve()}")
             self.model = Swinv2ForImageClassification.from_pretrained(str(model_path))
-            self.processor = AutoImageProcessor.from_pretrained(str(model_path))
+            self.processor = HFProcessor(
+                AutoImageProcessor.from_pretrained(str(model_path))
+            )
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
         def run(self, image: Image):
-            inputs = self.processor(images=image, return_tensors="pt")
+            inputs = self.processor(image)
 
             logger.info(f"Running {self.model_id} inference on device: {self.device}")
             model_dev = self.model.to(self.device)
@@ -183,13 +199,15 @@ def vit_clsf_model_factory(model_id: str):
             model_path = Path(settings.weights_dir) / self.model_id
             logger.info(f"Loading {self.model_id} model from {model_path.resolve()}")
             self.model = ViTForImageClassification.from_pretrained(str(model_path))
-            self.processor = ViTImageProcessor.from_pretrained(str(model_path))
+            self.processor = HFProcessor(
+                ViTImageProcessor.from_pretrained(str(model_path))
+            )
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
         def run(self, image: Image):
-            inputs = self.processor(images=image, return_tensors="pt")
+            inputs = self.processor(image)
 
             logger.info(f"Running {self.model_id} inference on device: {self.device}")
             model_dev = self.model.to(self.device)
@@ -232,13 +250,15 @@ def dinov2_clsf_model_factory(model_id: str):
             model_path = Path(settings.weights_dir) / self.model_id
             logger.info(f"Loading {self.model_id} model from {model_path.resolve()}")
             self.model = Dinov2ForImageClassification.from_pretrained(str(model_path))
-            self.processor = AutoImageProcessor.from_pretrained(str(model_path))
+            self.processor = HFProcessor(
+                AutoImageProcessor.from_pretrained(str(model_path))
+            )
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
         def run(self, image: Image):
-            inputs = self.processor(images=image, return_tensors="pt")
+            inputs = self.processor(image)
 
             logger.info(f"Running {self.model_id} inference on device: {self.device}")
             model_dev = self.model.to(self.device)

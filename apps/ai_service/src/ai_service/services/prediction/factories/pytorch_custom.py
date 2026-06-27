@@ -88,6 +88,19 @@ def compute_vascular_density(image: Image) -> torch.Tensor:
     return torch.tensor([density], dtype=torch.float32)
 
 
+class GlaucomaProcessor:
+    """Prepares inputs for the glaucoma model: a transformed image tensor plus
+    the vascular density feature, both batched and ready for the device."""
+
+    def __init__(self, transform):
+        self._transform = transform
+
+    def __call__(self, image: Image):
+        img_tensor = self._transform(image).unsqueeze(0)  # (1, 1, 224, 224)
+        density = compute_vascular_density(image).unsqueeze(0)  # (1, 1)
+        return img_tensor, density
+
+
 def glaucoma_resnet18_density_factory(model_id: str):
     """Create an OCTModel instance for glaucoma classification"""
 
@@ -133,15 +146,13 @@ def glaucoma_resnet18_density_factory(model_id: str):
                     transforms.Normalize(mean=[0.5], std=[0.5]),
                 ]
             )
+            self.processor = GlaucomaProcessor(self.transform)
 
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
         def run(self, image: Image):
-            # Compute vascular density
-            density = compute_vascular_density(image)
-
-            # Transform the image
-            img_tensor = self.transform(image).unsqueeze(0)  # (1, 1, 224, 224)
+            # Prepare inputs (transformed image + density feature)
+            img_tensor, density = self.processor(image)
 
             # Move to device
             img_tensor = img_tensor.to(self.device)
@@ -151,7 +162,7 @@ def glaucoma_resnet18_density_factory(model_id: str):
 
             start_time = datetime.now()
             with torch.no_grad():
-                output = self.model(img_tensor, density.unsqueeze(0))  # (1, 1)
+                output = self.model(img_tensor, density)  # (1, 1)
 
             # Time in milliseconds
             inference_time_ms = (datetime.now() - start_time).total_seconds() * 1000

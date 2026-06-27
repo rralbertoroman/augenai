@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+from .processor import Processor, PassthroughProcessor
+
 
 class ModelInstance(ABC):
+    processor: Processor  # contract: every model exposes a processor
+
     def __init__(self, model_id: str, timeout: int = 60):
         """
         Initialize a model instance with expiration tracking.
@@ -14,6 +18,7 @@ class ModelInstance(ABC):
         self.model_id = model_id
         self._last_used_at = datetime.now().timestamp()
         self._timeout = timeout * 60
+        self.processor = PassthroughProcessor()  # default; subclasses may override
 
     @abstractmethod
     def run(self, image):
