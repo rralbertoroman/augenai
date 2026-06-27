@@ -35,9 +35,14 @@ def ultralytics_detection_factory(model_id: str):
             conf = settings.confidence_threshold
             iou = settings.iou_threshold
 
-            # Run prediction
+            # YOLO preprocesses internally, so self.processor is the inherited
+            # passthrough; it satisfies the contract without altering the image.
             results = self.model.predict(
-                image, device=self.device, imgsz=imgsz, conf=conf, iou=iou
+                self.processor(image),
+                device=self.device,
+                imgsz=imgsz,
+                conf=conf,
+                iou=iou,
             )
 
             # logger.info(f"{results}")

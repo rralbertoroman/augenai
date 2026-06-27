@@ -45,6 +45,30 @@ def sample_bytes_images():
 
 
 @pytest.fixture
+def sample_glaucoma() -> List[Image.Image]:
+    image_dir = "tests/glaucoma-sample"
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp"}
+
+    if not os.path.exists(image_dir):
+        pytest.skip(f"Image directory not found: {image_dir}")
+
+    images = []
+    for file in os.listdir(image_dir):
+        file_path = Path(image_dir) / file
+        if file_path.suffix.lower() in image_extensions:
+            try:
+                img = Image.open(file_path)
+                images.append(img)
+            except Exception as e:
+                print(f"Error loading image {file_path}: {e}")
+
+    if not images:
+        pytest.skip(f"No valid images found in {image_dir}")
+
+    return images
+
+
+@pytest.fixture
 def sample_images() -> List[Image.Image]:
     """
     Fixture that loads sample images from a directory.
