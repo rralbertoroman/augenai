@@ -21,10 +21,12 @@ import {
   type PredictionRequest,
   type Classification,
   type Detection,
+  type Segmentation,
   type PredictionRequestWithRelations,
   type PredictionWithExtras,
   type ClassificationWithExtras,
   type DetectionWithExtras,
+  type SegmentationWithExtras,
 } from "../zod-schemas/prediction_workflow";
 import {
   type ClassificationFeedbackDTO,
@@ -171,8 +173,10 @@ const buildEnrichedPredictionRequest = async (
     const { modelId, id: predictionId, createdAt } = prediction;
     const classifications: Classification[] = [];
     const detections: Detection[] = [];
+    const segmentations: Segmentation[] = [];
     const classificationsWithExtras: ClassificationWithExtras[] = [];
     const detectionsWithExtras: DetectionWithExtras[] = [];
+    const segmentationsWithExtras: SegmentationWithExtras[] = [];
 
     // Process Classifications
     if (
@@ -290,12 +294,43 @@ const buildEnrichedPredictionRequest = async (
       }
     }
 
+    // Process Segmentations (class_name comes straight from the stored row;
+    // no DB class mapping needed, unlike classifications/detections).
+    if (prediction.segmentations && Array.isArray(prediction.segmentations)) {
+      for (const segmentation of prediction.segmentations) {
+        const baseSegmentation = {
+          id: segmentation.id,
+          class_id: segmentation.classId,
+          class_name: segmentation.className,
+          polygon: segmentation.polygon,
+          area: segmentation.area,
+          confidence: segmentation.confidence,
+        };
+
+        segmentations.push(baseSegmentation);
+
+        segmentationsWithExtras.push({
+          ...baseSegmentation,
+          model_id: modelId,
+          prediction_id: predictionId,
+          request_id: request.id,
+          patient_id: request.patientId,
+          patient_name: request.patient.name,
+          patient_birth_date: request.patient.dateOfBirth,
+          created_at: createdAt,
+          bucket_name: request.bucketName,
+          storage_path: request.storagePath,
+        });
+      }
+    }
+
     enrichedPredictions.push({
       prediction_id: predictionId,
       model_id: modelId,
       created_at: createdAt,
       classifications,
       detections,
+      segmentations,
     });
 
     predictionsWithExtras.push({
@@ -307,6 +342,7 @@ const buildEnrichedPredictionRequest = async (
       patient_id: request.patientId,
       classifications: classificationsWithExtras,
       detections: detectionsWithExtras,
+      segmentations: segmentationsWithExtras,
     });
   }
 
@@ -398,6 +434,7 @@ export const getAllPredictionRequestsWithPredictionsByUserId = async (
         with: {
           classifications: true,
           detections: true,
+          segmentations: true,
         },
       },
       patient: true,
@@ -444,6 +481,7 @@ export const getAllPredictionRequestsWithFeedbacksByUserId = async (
               feedbacks: true,
             },
           },
+          segmentations: true,
         },
       },
       patient: true,
@@ -489,6 +527,7 @@ export const getAllSystemPredictionRequests = async (
               feedbacks: true,
             },
           },
+          segmentations: true,
         },
       },
       patient: true,
@@ -541,6 +580,7 @@ export const getPredictionRequestById = async (
                 }
               : undefined,
           },
+          segmentations: true,
         },
       },
       patient: true,

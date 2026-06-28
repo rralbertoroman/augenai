@@ -11,6 +11,7 @@ import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
 import { createClassifications } from "./classification";
 import { createDetections } from "./detection";
+import { createSegmentations } from "./segmentation";
 import { supabaseAdmin } from "../supabase/client";
 import { selectOptimalModels } from "./model";
 import { type OptimalModel } from "../zod-schemas/model";
@@ -24,11 +25,13 @@ import {
   type PredictionRequest,
   type Classification,
   type Detection,
+  type Segmentation,
 } from "../zod-schemas/prediction_workflow";
 import {
   type AIServicePredictionResponse,
   type AIServiceClassification,
   type AIServiceDetection,
+  type AIServiceSegmentation,
 } from "../zod-schemas/ai_service";
 
 // ============================================================================
@@ -325,6 +328,7 @@ async function processModelPrediction(
   // 2.1 Process Results based on Task
   let Classifications: Classification[] = [];
   let Detections: Detection[] = [];
+  let Segmentations: Segmentation[] = [];
 
   if (task === "classification") {
     // Process Classifications
@@ -363,6 +367,23 @@ async function processModelPrediction(
       })),
     );
     Detections = await enrichDetectionData(detections, model.id);
+  } else if (task === "segmentation") {
+    // Process Segmentations
+    const segs = predictionResult.result.predictions as AIServiceSegmentation[];
+
+    // Save to DB
+    await createSegmentations(
+      segs.map((s) => ({
+        predictionId: savedPrediction.id,
+        classId: s.class_id,
+        className: s.class_name,
+        polygon: s.polygon,
+        area: s.area,
+        confidence: s.confidence,
+      })),
+    );
+
+    Segmentations = await enrichSegmentationData(segs);
   }
 
   return {
@@ -371,6 +392,7 @@ async function processModelPrediction(
     created_at: savedPrediction.createdAt,
     classifications: Classifications,
     detections: Detections,
+    segmentations: Segmentations,
   };
 }
 
@@ -452,4 +474,21 @@ async function enrichDetectionData(
   }
 
   return Detections;
+}
+
+/**
+ * Maps raw segmentation results to the enriched Segmentation DTO.
+ * Pass-through: class_name comes directly from the AI service, so no DB lookup.
+ * Internal helper.
+ */
+async function enrichSegmentationData(
+  segmentations: AIServiceSegmentation[],
+): Promise<Segmentation[]> {
+  return segmentations.map((seg) => ({
+    class_id: seg.class_id,
+    class_name: seg.class_name,
+    polygon: seg.polygon,
+    area: seg.area,
+    confidence: seg.confidence,
+  }));
 }

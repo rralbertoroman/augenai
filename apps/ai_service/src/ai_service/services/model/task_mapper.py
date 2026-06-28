@@ -1,7 +1,7 @@
 MODEL_TASKS = {
     "classification": ["single_label_classification"],
     "detection": [],
-    "segmentation": [],
+    "segmentation": ["semantic_segmentation"],
 }
 
 

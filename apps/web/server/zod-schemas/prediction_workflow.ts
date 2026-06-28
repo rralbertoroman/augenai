@@ -77,6 +77,19 @@ export const PredictionRequestWithRelationsSchema = z.object({
           }),
         )
         .optional(),
+      // Segmentations
+      segmentations: z
+        .array(
+          z.object({
+            id: z.string(),
+            classId: z.number(),
+            className: z.string(),
+            polygon: z.array(z.array(z.number())),
+            area: z.number(),
+            confidence: z.number(),
+          }),
+        )
+        .optional(),
     }),
   ),
 });
@@ -150,6 +163,38 @@ export const DetectionWithExtrasSchema = DetectionSchema.extend({
   storage_path: z.string().optional(),
 });
 
+// Base enriched segmentation with class information from the AI service
+export const SegmentationSchema = z.object({
+  id: z.string().optional(),
+  class_id: z.number(),
+  class_name: z.string(),
+  polygon: z.array(z.array(z.number())),
+  area: z.number(),
+  confidence: z.number(),
+  // Segmentation feedback is out of scope; the field is kept (always empty/undefined)
+  // so the Task/TaskWithExtras union retains a common `feedbacks` property.
+  feedbacks: z
+    .union([
+      z.array(DetectionFeedbackDTOSchema),
+      z.array(DetectionFeedbackWithExtrasSchema),
+    ])
+    .optional(),
+});
+
+// Enriched segmentation with extras for frontend consumption
+// Includes context information (model_id, prediction_id, request_id, patient_id, created_at)
+export const SegmentationWithExtrasSchema = SegmentationSchema.extend({
+  model_id: z.string(),
+  prediction_id: z.string(),
+  request_id: z.string(),
+  patient_id: z.string(),
+  patient_name: z.string().optional(),
+  patient_birth_date: z.string().optional(),
+  created_at: z.date(),
+  bucket_name: z.string().optional(),
+  storage_path: z.string().optional(),
+});
+
 // Enriched prediction containing classifications and detections
 export const PredictionSchema = z.object({
   prediction_id: z.uuid(),
@@ -157,6 +202,7 @@ export const PredictionSchema = z.object({
   created_at: z.date(),
   classifications: z.array(ClassificationSchema).default([]),
   detections: z.array(DetectionSchema).default([]),
+  segmentations: z.array(SegmentationSchema).default([]),
 });
 
 // Enriched prediction with extras - contains enriched classifications and detections
@@ -171,6 +217,7 @@ export const PredictionWithExtrasSchema = z.object({
   patient_id: z.string().optional(),
   classifications: z.array(ClassificationWithExtrasSchema).default([]),
   detections: z.array(DetectionWithExtrasSchema).default([]),
+  segmentations: z.array(SegmentationWithExtrasSchema).default([]),
 });
 
 // Enriched prediction request with all nested predictions
@@ -214,6 +261,7 @@ export type PredictionRequestWithRelations = z.infer<
 // OUTPUT TYPES - BASE
 export type Classification = z.output<typeof ClassificationSchema>;
 export type Detection = z.output<typeof DetectionSchema>;
+export type Segmentation = z.output<typeof SegmentationSchema>;
 export type Prediction = z.output<typeof PredictionSchema>;
 export type PredictionRequest = z.output<typeof PredictionRequestSchema>;
 
@@ -222,8 +270,14 @@ export type ClassificationWithExtras = z.output<
   typeof ClassificationWithExtrasSchema
 >;
 export type DetectionWithExtras = z.output<typeof DetectionWithExtrasSchema>;
+export type SegmentationWithExtras = z.output<
+  typeof SegmentationWithExtrasSchema
+>;
 export type PredictionWithExtras = z.output<typeof PredictionWithExtrasSchema>;
 
 // UNION TYPES
-export type Task = Classification | Detection;
-export type TaskWithExtras = ClassificationWithExtras | DetectionWithExtras;
+export type Task = Classification | Detection | Segmentation;
+export type TaskWithExtras =
+  | ClassificationWithExtras
+  | DetectionWithExtras
+  | SegmentationWithExtras;

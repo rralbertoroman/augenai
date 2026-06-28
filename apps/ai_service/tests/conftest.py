@@ -69,6 +69,64 @@ def sample_glaucoma() -> List[Image.Image]:
 
 
 @pytest.fixture
+def sample_amd() -> List[Image.Image]:
+    image_dir = "tests/amd-sample"
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp"}
+
+    if not os.path.exists(image_dir):
+        pytest.skip(f"Image directory not found: {image_dir}")
+
+    images = []
+    for file in os.listdir(image_dir):
+        file_path = Path(image_dir) / file
+        if file_path.suffix.lower() in image_extensions:
+            try:
+                img = Image.open(file_path)
+                images.append(img)
+            except Exception as e:
+                print(f"Error loading image {file_path}: {e}")
+
+    if not images:
+        pytest.skip(f"No valid images found in {image_dir}")
+
+    return images
+
+
+@pytest.fixture
+def sample_amd_bytes():
+    image_dir = "tests/amd-sample"
+    image_extensions = {".jpg", ".jpeg", ".png", ".bmp"}
+
+    if not os.path.exists(image_dir):
+        pytest.skip(f"Image directory not found: {image_dir}")
+
+    upload_files = []
+
+    for fname in os.listdir(image_dir):
+        path = Path(image_dir) / fname
+        ext = path.suffix.lower()
+
+        if ext in image_extensions:
+            try:
+                # Read file exactly as stored on disk
+                raw = path.read_bytes()
+
+                # Wrap as a file tuple suitable for TestClient
+                file_like = io.BytesIO(raw)
+                mime = f"image/{ext.lstrip('.')}" if ext != ".jpg" else "image/jpeg"
+
+                upload_files.append(("image", (fname, file_like, mime)))
+
+            except Exception as e:
+                print(f"Error reading image {path}: {e}")
+
+    if not upload_files:
+        pytest.skip(f"No valid images found in {image_dir}")
+
+    return upload_files
+
+
+@pytest.fixture
 def sample_images() -> List[Image.Image]:
     """
     Fixture that loads sample images from a directory.

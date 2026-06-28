@@ -7,10 +7,12 @@ import * as classDiseaseService from "@/server/services/prediction_class_disease
 import * as classLesionService from "@/server/services/prediction_class_lesion";
 import * as classificationService from "@/server/services/classification";
 import * as detectionService from "@/server/services/detection";
+import * as segmentationService from "@/server/services/segmentation";
 import * as predictionSharingService from "@/server/services/prediction_sharing";
 import * as patientService from "@/server/services/patient";
 import { supabaseAdmin } from "@/server/supabase/client";
 import { PredictionWorkflowInput } from "@/server/zod-schemas/prediction_workflow";
+import { AIServiceSegmentationSchema } from "@/server/zod-schemas/ai_service";
 import { OptimalModel } from "@/server/zod-schemas/model";
 import { PredictionRequestDTO } from "@/server/zod-schemas/prediction_request";
 import { PredictionDTO } from "@/server/zod-schemas/prediction";
@@ -25,6 +27,7 @@ vi.mock("@/server/services/prediction_class_disease");
 vi.mock("@/server/services/prediction_class_lesion");
 vi.mock("@/server/services/classification");
 vi.mock("@/server/services/detection");
+vi.mock("@/server/services/segmentation");
 vi.mock("@/server/services/prediction_sharing");
 vi.mock("@/server/services/patient");
 vi.mock("@/server/supabase/client", () => ({
@@ -202,6 +205,58 @@ describe("Prediction Workflow", () => {
     });
 
     expect(detectionService.createDetections).toHaveBeenCalled();
+  });
+
+  it("should process segmentation workflow successfully", async () => {
+    const segmentationInput = { ...MOCK_INPUT, task: "segmentation" };
+    const segmentationModel = { ...MOCK_MODEL, task: "segmentation" };
+
+    vi.mocked(modelService.selectOptimalModels).mockResolvedValue([
+      segmentationModel,
+    ]);
+
+    const samplePayload = {
+      class_id: 1,
+      class_name: "class_1",
+      polygon: [
+        [10, 10],
+        [50, 10],
+        [50, 50],
+        [10, 50],
+      ],
+      area: 1600,
+      confidence: 0.9,
+    };
+
+    // zod round-trip: the AI service segmentation schema parses the payload.
+    expect(() =>
+      AIServiceSegmentationSchema.parse(samplePayload),
+    ).not.toThrow();
+
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: "success",
+        result: {
+          predictions: [samplePayload],
+          metadata: { inference_time_ms: 100, model_version: "v1" },
+        },
+      }),
+    } as Response);
+
+    const result = await processPredictionRequest(segmentationInput);
+
+    expect(result.predictions).toHaveLength(1);
+    expect(result.predictions[0].segmentations).toHaveLength(1);
+    expect(result.predictions[0].segmentations[0].class_id).toBe(1);
+    expect(result.predictions[0].segmentations[0].class_name).toBe("class_1");
+    expect(result.predictions[0].segmentations[0].polygon).toEqual(
+      samplePayload.polygon,
+    );
+    expect(result.predictions[0].segmentations[0].area).toBe(1600);
+    expect(result.predictions[0].segmentations[0].confidence).toBe(0.9);
+
+    expect(segmentationService.createSegmentations).toHaveBeenCalled();
   });
 
   it("should throw error if no models found", async () => {

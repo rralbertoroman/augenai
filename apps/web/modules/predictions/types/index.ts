@@ -8,6 +8,12 @@ import type { DetectionForEditing } from "../components/detection-bbox-editor";
 // Re-export component types for convenience
 export type { DetectionForEditing };
 
+// Re-export segmentation types for convenience
+export type {
+  Segmentation,
+  SegmentationWithExtras,
+} from "@/server/zod-schemas/prediction_workflow";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Context Types
 // ─────────────────────────────────────────────────────────────────────────────

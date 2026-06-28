@@ -27,6 +27,36 @@ def test_predictions(client, sample_bytes_images, test_model):
         logger.info(f"Prediction Response: {response_dict}")
 
 
+def test_predictions_segmentation(client, sample_amd_bytes):
+    """Test the segmentation model (resnet34_unet) via the predict endpoint."""
+    for image in sample_amd_bytes:
+        _, image_file = image
+
+        response = client.post(
+            "api/v1/predict",
+            files={"image": image_file},
+            data={"model_id": "resnet34_unet"},
+        )
+
+        if response.status_code != 200:
+            logger.error(response.text)
+        assert response.status_code == 200
+
+        response_dict = response.json()
+        assert response_dict["status"] == "success"
+        assert response_dict["error"] is None
+        assert response_dict["result"]["metadata"]["inference_time_ms"] > 0
+
+        predictions = response_dict["result"]["predictions"]
+        assert isinstance(predictions, list)
+        for prediction in predictions:
+            assert "polygon" in prediction
+            assert "area" in prediction
+            assert "class_name" in prediction
+
+        logger.info(f"Segmentation Prediction Response: {response_dict}")
+
+
 def test_predictions_invalid_file_type(client):
     """Test error handling when file is not an image"""
     # Create a text file instead of image

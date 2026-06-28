@@ -19,6 +19,11 @@ interface BoundingBox {
   confidence?: number;
 }
 
+interface Polygon {
+  points: number[][]; // [[x, y], ...] in absolute image pixels
+  label?: string;
+}
+
 interface SupabaseImageProps {
   width: number;
   height: number;
@@ -32,6 +37,7 @@ interface SupabaseImageProps {
   fallback?: string;
   enableLightbox?: boolean;
   boundingBoxes?: BoundingBox[];
+  polygons?: Polygon[];
   colorMap?: Map<string, string>;
 }
 
@@ -48,6 +54,7 @@ export default function SupabaseImage({
   fallback = "file.svg",
   enableLightbox = true,
   boundingBoxes = [],
+  polygons = [],
   colorMap,
 }: SupabaseImageProps) {
   const [src, setSrc] = useState<string>(fallback);
@@ -65,12 +72,12 @@ export default function SupabaseImage({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const lightboxImageRef = useRef<HTMLImageElement>(null);
 
-  // Draw bounding boxes on canvas when image or boxes change
+  // Draw bounding boxes and polygons on canvas when image or overlays change
   useEffect(() => {
     if (
       !canvasRef.current ||
       !imgDimensions.width ||
-      boundingBoxes.length === 0
+      (boundingBoxes.length === 0 && polygons.length === 0)
     )
       return;
 
@@ -105,7 +112,39 @@ export default function SupabaseImage({
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
     });
-  }, [boundingBoxes, imgDimensions, colorMap]);
+
+    // Draw each polygon
+    polygons.forEach((polygon) => {
+      if (!polygon.points || polygon.points.length === 0) return;
+
+      const color =
+        polygon.label && colorMap
+          ? colorMap.get(polygon.label) || "#3B82F6"
+          : "#3B82F6";
+
+      ctx.beginPath();
+      polygon.points.forEach((point, index) => {
+        const px = point[0] * scaleX;
+        const py = point[1] * scaleY;
+        if (index === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      });
+      ctx.closePath();
+
+      // Semi-transparent fill, solid stroke
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.3;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }, [boundingBoxes, polygons, imgDimensions, colorMap]);
 
   useEffect(() => {
     let mounted = true;
@@ -201,8 +240,11 @@ export default function SupabaseImage({
       // Draw base image
       ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
 
-      // Draw bounding boxes if present
-      if (boundingBoxes.length > 0 && canvasRef.current) {
+      // Draw bounding boxes / polygons if present
+      if (
+        (boundingBoxes.length > 0 || polygons.length > 0) &&
+        canvasRef.current
+      ) {
         ctx.drawImage(canvasRef.current, 0, 0);
       }
 
@@ -226,8 +268,13 @@ export default function SupabaseImage({
     setZoom((prev) => Math.min(Math.max(0.5, prev * delta), 5));
   };
 
-  // Get unique labels for legend
-  const uniqueLabels = Array.from(new Set(boundingBoxes.map((b) => b.label)))
+  // Get unique labels for legend (boxes + polygons)
+  const uniqueLabels = Array.from(
+    new Set([
+      ...boundingBoxes.map((b) => b.label),
+      ...polygons.map((p) => p.label),
+    ]),
+  )
     .map((label) => {
       return {
         label,
@@ -267,7 +314,7 @@ export default function SupabaseImage({
               }}
             />
           </Button>
-          {boundingBoxes.length > 0 && (
+          {(boundingBoxes.length > 0 || polygons.length > 0) && (
             <canvas
               ref={canvasRef}
               className="absolute top-0 left-0 pointer-events-none"

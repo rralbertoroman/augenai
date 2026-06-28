@@ -25,6 +25,7 @@ import {
   type Prediction,
   type Classification,
   type Detection,
+  type Segmentation,
   type PredictionRequest,
 } from "../zod-schemas/prediction_workflow";
 
@@ -213,6 +214,7 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
         with: {
           classifications: true,
           detections: true,
+          segmentations: true,
         },
       },
       patient: true,
@@ -230,6 +232,7 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
     for (const prediction of request.predictions) {
       const classifications: Classification[] = [];
       const detections: Detection[] = [];
+      const segmentations: Segmentation[] = [];
 
       // Process Classifications
       if (
@@ -289,12 +292,27 @@ export const getSharedPredictionRequestsWithPredictionsByUserId = async (
         }
       }
 
+      // Process Segmentations (class_name comes straight from the stored row).
+      if (prediction.segmentations && Array.isArray(prediction.segmentations)) {
+        for (const segmentation of prediction.segmentations) {
+          segmentations.push({
+            id: segmentation.id,
+            class_id: segmentation.classId,
+            class_name: segmentation.className,
+            polygon: segmentation.polygon,
+            area: segmentation.area,
+            confidence: segmentation.confidence,
+          });
+        }
+      }
+
       Predictions.push({
         prediction_id: prediction.id,
         model_id: prediction.modelId,
         created_at: prediction.createdAt,
         classifications,
         detections,
+        segmentations,
       });
     }
 

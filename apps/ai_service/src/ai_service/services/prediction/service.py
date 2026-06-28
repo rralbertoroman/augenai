@@ -14,6 +14,7 @@ from ai_service.services.prediction.factories.model_instance import ModelInstanc
 from .factories import hf
 from .factories import ultralytics_detection_factory
 from .factories import glaucoma_resnet18_density_factory
+from .factories.segmentation import resnet34_unet_factory
 from .model_pool import ModelPool
 
 logger = get_logger(__name__)
@@ -60,6 +61,7 @@ class PredictionService:
             "yolo11m_dr_lesion": ultralytics_detection_factory,
             "Diabetic_RetinoPathy_detection": hf.dinov2_clsf_model_factory,
             "glaucoma_resnet18_density": glaucoma_resnet18_density_factory,
+            "resnet34_unet": resnet34_unet_factory,
         }
         self._model_pool = ModelPool(factories)
         logger.info("Prediction service initialized")

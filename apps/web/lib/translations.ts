@@ -83,3 +83,20 @@ export function translateLesionName(lesion: string): string {
 
   return translations[lesion.toLowerCase()] || lesion;
 }
+
+/**
+ * Translate segmentation class names from English to Spanish.
+ * NOTE: these are temporary placeholder labels until the real class
+ * taxonomy is defined by the AI service.
+ */
+export function translateSegmentationClassName(className: string): string {
+  const translations: Record<string, string> = {
+    background: "Fondo",
+    class_1: "Clase 1",
+    class_2: "Clase 2",
+    class_3: "Clase 3",
+    class_4: "Clase 4",
+  };
+
+  return translations[className.toLowerCase()] || className;
+}

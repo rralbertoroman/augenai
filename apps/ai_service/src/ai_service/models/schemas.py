@@ -60,11 +60,29 @@ class DetectionResult(PredictionResult):
     )
 
 
+class SegmentationObject(BaseModel):
+    class_id: int = Field(..., description="Predicted class ID")
+    class_name: str = Field(..., description="Human-readable class name")
+    polygon: List[List[float]] = Field(
+        ..., description="Contour vertices [[x, y], ...]"
+    )
+    area: float = Field(..., description="Region area in pixels")
+    confidence: Optional[float] = Field(
+        None, ge=0, le=1, description="Mean class probability over the region"
+    )
+
+
+class SegmentationResult(PredictionResult):
+    predictions: List[SegmentationObject] = Field(
+        ..., description="List of segmented regions"
+    )
+
+
 class PredictionResponse(BaseModel):
     """Schema for prediction API response"""
 
     status: PredictionStatus
     error: Optional[str] = None
-    result: PredictionResult | ClassificationResult | DetectionResult = Field(
-        ..., description="Prediction result"
-    )
+    result: (
+        PredictionResult | ClassificationResult | DetectionResult | SegmentationResult
+    ) = Field(..., description="Prediction result")
