@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MessageSquare } from "lucide-react";
-import { sendContactUsEmail } from "@/server/resend/services";
+import { sendContactUsEmail } from "@/server/email/services";
 import { useAuth } from "@/contexts/auth-context";
 
 export function ContactUsDialog() {

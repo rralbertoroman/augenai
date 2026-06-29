@@ -17,7 +17,7 @@ import {
   type PredictionSharingDTO,
 } from "../zod-schemas/prediction_sharing";
 import { getCurrentUser, verifyOwnership } from "../auth";
-import { sendPredictionSharedEmail } from "../resend/services";
+import { sendPredictionSharedEmail } from "../email/services";
 import { getUserProfileById } from "./user_profile";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";

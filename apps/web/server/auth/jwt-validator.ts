@@ -1,6 +1,16 @@
-import { importJWK, jwtVerify } from "jose";
-import { SUPABASE_JWT_JWK } from "../constants";
+import { createRemoteJWKSet, jwtVerify } from "jose";
+import { SUPABASE_URL } from "../constants";
 import type { JWTPayload } from "./schemas";
+
+/**
+ * Supabase publishes its JWT signing public keys at the JWKS endpoint. Using a
+ * remote JWK set (instead of a single pinned key) means signing-key rotation is
+ * handled automatically: `jose` caches the keys in-process and refetches when it
+ * encounters a token signed by an unknown key id.
+ */
+const JWKS = createRemoteJWKSet(
+  new URL(`${SUPABASE_URL}/auth/v1/.well-known/jwks.json`),
+);
 
 /**
  * Validates a Supabase JWT and returns the payload
@@ -10,14 +20,7 @@ import type { JWTPayload } from "./schemas";
  */
 export async function verifySupabaseToken(token: string): Promise<JWTPayload> {
   try {
-    // Parse JWK from environment variable
-    const jwkData = JSON.parse(SUPABASE_JWT_JWK);
-
-    // Convert JWK to public key
-    const publicKey = await importJWK(jwkData, "ES256");
-
-    // Decode and validate token
-    const { payload } = await jwtVerify(token, publicKey, {
+    const { payload } = await jwtVerify(token, JWKS, {
       algorithms: ["ES256"],
       audience: "authenticated",
     });

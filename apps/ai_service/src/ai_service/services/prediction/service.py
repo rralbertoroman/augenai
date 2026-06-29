@@ -46,12 +46,7 @@ def get_mocked_detection() -> DetectionResult:
                 class_id=0,
                 class_name="Normal",
                 confidence=1.0,
-                box=[
-                    1376.81,
-                    150.967,
-                    87.2196,
-                    88.706,
-                ],  # [x1, y1, x2, y2] placeholder coordinates
+                box=[0.0, 0.0, 0.0, 0.0],  # [left, top, width, height] placeholder
             )
         ],
     )
