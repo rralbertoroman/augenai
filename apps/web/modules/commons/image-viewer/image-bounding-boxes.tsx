@@ -29,11 +29,17 @@ export interface BoundingBox {
   confidence?: number;
 }
 
+export interface Polygon {
+  points: number[][]; // [[x, y], ...] in absolute image pixels
+  label?: string;
+}
+
 interface ImageBoundingBoxesProps {
   imageUrl?: string; // For backward compatibility with external URLs
   bucketName?: string; // Supabase bucket name
   path?: string; // Path in Supabase bucket
   boxes?: BoundingBox[];
+  polygons?: Polygon[];
   className?: string;
 }
 
@@ -41,6 +47,7 @@ export function ImageBoundingBoxes({
   bucketName,
   path,
   boxes = [],
+  polygons = [],
   className = "",
 }: ImageBoundingBoxesProps) {
   // Create a color map based on class order of appearance
@@ -48,19 +55,24 @@ export function ImageBoundingBoxes({
     const map = new Map<string, string>();
     const seenLabels: string[] = [];
 
-    boxes.forEach((box) => {
-      if (box.label && !map.has(box.label)) {
-        seenLabels.push(box.label);
+    const assignColor = (label?: string) => {
+      if (label && !map.has(label)) {
+        seenLabels.push(label);
         const colorIndex = (seenLabels.length - 1) % COLOR_PALETTE.length;
-        map.set(box.label, COLOR_PALETTE[colorIndex]);
+        map.set(label, COLOR_PALETTE[colorIndex]);
       }
-    });
+    };
+
+    boxes.forEach((box) => assignColor(box.label));
+    polygons.forEach((polygon) => assignColor(polygon.label));
 
     return map;
-  }, [boxes]);
+  }, [boxes, polygons]);
 
-  // Extract unique labels for legend
-  const uniqueLabels = Array.from(new Set(boxes.map((b) => b.label)))
+  // Extract unique labels for legend (boxes + polygons)
+  const uniqueLabels = Array.from(
+    new Set([...boxes.map((b) => b.label), ...polygons.map((p) => p.label)]),
+  )
     .map((label) => {
       return { label, color: label ? colorMap.get(label) : undefined };
     })
@@ -76,6 +88,7 @@ export function ImageBoundingBoxes({
         alt="Diagnosis"
         className="block max-w-full h-auto rounded-lg"
         boundingBoxes={boxes}
+        polygons={polygons}
         colorMap={colorMap}
       />
       {/* Legend Overlay */}

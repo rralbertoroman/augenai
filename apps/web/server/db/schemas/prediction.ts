@@ -6,6 +6,7 @@ import PredictionRequestsTable from "./prediction_request";
 import PredictionSharingTable from "./prediction_sharing";
 import ClassificationsTable from "./classification";
 import DetectionsTable from "./detection";
+import SegmentationsTable from "./segmentation";
 
 const PredictionsTable = pgTable("predictions", {
   ...standardSchema,
@@ -31,6 +32,7 @@ export const predictionsRelations = relations(
     sharings: many(PredictionSharingTable),
     classifications: many(ClassificationsTable),
     detections: many(DetectionsTable),
+    segmentations: many(SegmentationsTable),
   }),
 );
 

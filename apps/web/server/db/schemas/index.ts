@@ -22,6 +22,8 @@ export { default as DetectionFeedbackTable } from "./detection_feedback";
 export * from "./detection_feedback";
 export { default as DetectionsTable } from "./detection";
 export * from "./detection";
+export { default as SegmentationsTable } from "./segmentation";
+export * from "./segmentation";
 export { default as LesionsTable } from "./lesion";
 export * from "./lesion";
 export { default as LesionDiseaseLinkTable } from "./lesion_disease_link";

@@ -19,12 +19,16 @@ import { DetectionFeedbacksModal } from "../components/detection-feedbacks-modal
 import { ImageBoundingBoxes } from "@/modules/commons/image-viewer/image-bounding-boxes";
 import type { ClassificationFeedbackWithExtras } from "@/server/zod-schemas/classification_feedback";
 import type { DetectionFeedbackWithExtras } from "@/server/zod-schemas/detection_feedback";
-import type { DetectionWithExtras } from "@/server/zod-schemas/prediction_workflow";
+import type {
+  DetectionWithExtras,
+  SegmentationWithExtras,
+} from "@/server/zod-schemas/prediction_workflow";
 import {
   translateImageType,
   translateTaskType,
   translateStageContent,
   translateLesionName,
+  translateSegmentationClassName,
 } from "@/lib/translations";
 
 interface PredictionDetailContainerProps {
@@ -76,6 +80,13 @@ export function PredictionDetailContainer({
     [request?.predictionsWithExtras],
   );
 
+  const allSegmentations = React.useMemo(
+    () =>
+      request?.predictionsWithExtras?.flatMap((pred) => pred.segmentations) ||
+      [],
+    [request?.predictionsWithExtras],
+  );
+
   // Check if user has already provided feedback
   const [hasCheckedDetectionFeedback, setHasCheckedDetectionFeedback] =
     React.useState(false);
@@ -117,6 +128,12 @@ export function PredictionDetailContainer({
     height: detection.bbox.height,
     label: detection.lesion_name,
     confidence: detection.confidence,
+  }));
+
+  // Convert segmentations to polygons for display
+  const segmentationPolygons = allSegmentations.map((segmentation) => ({
+    points: segmentation.polygon,
+    label: translateSegmentationClassName(segmentation.class_name),
   }));
 
   // Handlers
@@ -219,6 +236,7 @@ export function PredictionDetailContainer({
               bucketName={bucketName}
               storagePath={storagePath}
               detectionBoxes={detectionBoxes}
+              segmentationPolygons={segmentationPolygons}
               hasDetections={hasDetections}
               hasClassifications={hasClassifications}
               taskType={request?.task}
@@ -343,6 +361,7 @@ function ImageSection({
   bucketName,
   storagePath,
   detectionBoxes,
+  segmentationPolygons,
   hasDetections,
   hasClassifications,
   taskType,
@@ -363,6 +382,10 @@ function ImageSection({
     height: number;
     label: string;
     confidence: number;
+  }>;
+  segmentationPolygons: Array<{
+    points: number[][];
+    label: string;
   }>;
   hasDetections: boolean;
   hasClassifications: boolean;
@@ -454,6 +477,7 @@ function ImageSection({
           bucketName={bucketName}
           path={storagePath}
           boxes={detectionBoxes}
+          polygons={segmentationPolygons}
         />
       </div>
     </div>
@@ -494,7 +518,11 @@ function DiagnosisResultsSection({
               <div className="w-full space-y-4">
                 {(() => {
                   const allTasks = request.predictionsWithExtras.flatMap(
-                    (pred) => [...pred.classifications, ...pred.detections],
+                    (pred) => [
+                      ...pred.classifications,
+                      ...pred.detections,
+                      ...pred.segmentations,
+                    ],
                   );
 
                   return (
@@ -503,8 +531,31 @@ function DiagnosisResultsSection({
                         Predicciones ({allTasks.length})
                       </p>
                       {allTasks.map((task) => {
+                        const isSegmentation = "polygon" in task;
                         const isClassification = "disease_name" in task;
                         const isDetection = "lesion_name" in task;
+
+                        // Segmentation regions: read-only card with
+                        // class name + confidence + area (no feedback).
+                        if (isSegmentation) {
+                          const segmentation = task as SegmentationWithExtras;
+                          return (
+                            <PredictionCard
+                              key={segmentation.id}
+                              diagnosis={{
+                                id: segmentation.id!,
+                                disease_name: translateSegmentationClassName(
+                                  segmentation.class_name,
+                                ),
+                                stage_content: `Área: ${Math.round(
+                                  segmentation.area,
+                                )} px²`,
+                                confidence: segmentation.confidence,
+                              }}
+                            />
+                          );
+                        }
+
                         const diseaseName = isClassification
                           ? task.disease_name
                           : request?.diseaseNames?.join(", ") || "Detección";

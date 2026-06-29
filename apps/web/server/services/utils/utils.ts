@@ -1,6 +1,7 @@
 import type {
   ClassificationWithExtras,
   DetectionWithExtras,
+  SegmentationWithExtras,
   PredictionWithExtras,
 } from "../../zod-schemas/prediction_workflow";
 
@@ -15,6 +16,7 @@ import type {
 export const groupByPredictionId = (
   classifications: ClassificationWithExtras[],
   detections: DetectionWithExtras[],
+  segmentations: SegmentationWithExtras[] = [],
 ): PredictionWithExtras[] => {
   const predictionMap = new Map<string, PredictionWithExtras>();
 
@@ -31,6 +33,7 @@ export const groupByPredictionId = (
         storage_path: classification.storage_path,
         classifications: [],
         detections: [],
+        segmentations: [],
       });
     }
     predictionMap
@@ -51,9 +54,31 @@ export const groupByPredictionId = (
         storage_path: detection.storage_path,
         classifications: [],
         detections: [],
+        segmentations: [],
       });
     }
     predictionMap.get(detection.prediction_id)!.detections.push(detection);
+  }
+
+  // Add segmentations to their predictions
+  for (const segmentation of segmentations) {
+    if (!predictionMap.has(segmentation.prediction_id)) {
+      predictionMap.set(segmentation.prediction_id, {
+        id: segmentation.request_id,
+        patient_id: segmentation.patient_id,
+        prediction_id: segmentation.prediction_id,
+        model_id: segmentation.model_id,
+        created_at: segmentation.created_at,
+        bucket_name: segmentation.bucket_name,
+        storage_path: segmentation.storage_path,
+        classifications: [],
+        detections: [],
+        segmentations: [],
+      });
+    }
+    predictionMap
+      .get(segmentation.prediction_id)!
+      .segmentations.push(segmentation);
   }
 
   return Array.from(predictionMap.values());

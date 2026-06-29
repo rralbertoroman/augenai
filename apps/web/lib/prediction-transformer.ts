@@ -3,6 +3,7 @@ import type {
   TaskWithExtras,
   ClassificationWithExtras,
   DetectionWithExtras,
+  SegmentationWithExtras,
 } from "@/server/zod-schemas/prediction_workflow";
 
 /**
@@ -40,6 +41,18 @@ export function flattenPredictions(
       });
     });
 
+    // Process Segmentations
+    pred.segmentations.forEach((s: SegmentationWithExtras) => {
+      results.push({
+        ...s,
+        created_at: pred.created_at,
+        request_id: pred.id!,
+        patient_id: pred.patient_id!,
+        bucket_name: pred.bucket_name,
+        storage_path: pred.storage_path,
+      });
+    });
+
     return results;
   });
 }
@@ -58,4 +71,13 @@ export function isClassification(
  */
 export function isDetection(task: TaskWithExtras): task is DetectionWithExtras {
   return "lesion_name" in task && "bbox" in task;
+}
+
+/**
+ * Type guard to check if a task is a segmentation
+ */
+export function isSegmentation(
+  task: TaskWithExtras,
+): task is SegmentationWithExtras {
+  return "polygon" in task;
 }
