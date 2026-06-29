@@ -32,6 +32,7 @@ def _synthetic_oct_image() -> Image.Image:
     return Image.fromarray(arr)
 
 
+@pytest.mark.weights
 class TestFactoriesSegmentation:
     @pytest.mark.parametrize("model_id", ["resnet34_unet"])
     def test_resnet34_unet_factory(self, model_id):

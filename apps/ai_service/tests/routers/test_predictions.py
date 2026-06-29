@@ -1,9 +1,12 @@
 import logging
 import io
 
+import pytest
+
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.weights
 def test_predictions(client, sample_bytes_images, test_model):
     for image in sample_bytes_images:
         _, image_file = image
@@ -27,6 +30,7 @@ def test_predictions(client, sample_bytes_images, test_model):
         logger.info(f"Prediction Response: {response_dict}")
 
 
+@pytest.mark.weights
 def test_predictions_segmentation(client, sample_amd_bytes):
     """Test the segmentation model (resnet34_unet) via the predict endpoint."""
     for image in sample_amd_bytes:

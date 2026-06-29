@@ -9,6 +9,7 @@ import { createPrediction } from "./prediction";
 import { createPredictionRequest } from "./prediction_request";
 import { getPredictionClassDiseaseByClassIdAndModelId } from "./prediction_class_disease";
 import { getPredictionClassLesionByClassIdAndModelId } from "./prediction_class_lesion";
+import { getPredictionClassBiomarkerByClassIdAndModelId } from "./prediction_class_biomarker";
 import { createClassifications } from "./classification";
 import { createDetections } from "./detection";
 import { createSegmentations } from "./segmentation";
@@ -371,19 +372,25 @@ async function processModelPrediction(
     // Process Segmentations
     const segs = predictionResult.result.predictions as AIServiceSegmentation[];
 
+    // Enrich first so the canonical biomarker name is persisted
+    Segmentations = await enrichSegmentationData(segs, model.id);
+
+    // Map enriched biomarker names by class_id for persistence
+    const biomarkerNameByClassId = new Map(
+      Segmentations.map((s) => [s.class_id, s.class_name]),
+    );
+
     // Save to DB
     await createSegmentations(
       segs.map((s) => ({
         predictionId: savedPrediction.id,
         classId: s.class_id,
-        className: s.class_name,
+        className: biomarkerNameByClassId.get(s.class_id) ?? s.class_name,
         polygon: s.polygon,
         area: s.area,
         confidence: s.confidence,
       })),
     );
-
-    Segmentations = await enrichSegmentationData(segs);
   }
 
   return {
@@ -477,18 +484,39 @@ async function enrichDetectionData(
 }
 
 /**
- * Maps raw segmentation results to the enriched Segmentation DTO.
- * Pass-through: class_name comes directly from the AI service, so no DB lookup.
+ * Maps raw segmentation results to biomarker information (Name).
  * Internal helper.
  */
 async function enrichSegmentationData(
   segmentations: AIServiceSegmentation[],
+  modelId: string,
 ): Promise<Segmentation[]> {
-  return segmentations.map((seg) => ({
-    class_id: seg.class_id,
-    class_name: seg.class_name,
-    polygon: seg.polygon,
-    area: seg.area,
-    confidence: seg.confidence,
-  }));
+  const Segmentations: Segmentation[] = [];
+
+  for (const seg of segmentations) {
+    const biomarkerInfo = await getPredictionClassBiomarkerByClassIdAndModelId({
+      classId: seg.class_id,
+      modelId: modelId,
+    });
+
+    if (!biomarkerInfo) {
+      console.error("[PREDICTION_WORKFLOW] Biomarker mapping not found", {
+        classId: seg.class_id,
+        modelId,
+      });
+      throw new Error(
+        `Biomarker mapping not found for class_id ${seg.class_id} and model ${modelId}`,
+      );
+    }
+
+    Segmentations.push({
+      class_id: seg.class_id,
+      class_name: biomarkerInfo.biomarkerName,
+      polygon: seg.polygon,
+      area: seg.area,
+      confidence: seg.confidence,
+    });
+  }
+
+  return Segmentations;
 }

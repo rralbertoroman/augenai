@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 # Test class for HuggingFace factories
+@pytest.mark.weights
 class TestFactoriesHF:
     @pytest.mark.parametrize("model_id", ["diabetic-retinopathy-224-procnorm-vit"])
     def test_vit_clsf_model_factory(self, sample_images, model_id):

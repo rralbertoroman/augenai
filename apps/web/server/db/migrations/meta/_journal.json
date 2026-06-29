@@ -120,6 +120,13 @@
       "when": 1782659940109,
       "tag": "0016_segmentation_module",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1782736058698,
+      "tag": "0017_biomarker_module",
+      "breakpoints": true
     }
   ]
 }

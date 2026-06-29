@@ -19,13 +19,18 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: "dummy-key"
       # DB URL for build (if needed by drizzle/next)
       SUPABASE_DB_URL: "postgresql://postgres:password@localhost:5432/postgres" 
-      # Other env vars from .env.example (mocked for CI)
-      SUPABASE_MASTER_API_KEY: "dummy-key"
+      # Server-side secrets required by server/constants.ts (mocked for CI)
+      SUPABASE_SECRET_KEY: "dummy-key"
       SUPABASE_JWT_JWK: '{"x": "test", "y": "test", "alg": "ES256", "crv": "P-256", "ext": true, "kid": "test", "kty": "EC", "key_ops": ["verify"]}'
       AI_PREDICTION_SERVICE_URL: "http://localhost:8000"
       AI_PREDICTION_SERVICE_SECRET_KEY: "dummy-key"
-      RESEND_API_KEY: "dummy-key"
-      RESEND_FROM_EMAIL: "test@example.com"
+      # SMTP (email) config required by server/constants.ts
+      SMTP_HOST: "smtp.example.com"
+      SMTP_PORT: "587"
+      SMTP_USER: "test@example.com"
+      SMTP_PASS: "dummy-pass"
+      EMAIL_FROM: "AugenAI <test@example.com>"
+      CONTACT_EMAIL: "contact@example.com"
       ENVIRONMENT: "test"
 
     steps:
@@ -33,11 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-          submodules: recursive
-          lfs: true
-
-      - name: Pull submodule LFS files
-        run: git submodule foreach 'git lfs pull'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -68,8 +68,12 @@ jobs:
       - name: Type Check
         run: pnpm run check-types
 
-      - name: Test
-        run: pnpm run test
+      - name: Test (web)
+        run: pnpm --filter web test
+
+      - name: Test (ai_service)
+        working-directory: apps/ai_service
+        run: uv run pytest --skip-weights
 
       - name: Build
         run: pnpm run build

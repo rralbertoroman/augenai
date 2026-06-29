@@ -10,6 +10,30 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-weights",
+        action="store_true",
+        default=False,
+        help="Skip tests marked 'weights' (model-weight-dependent) — used on CI with no weights.",
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "weights: requires model weight files on disk")
+
+
+def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--skip-weights"):
+        return
+    skip = pytest.mark.skip(
+        reason="weight-dependent; skipped via --skip-weights (CI has no model weights)"
+    )
+    for item in items:
+        if "weights" in item.keywords:
+            item.add_marker(skip)
+
+
 @pytest.fixture
 def sample_bytes_images():
     image_dir = "tests/dr_sample"

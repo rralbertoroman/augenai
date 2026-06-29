@@ -6,6 +6,7 @@ from ai_service.services.prediction.factories import pytorch_custom
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.weights
 class TestFactoriesPyTorchCustom:
     @pytest.mark.parametrize("model_id", ["glaucoma_resnet18_density"])
     def test_glaucoma_resnet18_density_factory(self, sample_glaucoma, model_id):

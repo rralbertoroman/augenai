@@ -5,6 +5,7 @@ import * as predictionRequestService from "@/server/services/prediction_request"
 import * as predictionService from "@/server/services/prediction";
 import * as classDiseaseService from "@/server/services/prediction_class_disease";
 import * as classLesionService from "@/server/services/prediction_class_lesion";
+import * as classBiomarkerService from "@/server/services/prediction_class_biomarker";
 import * as classificationService from "@/server/services/classification";
 import * as detectionService from "@/server/services/detection";
 import * as segmentationService from "@/server/services/segmentation";
@@ -18,6 +19,7 @@ import { PredictionRequestDTO } from "@/server/zod-schemas/prediction_request";
 import { PredictionDTO } from "@/server/zod-schemas/prediction";
 import { PredictionClassDiseaseWithDisease } from "@/server/zod-schemas/prediction_class_disease";
 import { PredictionClassLesionWithLesion } from "@/server/zod-schemas/prediction_class_lesion";
+import { PredictionClassBiomarkerWithBiomarker } from "@/server/zod-schemas/prediction_class_biomarker";
 
 // Mocks
 vi.mock("@/server/services/model");
@@ -25,6 +27,7 @@ vi.mock("@/server/services/prediction_request");
 vi.mock("@/server/services/prediction");
 vi.mock("@/server/services/prediction_class_disease");
 vi.mock("@/server/services/prediction_class_lesion");
+vi.mock("@/server/services/prediction_class_biomarker");
 vi.mock("@/server/services/classification");
 vi.mock("@/server/services/detection");
 vi.mock("@/server/services/segmentation");
@@ -232,6 +235,18 @@ describe("Prediction Workflow", () => {
     expect(() =>
       AIServiceSegmentationSchema.parse(samplePayload),
     ).not.toThrow();
+
+    // Segmentation enrichment resolves the class_name from the biomarker mapping.
+    vi.mocked(
+      classBiomarkerService.getPredictionClassBiomarkerByClassIdAndModelId,
+    ).mockResolvedValue({
+      classId: 1,
+      modelId: segmentationModel.id,
+      biomarkerId: "biomarker-123",
+      biomarkerName: "class_1",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as PredictionClassBiomarkerWithBiomarker);
 
     vi.mocked(global.fetch).mockResolvedValue({
       ok: true,

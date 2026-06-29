@@ -1,11 +1,15 @@
 import json
 import logging
 from datetime import datetime
+
+import pytest
+
 from ai_service.services.model import ModelService
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.weights
 def test_get_all_models_info():
     model_service = ModelService()
     models_info = model_service.get_all_models_info()
