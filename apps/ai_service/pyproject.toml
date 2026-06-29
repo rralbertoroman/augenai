@@ -17,7 +17,6 @@ dependencies = [
     "safetensors>=0.4.0",
     "opencv-python-headless>=4.5.0",
     "numpy>=1.26.0",
-    "amd-biomarker @ git+ssh://git@github.com/rralbertoroman/amd-biomarker.git",
 ]
 
 [project.scripts]
@@ -34,4 +33,10 @@ where = ["src"]
 dev = [
     "pytest>=9.0.0",
     "ruff>=0.14.6",
+]
+# Optional: the AMD-biomarker segmentation model lives in a private repo.
+# Not synced by default (so CI / contributors without access install cleanly).
+# Install it for the resnet34_unet model with: `uv sync --group segmentation`.
+segmentation = [
+    "amd-biomarker @ git+ssh://git@github.com/rralbertoroman/amd-biomarker.git",
 ]

@@ -22,8 +22,10 @@ WORKDIR /app
 # Copy project files
 COPY pyproject.toml uv.lock ./
 
-# Install Python dependencies without installing the project itself yet
-RUN uv sync --all-extras --no-install-project
+# Install Python dependencies without installing the project itself yet.
+# `--group segmentation` pulls the private amd-biomarker model (resnet34_unet);
+# the build needs SSH access to that repo (e.g. a mounted key / build secret).
+RUN uv sync --all-extras --group segmentation --no-install-project
 
 # Copy source code
 COPY ./src ./src
