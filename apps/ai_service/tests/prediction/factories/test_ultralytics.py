@@ -8,6 +8,7 @@ from ai_service.services.prediction.factories import (
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.weights
 class TestFactoriesUltralytics:
     @pytest.mark.parametrize("model_id", ["yolo11m_dr_lesion"])
     def test_ultralytics_detection_factory(self, sample_images, model_id):
