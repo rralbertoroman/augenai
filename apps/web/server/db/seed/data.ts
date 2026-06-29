@@ -360,7 +360,8 @@ export const predictionClassLesions: (typeof PredictionClassLesionsTable.$inferI
     },
   ];
 
-// TODO: replace with real AMD biomarker labels once amd-biomarker package is installed
+// AMD biomarker labels from the amd-biomarker `unet_training.ipynb` resnet34_unet
+// experiment (index-keyed class_names: {0: Fondo, 1: SRF, 2: IRF, 3: SHRM, 4: PED}).
 export const biomarkers: (typeof BiomarkersTable.$inferInsert)[] = [
   {
     id: "c1110000-1111-4111-8111-000000000000",
@@ -369,22 +370,22 @@ export const biomarkers: (typeof BiomarkersTable.$inferInsert)[] = [
   },
   {
     id: "c1110000-1111-4111-8111-000000000001",
-    name: "class_1",
+    name: "Subretinal Fluid (SRF)",
     classId: 1,
   },
   {
     id: "c1110000-1111-4111-8111-000000000002",
-    name: "class_2",
+    name: "Intraretinal Fluid (IRF)",
     classId: 2,
   },
   {
     id: "c1110000-1111-4111-8111-000000000003",
-    name: "class_3",
+    name: "Subretinal Hyperreflective Material (SHRM)",
     classId: 3,
   },
   {
     id: "c1110000-1111-4111-8111-000000000004",
-    name: "class_4",
+    name: "Pigment Epithelial Detachment (PED)",
     classId: 4,
   },
 ];

@@ -16,13 +16,15 @@ from .model_instance import ModelInstance
 logger = get_logger(__name__)
 
 # Single source of truth for the AMD biomarker classes (also used by the adapter).
+# Labels from the amd-biomarker `unet_training.ipynb` resnet34_unet experiment
+# (index-keyed class_names: {0: Fondo, 1: SRF, 2: IRF, 3: SHRM, 4: PED}).
 CLASS_NAMES = {
-    0: "background",
-    1: "class_1",
-    2: "class_2",
-    3: "class_3",
-    4: "class_4",
-}  # TODO: replace with real AMD biomarker labels
+    0: "Background",
+    1: "Subretinal Fluid (SRF)",
+    2: "Intraretinal Fluid (IRF)",
+    3: "Subretinal Hyperreflective Material (SHRM)",
+    4: "Pigment Epithelial Detachment (PED)",
+}
 NUM_CLASSES = 5
 IMG_SIZE = 512
 WEIGHTS_FILENAME = "best_model.pt"
