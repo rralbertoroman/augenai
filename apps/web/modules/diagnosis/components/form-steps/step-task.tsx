@@ -61,6 +61,7 @@ export function StepTask({
           <SelectContent>
             <SelectItem value="classification">Clasificación</SelectItem>
             <SelectItem value="detection">Detección</SelectItem>
+            <SelectItem value="segmentation">Segmentación</SelectItem>
           </SelectContent>
         </Select>
         {errors.task && (

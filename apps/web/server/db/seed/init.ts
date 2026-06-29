@@ -1,21 +1,31 @@
 import { sql } from "drizzle-orm";
-import { readFileSync } from "fs";
-import { join } from "path";
 import { db, queryClient } from "../client";
-
-// Seed files in execution order
-const SEED_FILES = [
-  "models_rows.sql",
-  "diseases_rows.sql",
-  "lesions_rows.sql",
-  "lesion_disease_link_rows.sql",
-  "prediction_class_disease_rows.sql",
-  "prediction_class_lesion_rows.sql",
-];
+import {
+  ModelsTable,
+  DiseasesTable,
+  LesionsTable,
+  LesionDiseaseLinkTable,
+  PredictionClassesTable,
+  PredictionClassLesionsTable,
+  BiomarkersTable,
+  BiomarkerDiseaseLinkTable,
+  PredictionClassBiomarkersTable,
+} from "../schemas";
+import {
+  diseases,
+  models,
+  lesions,
+  lesionDiseaseLinks,
+  predictionClassDiseases,
+  predictionClassLesions,
+  biomarkers,
+  biomarkerDiseaseLinks,
+  predictionClassBiomarkers,
+} from "./data";
 
 // Drop tables in reverse order (to handle foreign key constraints)
 // First drop tables that depend on predictions, then predictions themselves,
-// then tables that depend on models/diseases/lesions, and finally the seed tables
+// then tables that depend on models/diseases/lesions/biomarkers, and finally the seed tables
 const DROP_TABLES = [
   "classification_feedback",
   "detection_feedback",
@@ -26,31 +36,14 @@ const DROP_TABLES = [
   "prediction_sharing",
   "prediction_class_lesion",
   "prediction_class_disease",
+  "prediction_class_biomarker",
   "lesion_disease_link",
+  "biomarker_disease_link",
   "lesions",
+  "biomarkers",
   "diseases",
   "models",
 ];
-
-async function executeSqlFile(filename: string): Promise<void> {
-  console.log(`Executing seed file: ${filename}...`);
-  const filePath = join(__dirname, filename);
-  const content = readFileSync(filePath, "utf-8");
-
-  if (!content.trim()) {
-    console.log(`Skipping empty file: ${filename}`);
-    return;
-  }
-
-  const statements = content.split(";").filter((stmt) => stmt.trim());
-
-  for (const statement of statements) {
-    if (statement.trim()) {
-      await db.execute(sql.raw(statement));
-    }
-  }
-  console.log(`Finished executing ${filename}`);
-}
 
 async function main() {
   try {
@@ -73,9 +66,56 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     console.log("Resuming after wait...");
 
-    // Execute seed files in order
-    for (const filename of SEED_FILES) {
-      await executeSqlFile(filename);
+    // Insert seed data in FK-safe order
+    if (diseases.length) {
+      console.log(`Seeding diseases (${diseases.length})...`);
+      await db.insert(DiseasesTable).values(diseases);
+    }
+    if (models.length) {
+      console.log(`Seeding models (${models.length})...`);
+      await db.insert(ModelsTable).values(models);
+    }
+    if (lesions.length) {
+      console.log(`Seeding lesions (${lesions.length})...`);
+      await db.insert(LesionsTable).values(lesions);
+    }
+    if (biomarkers.length) {
+      console.log(`Seeding biomarkers (${biomarkers.length})...`);
+      await db.insert(BiomarkersTable).values(biomarkers);
+    }
+    if (lesionDiseaseLinks.length) {
+      console.log(
+        `Seeding lesion_disease_link (${lesionDiseaseLinks.length})...`,
+      );
+      await db.insert(LesionDiseaseLinkTable).values(lesionDiseaseLinks);
+    }
+    if (biomarkerDiseaseLinks.length) {
+      console.log(
+        `Seeding biomarker_disease_link (${biomarkerDiseaseLinks.length})...`,
+      );
+      await db.insert(BiomarkerDiseaseLinkTable).values(biomarkerDiseaseLinks);
+    }
+    if (predictionClassDiseases.length) {
+      console.log(
+        `Seeding prediction_class_disease (${predictionClassDiseases.length})...`,
+      );
+      await db.insert(PredictionClassesTable).values(predictionClassDiseases);
+    }
+    if (predictionClassLesions.length) {
+      console.log(
+        `Seeding prediction_class_lesion (${predictionClassLesions.length})...`,
+      );
+      await db
+        .insert(PredictionClassLesionsTable)
+        .values(predictionClassLesions);
+    }
+    if (predictionClassBiomarkers.length) {
+      console.log(
+        `Seeding prediction_class_biomarker (${predictionClassBiomarkers.length})...`,
+      );
+      await db
+        .insert(PredictionClassBiomarkersTable)
+        .values(predictionClassBiomarkers);
     }
 
     console.log("Seed process completed successfully.");
