@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # Next.js / Supabase public env vars for build
+      NEXT_PUBLIC_SUPABASE_URL: "https://your-project.supabase.co"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: "dummy-key"
+      # DB URL for build (if needed by drizzle/next)
+      SUPABASE_DB_URL: "postgresql://postgres:password@localhost:5432/postgres" 
+      # Other env vars from .env.example (mocked for CI)
+      SUPABASE_MASTER_API_KEY: "dummy-key"
+      SUPABASE_JWT_JWK: '{"x": "test", "y": "test", "alg": "ES256", "crv": "P-256", "ext": true, "kid": "test", "kty": "EC", "key_ops": ["verify"]}'
+      AI_PREDICTION_SERVICE_URL: "http://localhost:8000"
+      AI_PREDICTION_SERVICE_SECRET_KEY: "dummy-key"
+      RESEND_API_KEY: "dummy-key"
+      RESEND_FROM_EMAIL: "test@example.com"
+      ENVIRONMENT: "test"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          submodules: recursive
+          lfs: true
+
+      - name: Pull submodule LFS files
+        run: git submodule foreach 'git lfs pull'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Type Check
+        run: pnpm run check-types
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build

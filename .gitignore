@@ -40,6 +40,5 @@ yarn-error.log*
 *.pem
 __pycache__
 *.log
-.github
 notebooks/
 *tfevents*
