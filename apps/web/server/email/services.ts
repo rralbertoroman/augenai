@@ -1,15 +1,11 @@
 "use server";
 
-import { resend } from "./client";
-import { RESEND_FROM_EMAIL, CONTACT_EMAIL } from "../constants";
+import { mailer } from "./client";
+import { EMAIL_FROM, CONTACT_EMAIL } from "../constants";
 import { getUserProfileById } from "../services/user_profile";
 import { generateEmailTemplate } from "./email-templates";
 import { EmailType, type EmailOptions } from "./schemas";
 import { getCurrentUser } from "../auth";
-
-if (!RESEND_FROM_EMAIL) {
-  throw new Error("RESEND_FROM_EMAIL is not set");
-}
 
 export async function sendPredictionSharedEmail(
   sharedByUserId: string,
@@ -37,20 +33,13 @@ export async function sendPredictionSharedEmail(
     });
 
     const emailOptions: EmailOptions = {
-      from: RESEND_FROM_EMAIL,
+      from: EMAIL_FROM,
       to: sharedToProfile.email,
       subject: emailContent.subject,
       html: emailContent.html,
     };
 
-    const { error } = await resend.emails.send(emailOptions);
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message || "Unknown Resend error",
-      };
-    }
+    await mailer.sendMail(emailOptions);
 
     return { success: true };
   } catch (error) {
@@ -85,20 +74,13 @@ export async function sendContactUsEmail(
     });
 
     const emailOptions: EmailOptions = {
-      from: RESEND_FROM_EMAIL,
+      from: EMAIL_FROM,
       to: CONTACT_EMAIL,
       subject: emailContent.subject,
       html: emailContent.html,
     };
 
-    const { error } = await resend.emails.send(emailOptions);
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message || "Unknown Resend error",
-      };
-    }
+    await mailer.sendMail(emailOptions);
 
     return { success: true };
   } catch (error) {

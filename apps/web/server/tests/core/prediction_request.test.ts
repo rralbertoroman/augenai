@@ -22,6 +22,14 @@ vi.mock("@/server/db/client", () => ({
         findFirst: (...args: unknown[]) => mockFindFirst(...args),
       },
     },
+    // Chainable stub for raw query-builder calls. `select()` with no args is the
+    // disease-name lookup (rows to .map over); `select({ total: count() })` is the
+    // aggregate count (destructured as `[{ total }]`).
+    select: (...args: unknown[]) => ({
+      from: () => ({
+        where: () => Promise.resolve(args.length > 0 ? [{ total: 0 }] : []),
+      }),
+    }),
   },
 }));
 
