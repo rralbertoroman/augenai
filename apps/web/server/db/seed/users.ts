@@ -24,7 +24,9 @@ import {
   getUserProfileByEmail,
 } from "../../services/user_profile";
 
-const email = process.env.SEED_USER_EMAIL || "doctor@augenai.dev";
+// Default uses a real-domain address; Supabase rejects domains without valid
+// DNS/MX (e.g. *.dev placeholders) during signUp.
+const email = process.env.SEED_USER_EMAIL || "augenai.demo@gmail.com";
 const password = process.env.SEED_USER_PASSWORD || "AugenAI!2026";
 const name = process.env.SEED_USER_NAME || "Demo Doctor";
 const role = process.env.SEED_USER_ROLE || "doctor";
