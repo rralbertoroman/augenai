@@ -542,12 +542,14 @@ function DiagnosisResultsSection({
                           return (
                             <PredictionCard
                               key={segmentation.id}
+                              primaryLabel="Biomarcador"
+                              secondaryLabel="Área"
                               diagnosis={{
                                 id: segmentation.id!,
                                 disease_name: translateSegmentationClassName(
                                   segmentation.class_name,
                                 ),
-                                stage_content: `Área: ${Math.round(
+                                stage_content: `${Math.round(
                                   segmentation.area,
                                 )} px²`,
                                 confidence: segmentation.confidence,

@@ -30,6 +30,26 @@ IMG_SIZE = 512
 WEIGHTS_FILENAME = "best_model.pt"
 
 
+def rescale_polygon_to_original(
+    points: list[list[float]],
+    area: float,
+    orig_size: tuple[int, int],
+    model_size: int = IMG_SIZE,
+) -> tuple[list[list[float]], float]:
+    """Map polygon vertices and area from the model's square input space back to
+    the original image resolution.
+
+    ``preprocess_image`` stretches the image to ``model_size x model_size``
+    without preserving aspect ratio, so the inverse is an independent per-axis
+    scale (``sx`` for x, ``sy`` for y). Area scales by ``sx * sy``.
+    """
+    orig_w, orig_h = orig_size
+    sx = orig_w / model_size
+    sy = orig_h / model_size
+    scaled = [[x * sx, y * sy] for x, y in points]
+    return scaled, area * sx * sy
+
+
 class SegmentationProcessor:
     """Prepares inputs for the ResNet34-UNet segmentation model: a normalized,
     batched (1, 3, 512, 512) tensor ready for the device."""
@@ -82,6 +102,9 @@ def resnet34_unet_factory(model_id: str):
             logger.info(f"Loaded \n\n{'==' * 20}\n\n {self.model} \n\n{'==' * 20}")
 
         def run(self, image: Image):
+            # Original (width, height), captured before the 512x512 resize so
+            # polygons can be mapped back to the source resolution.
+            orig_w, orig_h = image.size
             tensor = self.processor(image).to(self.device)
 
             logger.info(f"Running {self.model_id} inference on device: {self.device}")
@@ -118,12 +141,18 @@ def resnet34_unet_factory(model_id: str):
                     confidence_by_class[class_id] = float(class_probs[region].mean())
                 conf = confidence_by_class[class_id]
 
+                # Scale polygon + area out of 512x512 model space into the
+                # original image resolution (consistent with detection boxes).
+                scaled_polygon, scaled_area = rescale_polygon_to_original(
+                    poly["polygon"], poly["area"], (orig_w, orig_h)
+                )
+
                 predictions.append(
                     SegmentationObject(
                         class_id=class_id,
                         class_name=poly["class_name"],
-                        polygon=[[float(x), float(y)] for x, y in poly["polygon"]],
-                        area=float(poly["area"]),
+                        polygon=[[float(x), float(y)] for x, y in scaled_polygon],
+                        area=float(scaled_area),
                         confidence=conf,
                     )
                 )

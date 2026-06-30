@@ -62,6 +62,21 @@ class TestFactoriesSegmentation:
         logger.info(f"===Result: {result}")
         logger.info(f"===Result Dict: \n\n{json.dumps(result.model_dump(), indent=4)}")
 
+    @pytest.mark.parametrize("model_id", ["resnet34_unet"])
+    def test_polygons_in_original_image_space(self, model_id):
+        """Non-square input: returned polygon coords must lie within the ORIGINAL
+        image bounds (proves they were scaled out of 512x512 model space)."""
+        model = resnet34_unet_factory(model_id)
+        width, height = 900, 600
+        arr = (np.random.rand(height, width, 3) * 255).astype("uint8")
+        result = model.run(Image.fromarray(arr))
+
+        for prediction in result.predictions:
+            xs = [pt[0] for pt in prediction.polygon]
+            ys = [pt[1] for pt in prediction.polygon]
+            assert 0 <= min(xs) and max(xs) <= width
+            assert 0 <= min(ys) and max(ys) <= height
+
 
 class TestSegmentationProcessor:
     def test_satisfies_processor_contract(self):

@@ -14,12 +14,18 @@ export interface PredictionCardProps {
     feedbacks?: ClassificationFeedbackWithExtras[];
     detectionFeedbacks?: DetectionFeedbackWithExtras[];
   };
+  /** Column 1 header — defaults to "Enfermedad"; set per task type. */
+  primaryLabel?: string;
+  /** Column 2 header — defaults to "Clasificación"; set per task type. */
+  secondaryLabel?: string;
   onViewFeedbacks?: (feedbacks: ClassificationFeedbackWithExtras[]) => void;
   onViewDetectionFeedbacks?: () => void;
 }
 
 export function PredictionCard({
   diagnosis,
+  primaryLabel = "Enfermedad",
+  secondaryLabel = "Clasificación",
   onViewFeedbacks,
   onViewDetectionFeedbacks,
 }: PredictionCardProps) {
@@ -38,7 +44,7 @@ export function PredictionCard({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 flex-1">
           <div>
             <p className="text-xs font-medium text-muted-foreground">
-              Enfermedad
+              {primaryLabel}
             </p>
             <div>
               <p className="mt-1 text-sm font-semibold text-foreground">
@@ -55,7 +61,7 @@ export function PredictionCard({
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground">
-              Clasificación
+              {secondaryLabel}
             </p>
             <div>
               <p className="mt-1 text-sm text-foreground">
