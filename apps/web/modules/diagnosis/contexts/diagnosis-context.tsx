@@ -194,8 +194,10 @@ export function DiagnosisProvider({
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
 
-      const imageType =
-        formData.imageType.toLowerCase() === "fundus" ? "fundus" : "oct";
+      const imageType = formData.imageType.toLowerCase() as
+        | "fundus"
+        | "oct"
+        | "oct-a";
 
       setIsUploading(true);
 

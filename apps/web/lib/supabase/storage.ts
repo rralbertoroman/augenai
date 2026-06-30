@@ -2,7 +2,7 @@ import { createClient } from "./client";
 
 export async function uploadEyeScan(
   file: File,
-  imageType: "fundus" | "oct",
+  imageType: "fundus" | "oct" | "oct-a",
   retries: number = 3,
 ): Promise<{ path: string; error?: string }> {
   try {

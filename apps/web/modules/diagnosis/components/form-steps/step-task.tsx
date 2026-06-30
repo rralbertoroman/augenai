@@ -38,6 +38,7 @@ export function StepTask({
           <SelectContent>
             <SelectItem value="fundus">Fundus</SelectItem>
             <SelectItem value="oct">OCT</SelectItem>
+            <SelectItem value="oct-a">OCT-A</SelectItem>
           </SelectContent>
         </Select>
         {errors.imageType && (
