@@ -35,9 +35,10 @@ async function finish(code: number): Promise<never> {
 
 async function main() {
   // 1. Bucket (private; signed-URL reads).
+  const mimeArrayLiteral = `{${MIME_TYPES.join(",")}}`;
   await db.execute(sql`
     insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-    values (${BUCKET}, ${BUCKET}, false, ${FILE_SIZE_LIMIT}, ${MIME_TYPES})
+    values (${BUCKET}, ${BUCKET}, false, ${FILE_SIZE_LIMIT}, ${mimeArrayLiteral}::text[])
     on conflict (id) do update
       set file_size_limit = excluded.file_size_limit,
           allowed_mime_types = excluded.allowed_mime_types
@@ -46,32 +47,25 @@ async function main() {
 
   // 2. RLS policies on storage.objects scoped to this bucket, for authenticated
   //    users. INSERT needs WITH CHECK; the rest use USING. Idempotent via drop.
+  // DDL can't bind parameters (Postgres can't infer their type in CREATE
+  // POLICY), so inline the bucket id as a literal. Both values are fixed,
+  // controlled constants — no injection surface.
+  const cond = `bucket_id = '${BUCKET}'`;
   for (const action of ACTIONS) {
     const name = `${BUCKET}_authenticated_${action}`;
     await db.execute(
-      sql`drop policy if exists ${sql.identifier(name)} on storage.objects`,
+      sql.raw(`drop policy if exists "${name}" on storage.objects`),
     );
 
+    let ddl: string;
     if (action === "insert") {
-      await db.execute(sql`
-        create policy ${sql.identifier(name)} on storage.objects
-          for insert to authenticated
-          with check (bucket_id = ${BUCKET})
-      `);
+      ddl = `create policy "${name}" on storage.objects for insert to authenticated with check (${cond})`;
     } else if (action === "update") {
-      await db.execute(sql`
-        create policy ${sql.identifier(name)} on storage.objects
-          for update to authenticated
-          using (bucket_id = ${BUCKET})
-          with check (bucket_id = ${BUCKET})
-      `);
+      ddl = `create policy "${name}" on storage.objects for update to authenticated using (${cond}) with check (${cond})`;
     } else {
-      await db.execute(sql`
-        create policy ${sql.identifier(name)} on storage.objects
-          for ${sql.raw(action)} to authenticated
-          using (bucket_id = ${BUCKET})
-      `);
+      ddl = `create policy "${name}" on storage.objects for ${action} to authenticated using (${cond})`;
     }
+    await db.execute(sql.raw(ddl));
     console.log(`✓ policy ensured: ${name}`);
   }
 
