@@ -13,7 +13,8 @@
     "migrate": "drizzle-kit migrate",
     "test": "vitest run",
     "migrate:seed": "pnpm run migrate && tsx server/db/seed/init.ts",
-    "seed:users": "tsx server/db/seed/users.ts"
+    "seed:users": "tsx server/db/seed/users.ts",
+    "seed:storage": "tsx server/db/seed/storage.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
